@@ -4,6 +4,7 @@
 @inject SettingsService Settings
 @inject ProviderService Provider
 @inject ChatState State
+@inject TranslatorService Translator;
 @using LLMRP.Components.Models.User
 @using Models;
 
@@ -146,7 +147,10 @@
 
         if (!string.IsNullOrWhiteSpace(CurrentMessage) && isGenerating == false)
         {
-            await ChatHistory.AddMessage(CurrentMessage, ChatHistory.MainUser, Settings.CurrentInstruct);
+            var nativeLangContent = CurrentMessage;
+            if (Translator.isEnabled)
+                CurrentMessage = await Translator.TranslateForLLM(CurrentMessage);
+            var mes = await ChatHistory.AddMessage(CurrentMessage, ChatHistory.MainUser, Settings.CurrentInstruct, nativeLangContent);
             await ClearMessage();
             StateHasChanged();
             _ = ClickSend.InvokeAsync(NextPerson);

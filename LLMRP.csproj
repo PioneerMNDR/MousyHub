@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <Content Remove="wwwroot\JSScripts.js" />
-    <Content Remove="wwwroot\models\L3-8B-Stheno-v3.2-Q6_K.gguf" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,15 +17,18 @@
 
   
   <ItemGroup>
-    <PackageReference Include="AutoGen.LMStudio" Version="0.0.11" />
-    <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="7.0.0-rc.1" />
-    <PackageReference Include="LLamaSharp" Version="0.14.0" />
-    <PackageReference Include="LLamaSharp.Backend.Vulkan" Version="0.14.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.6.0" />
-    <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.6" />
-    <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.36.240416.1" />
-    <PackageReference Include="MudBlazor" Version="7.0.0" />
-    <PackageReference Include="MudBlazor.Markdown" Version="1.0.2" />
+    <PackageReference Include="AutoGen.LMStudio" Version="0.2.0" />
+    <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="7.0.1" />
+    <PackageReference Include="GTranslate" Version="2.2.7" />
+    <PackageReference Include="LLamaSharp" Version="0.16.0" />
+    <PackageReference Include="LLamaSharp.Backend.Cpu" Version="0.16.0" />
+    <PackageReference Include="LLamaSharp.Backend.Cuda12" Version="0.16.0" />
+    <PackageReference Include="LLamaSharp.Backend.Vulkan" Version="0.16.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
+    <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.8" />
+    <PackageReference Include="Microsoft.KernelMemory.Core" Version="0.73.240906.1" />
+    <PackageReference Include="MudBlazor" Version="7.8.0" />
+    <PackageReference Include="MudBlazor.Markdown" Version="7.8.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Spectre.Console" Version="0.49.2-preview.0.4" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="8.0.0" />
@@ -37,9 +39,7 @@
   <ItemGroup>
     <Folder Include="ThemeManager\" />
     <Folder Include="wwwroot\chatHistory\" />
-    <Folder Include="wwwroot\cache\" />
     <Folder Include="wwwroot\config\Profiles\" />
-    <Folder Include="wwwroot\models\" />
   </ItemGroup>
 
   

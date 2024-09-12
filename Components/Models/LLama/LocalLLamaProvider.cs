@@ -1,4 +1,5 @@
 ﻿using LLama.Common;
+using LLama.Sampling;
 using LLMRP.Components.Abstractions;
 using LLMRP.Components.Models.Model;
 using Grammar = LLama.Grammars.Grammar;
@@ -28,43 +29,37 @@ namespace LLMRP.Components.Models.LLama
             {
                 grammar = Grammar.Parse(config.grammar, "root");
             }
-
-
-            var inferenceParams = new InferenceParams
+            CustomSampler SamplerPipeline = new CustomSampler
             {
-                // Assign values from GenerationConfig where possible
-                RepeatPenalty = (float)config.rep_pen,
-                MaxTokens = maxTokens,
                 TopK = config.top_k,
-                TfsZ = (float)config.tfs,
-                TopP = (float)config.top_p,
+                TailFreeZ = (float)config.tfs,
+                TopP = (float)config.top_p, 
                 MinP = (float)config.min_p,
                 TypicalP = (float)config.typical,
                 Temperature = (float)config.temp,
-                RepeatLastTokensCount = config.rep_pen_range,
-                FrequencyPenalty = 0, // Assuming FrequencyPenalty is not used in GenerationConfig
-                PresencePenalty = 0, // Assuming PresencePenalty is not used in GenerationConfig
-                Mirostat = (MirostatType)config.mirostat,
-                MirostatTau = (float)config.mirostat_tau,
-                MirostatEta = (float)config.mirostat_eta,
-                PenalizeNL = true, // Default value
-
-
+                RepeatPenalty = (float)config.rep_pen,
+                AlphaFrequency = 0, // Assuming FrequencyPenalty is not used in GenerationConfig
+                AlphaPresence = 0, // Assuming PresencePenalty is not used in GenerationConfig              
+                //Mirostat = (MirostatType)config.mirostat,
+                //MirostatTau = (float)config.mirostat_tau,
+                //MirostatEta = (float)config.mirostat_eta,
+                PenalizeNewline = true, // Default value 
+                RepeatLastTokensCount = config.rep_pen_range
             };
             if (grammar != null)
+                SamplerPipeline.Grammar = grammar.CreateInstance();
+
+            var inferenceParams = new InferenceParams
             {
-                inferenceParams.Grammar = grammar.CreateInstance();
-
-            }
-
-
+                MaxTokens = maxTokens,
+                SamplingPipeline = SamplerPipeline,     
+        
+            };
+     
             if (stop_seq != "")
             {
                 inferenceParams.AntiPrompts = PromtBuilder.Stop_sequence_split(stop_seq).ToList();
             }
-
-
-            // * SamplingPipeline: Requires understanding of sampler_order and potentially custom logic.
 
             return inferenceParams;
         }

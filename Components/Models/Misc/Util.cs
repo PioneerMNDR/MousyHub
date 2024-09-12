@@ -51,13 +51,14 @@ namespace LLMRP.Components.Models.Misc
             if (match.Success)
             {
                 string elementsString = match.Groups[1].Value;
-                string[] elements = elementsString.Split(new[] { "],[" }, StringSplitOptions.None);
+                // Используем регулярное выражение для разделения строки
+                string[] elements = Regex.Split(elementsString, @"\],\s*\[");
 
+                // Удаляем лишние символы и пробелы
                 for (int i = 0; i < elements.Length; i++)
                 {
-                    elements[i] =  elements[i].Trim('[', ']');
-                }
-
+                    elements[i] = elements[i].Trim('[', ' ', ']');
+                }          
                 return elements;
             }
 

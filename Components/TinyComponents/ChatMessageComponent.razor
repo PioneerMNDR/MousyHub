@@ -63,9 +63,9 @@
                     {
                         <MudFocusTrap>
                             <div class="MarkdownFormatting">
-                                @if (Message.TranslatedContent != "" && Message.TranslatedContent != null)
+                                @if (Message.UserNativeLanguageContent != "" && Message.UserNativeLanguageContent != null)
                                 {
-                                    <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16" Value="@Message.TranslatedContent"></MudMarkdown>
+                                    <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16" Value="@Message.UserNativeLanguageContent"></MudMarkdown>
                                 }
                                 else
                                 {

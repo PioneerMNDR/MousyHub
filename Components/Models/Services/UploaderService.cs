@@ -122,7 +122,7 @@ namespace LLMRP.Components.Models.Services
 
         public List<string> LoadModelsPath()
         {
-            string directory = Environment.CurrentDirectory + "/wwwroot/models/";
+            string directory = Environment.CurrentDirectory + "/wwwroot/LocalModels/";
             List<string> list = new List<string>();
             foreach (string file in Directory.GetFiles(directory, "*.gguf"))
             {

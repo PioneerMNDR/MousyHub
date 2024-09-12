@@ -47,13 +47,32 @@
                         <MudGrid Spacing="4">
                             <MudItem  xs="12" md="12">
                                 <MudStack Row AlignItems="AlignItems.End" Class="mb-3">
-                                     <MudText>Model:</MudText>
-                                     <MudSelect AnchorOrigin="Origin.BottomCenter" @bind-Value=Settings.User.SelfInferenceConfig.ModelPath ToStringFunc="converter">
-                                         @foreach (var item in Settings.LocalModelsList)
-                                        {
-                                            <MudSelectItem Value="item">@Path.GetFileName(item)</MudSelectItem>
-                                        }
-                                    </MudSelect>
+                                     @if (Settings.LocalModelsList.Count>0)
+                                    {
+                                        <MudText>Model:</MudText>
+                                        <MudSelect AnchorOrigin="Origin.BottomCenter" @bind-Value=Settings.User.SelfInferenceConfig.ModelPath ToStringFunc="converter">
+                                            @foreach (var item in Settings.LocalModelsList)
+                                            {
+                                                <MudSelectItem Value="item">@Path.GetFileName(item)</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    }
+                                    else
+                                    {
+                                        <MudAlert Severity="Severity.Warning">No models found</MudAlert>
+                                    <MudAlert Severity="Severity.Info">Download GGUF model on
+                                            <MudElement HtmlTag="a"
+                                                        Class="ms-1"
+                                                        Style="color:yellow;font-weight:bold;"
+                                                        href="https://huggingface.co/models?pipeline_tag=text-generation&sort=trending"
+                                                        target="blank"
+                                                        rel="noopener noreferrer">
+                                                Hugging Face
+                                            </MudElement>
+                                            and place them in the LocalModels folder and refresh page
+                                    </MudAlert>
+                                    }
+                              
                                 </MudStack>
                             </MudItem>
                             <MudItem xs="12" md="12" Class=" mr-2">

@@ -18,6 +18,8 @@ namespace LLMRP.Components.Models.User
 
         public LocalLLamaLaunchConfig SelfInferenceConfig { get; set; } = new LocalLLamaLaunchConfig();
 
+        public TranslatorOptions TranslatorOptions { get; set; } = new TranslatorOptions();
+
         public int CurrentMaxToken { get; set; } = 100;
         public int CurrentContextLength { get; set; } = 4096;
 

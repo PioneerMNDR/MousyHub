@@ -10,6 +10,7 @@
 @inject SettingsService Settings
 @inject UploaderService Uploader
 @inject AlertServices Alert
+@inject TranslatorService Translator
 @inject IJSRuntime JS
 
 <MudCollapse @bind-Expanded="@isCharEditMode" Class="FixedCollapsing">
@@ -192,9 +193,9 @@
                 });
             });
         });
-        if (Provider.Translator!=null && message!=null)
+        if (message != null)
         {
-            // message.TranslatedContent = await Provider.Translator.Translate(message.Content);
+            await message.TranslateMessage(Translator);
         }
 
         await State.SetContextSize();

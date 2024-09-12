@@ -1,4 +1,7 @@
-﻿namespace LLMRP.Components.Models
+﻿using DocumentFormat.OpenXml.Bibliography;
+using LLMRP.Components.Models.Services;
+
+namespace LLMRP.Components.Models
 {
     public class Message
     {
@@ -22,10 +25,18 @@
             dateTimeString = dateTime.ToString("dd MMMM, yyyy HH:mm");
         }
 
+        public async Task TranslateMessage(TranslatorService translatorService)
+        {
+            if (translatorService.isEnabled)
+            {
+                UserNativeLanguageContent = await translatorService.TranslateForUser(Content);
+            }
+          
+        }
 
         public string Content { get; set; }
 
-        public string TranslatedContent { get; set; }
+        public string UserNativeLanguageContent { get; set; }
 
         public string InstructContent { get; set; }
             

@@ -33,6 +33,8 @@ namespace LLMRP.Components.Models.Services
             ThemeList = uploaderService.LoadThemes();
             User = uploaderService.LoadSettings();
             LocalModelsList = uploaderService.LoadModelsPath();
+            if (LocalModelsList.Contains(User.SelfInferenceConfig.ModelPath) == false)
+                User.SelfInferenceConfig.ModelPath = "";
             ProfileList = uploaderService.LoadProfileList();
             LoadDefault();
             Console.WriteLine("~This SettingsService is main service. Other connections is off ~");

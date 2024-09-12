@@ -1,3 +1,4 @@
+using LLama.Native;
 using LLMRP.Components;
 using LLMRP.Components.Models;
 using LLMRP.Components.Models.Misc;
@@ -7,6 +8,7 @@ using MudBlazor.Services;
 using MudExtensions.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -26,6 +28,7 @@ builder.Services.AddScoped<ChatState>();
 builder.Services.AddScoped<SettingsService>();
 builder.Services.AddScoped<ScreenSize>();
 builder.Services.AddScoped<AlertServices>();
+builder.Services.AddScoped<TranslatorService>();
 builder.Services.AddSingleton<ProviderService>();
 builder.Services.AddSingleton<DiagnosticsService>();
 builder.Services.AddSingleton<UploaderService>();

@@ -103,7 +103,6 @@ namespace LLMRP.Components.Models
             if (person.Name == "Narrator" && PlayerWishes != null && PlayerWishes != "")
             {
                 finalpromt += "\n[Player's wishes: " + PlayerWishes + "]";
-
             }
             Message lastmessage = new Message();
             foreach (var item in Messages)
@@ -138,7 +137,7 @@ namespace LLMRP.Components.Models
         }
 
 
-        public async Task AddMessage(string content, Person person, Instruct instruct)
+        public async Task<Message> AddMessage(string content, Person person, Instruct instruct, string NativeLangContent = "")
         {
             if (person.IsUser == true)
             {
@@ -147,14 +146,20 @@ namespace LLMRP.Components.Models
                     content += "\n" + OCC_PlayerWishes;
                     OCC_PlayerWishes = string.Empty;
                 }
-                var Instuctcontent = PromtBuilder.UserMessage(instruct, content, person.Name);
-                Messages.Add(new Message(content, Instuctcontent, person));
+                var InstructContent = PromtBuilder.UserMessage(instruct, content, person.Name);
+                var newMes = new Message(content, InstructContent, person);
+                newMes.UserNativeLanguageContent = NativeLangContent;
+                Messages.Add(newMes);
+                return newMes;
             }
             else
             {
                 var InstructContent = PromtBuilder.BotMessageFormatting(instruct, person.Name);
                 content = PromtBuilder.TagPlaceholder(content, MainUser.Name, MainCharacter.Name);
-                Messages.Add(new Message(content, InstructContent, person));
+                var newMes = new Message(content, InstructContent, person);
+                newMes.UserNativeLanguageContent = NativeLangContent;
+                Messages.Add(newMes);
+                return newMes;
             }
 
         }

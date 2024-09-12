@@ -44,26 +44,26 @@
                 </MudItem>
                 <MudItem xs="12" md="12">
                     <MudStack Row AlignItems="AlignItems.Baseline">
-                        <MudText Typo="Typo.h6">Quick reply options</MudText>
-                        <MudText Typo="Typo.caption">assign the mood of quick replies</MudText>
-                    </MudStack>
-                    <MudDivider></MudDivider>
-                    @if (Settings!=null && Settings.User != null)
+                         <MudText Typo="Typo.h6">Quick reply options</MudText>
+                         <MudText Typo="Typo.caption">assign the mood of quick replies</MudText>
+                     </MudStack>
+                     <MudDivider></MudDivider>
+                     @if (Settings != null && Settings.User != null)
                     {
                         @for (int i = 0; i < Settings.User.QuickRepliesSetings.Length; i++)
                         {
                             var n = i;
                             <MudItem xs="12" md="12">
                                 <MudStack Row AlignItems="AlignItems.Baseline">
-                                 <MudText>@(n+1)</MudText>
+                                     <MudText>@(n + 1)</MudText>
                                      <MudSelect @bind-Value="Settings.User.QuickRepliesSetings[n].Emotion" Style="width:120px" Label="Classification">
                                          @foreach (ResponseEmotion emotion in Enum.GetValues(typeof(ResponseEmotion)))
                                         {
                                             <MudSelectItem Value="@emotion">@emotion @Settings.User.QuickRepliesSetings[n].GetEmoji(emotion)</MudSelectItem>
                                         }
                                     </MudSelect>
-                                     <MudSelect @bind-Value="Settings.User.QuickRepliesSetings[n].MudColor" Style="width:120px" AdornmentColor="Settings.User.QuickRepliesSetings[n].MudColor" Label="Color">
-                                     @foreach (Color color in Enum.GetValues(typeof(Color)))
+                                    <MudSelect @bind-Value="Settings.User.QuickRepliesSetings[n].MudColor" Style="width:120px" AdornmentColor="Settings.User.QuickRepliesSetings[n].MudColor" Label="Color">
+                                        @foreach (Color color in Enum.GetValues(typeof(Color)))
                                         {
                                             <MudSelectItem Value="@color">@color</MudSelectItem>
                                         }
@@ -72,7 +72,7 @@
                             </MudItem>
                         }
                     }
-               
+
                 </MudItem>
             </MudGrid>
         </MudPaper>
@@ -109,6 +109,35 @@
         </MudPaper>
     </MudItem>
     <MudItem xs="12" md="6">
+        <MudPaper Class="pa-3">
+            <MudStack Row>
+                <MudText Typo="Typo.h4">Translator</MudText>
+                <MudSpacer></MudSpacer>
+                <MudSwitch Label="Enabled" Color="Color.Primary" @bind-Value=Settings.User.TranslatorOptions.isEnabled></MudSwitch>
+            </MudStack>
+
+            <MudDivider></MudDivider>
+            <MudGrid Justify="Justify.SpaceAround">
+                <MudItem xs="6" md="6">
+                    <MudSelect Label="Select your language" @bind-Value="Settings.User.TranslatorOptions.SelectLanguage">
+                        @foreach (var item in TranslatorOptions.LanguageCodes)
+                        {
+                            <MudSelectItem Value="item">@item.Key</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6" md="6">
+                    <MudSelect Label="Select translate provider" @bind-Value="Settings.User.TranslatorOptions.CurrentService">
+                        @foreach (GTranslate.TranslationServices item in Enum.GetValues(typeof(GTranslate.TranslationServices)))
+                        {
+                            <MudSelectItem Value="@item">@item</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="6">
         <MudSelect Label="Select theme" Value=Settings.Theme ValueChanged="@((Theme th)=>{Settings.Theme=th;})">
             @foreach (var item in Settings.ThemeList)
             {
@@ -127,6 +156,7 @@
 
     Func<GenerationConfig, string> converter3 = p => p?.ConfigName;
     Func<Person, string> converter4 = p => p?.Name;
+    Func<string, string> converter5 = p => p;
     bool themeOpen = false;
     string themeName = "";
     // private ThemeManagerTheme ManagerTheme = new ThemeManagerTheme();

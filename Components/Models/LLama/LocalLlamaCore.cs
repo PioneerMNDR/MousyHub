@@ -1,7 +1,9 @@
 ﻿using LLama;
+using LLama.Abstractions;
 using LLama.Batched;
 using LLama.Common;
 using LLama.Native;
+using LLama.Sampling;
 using LLMRP.Components.Models.Model;
 using Spectre.Console;
 
@@ -20,7 +22,8 @@ namespace LLMRP.Components.Models.LLama
         {
             try
             {
-                await Task.Run(() =>
+          
+               await Task.Run(() =>
                 {
                     weights = LLamaWeights.LoadFromFile(modelParams);
                 });
@@ -161,15 +164,15 @@ namespace LLMRP.Components.Models.LLama
                     await executor.Infer(cancellationToken);
                 var decoder = new StreamingTokenDecoder(executor.Context);
                 AntipromptProcessor antiprocessor = new AntipromptProcessor(param.AntiPrompts);
-
-                int repeat_last_n = Math.Max(0, param.RepeatLastTokensCount < 0 ? weights.ContextSize : param.RepeatLastTokensCount);
+                _sampler = (CustomSampler)param.SamplingPipeline;
+                int repeat_last_n = Math.Max(0, _sampler.RepeatLastTokensCount < 0 ? weights.ContextSize : _sampler.RepeatLastTokensCount);
                 List<LLamaToken> lastTokens = new List<LLamaToken>(repeat_last_n);
                 for (int j = 0; j < repeat_last_n; j++)
                 {
                     lastTokens.Add(0);
                 }
                 lastTokens.AddRange(NewTokens);
-                _sampler = new CustomSampler(Element.Conversation, param);
+            
                 if (Element.Conversation.RequiresInference)
                     await executor.Infer(cancellationToken);
 

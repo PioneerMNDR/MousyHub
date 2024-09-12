@@ -2,7 +2,7 @@
   "ConfigName": "Universal-Light",
   "temp": 1.1,
   "rep_pen": 1.0,
-  "rep_pen_range": 1056,
+  "rep_pen_range": 192,
   "top_p": 1.0,
   "min_p": 0.1,
   "top_a": 0.0,

@@ -1,5 +1,6 @@
 ﻿using LLMRP.Components.Models.Model;
 using LLMRP.Components.Models.Services;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace LLMRP.Components.Models
 {
@@ -10,13 +11,15 @@ namespace LLMRP.Components.Models
         private SettingsService Settings { get; set; }
         private ProviderService Provider { get; set; }
 
+        private TranslatorService TranslatorService { get; set; }
+
         public List<Person> AllPersons { get; set; } = new List<Person>();
 
         public Person NextPerson;
 
 
 
-        public ChatState(UploaderService uploaderService, SettingsService settingsService, ProviderService Provider)
+        public ChatState(UploaderService uploaderService, SettingsService settingsService, ProviderService Provider, TranslatorService translatorService)
         {
             this.UploaderService = uploaderService;
             this.Settings = settingsService;
@@ -28,7 +31,7 @@ namespace LLMRP.Components.Models
                 AddPerson(settingsService.CurrentUserProfile);
             }
             UploaderService.SaveInfoEvent += SaveChatHistory;
-
+            TranslatorService = translatorService;
         }
         public async Task CheckChatHistory(CharCard charCard)
         {
@@ -52,7 +55,8 @@ namespace LLMRP.Components.Models
             ChatHistory = newchat;
             ChatHistory.AddToQueue(AllPersons.Where(x => x.Name == "Narrator").FirstOrDefault(), false);
             //FirstMessage
-            await ChatHistory.AddMessage(ChatHistory.FirstMessage, ChatHistory.MainCharacter, Settings.CurrentInstruct);
+            var mes = await ChatHistory.AddMessage(ChatHistory.FirstMessage, ChatHistory.MainCharacter, Settings.CurrentInstruct);
+            await mes.TranslateMessage(TranslatorService);
         }
         public async Task ClearAndNewChatHistory()
         {
@@ -60,9 +64,9 @@ namespace LLMRP.Components.Models
             ChatHistory newchat = new ChatHistory(Settings.CurrentUserProfile, TakePerson(charCard), AllPersons);
             ChatHistory = newchat;
             ChatHistory.AddToQueue(AllPersons.Where(x => x.Name == "Narrator").FirstOrDefault(), false);
-            ChatHistory.AddToQueue(AllPersons.Where(x => x.Name == "John").FirstOrDefault(), false);
             //FirstMessage
-            await ChatHistory.AddMessage(ChatHistory.FirstMessage, ChatHistory.MainCharacter, Settings.CurrentInstruct);
+            var mes = await ChatHistory.AddMessage(ChatHistory.FirstMessage, ChatHistory.MainCharacter, Settings.CurrentInstruct);
+            await mes.TranslateMessage(TranslatorService);
             await SetContextSize();
 
         }
@@ -77,7 +81,7 @@ namespace LLMRP.Components.Models
 
 
 
-        //Суммаризировать чат и записать результат суммаризации в ChatHistory.SummarizeContext
+        //Summarize the chat and write the summarization result to Chat History.Summarized Context
         public async Task<bool> ChatSummarize()
         {
             string preparePromt = "";
@@ -113,7 +117,7 @@ namespace LLMRP.Components.Models
                 return false;
             }
         }
-        //Подготовить промт для быстрых ответов и вернуть результат
+        //Prepare prompt for quick answers and return the result
         public async Task<string> AnswerAssistant()
         {
             string preparePromt = "";
@@ -122,13 +126,16 @@ namespace LLMRP.Components.Models
             //Take only 4 last message
             foreach (var item in ChatHistory.Messages.TakeLast(4))
             {
-                preparePromt += "\n" + item.Owner.Name + ": " + item.Content;
+               preparePromt += "\n" + item.Owner.Name + ": " + item.Content;
             }
             preparePromt += "[END OF DIALOGUE]";
             var res = await Provider.Wizard.WizardRequest(preparePromt, Misc.Wizard.WizardFunction.AnswerAssistant, ChatHistory.MainUser.Name, ChatHistory.GetLastMessage(true).Owner.Name);
             if (res.IsSuccess)
             {
-                return res.Content;
+                Console.WriteLine(res.Content);
+                var c = await TranslatorService.TranslateForUser(res.Content);
+                Console.WriteLine(c);
+                return c;
             }
             else
             {

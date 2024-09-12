@@ -5,7 +5,6 @@ using LLMRP.Components.Models.LLama;
 using LLMRP.Components.Models.Misc;
 using LLMRP.Components.Models.Model;
 using LLMRP.Components.Models.User;
-using LLMRP.Components.Translator;
 
 namespace LLMRP.Components.Models.Services
 {
@@ -28,7 +27,6 @@ namespace LLMRP.Components.Models.Services
             Self_Inference
         }
         public ILanguageModel? LLModel;
-        public ITranslator? Translator;
         public Wizard Wizard { get; set; } = new Wizard();
         public string BaseUrl = "http://localhost:5001";
         public bool Status = false;
@@ -63,7 +61,6 @@ namespace LLMRP.Components.Models.Services
                     if (!IsSuccessL)
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.GenConfigWizard, Settings.User);
-                    Translator = new LocalLLMTranslatorBeta(LLModel);
                     return await LLModel.Model();
                 case APIType.Chat_Completions:
                     break;
@@ -125,6 +122,10 @@ namespace LLMRP.Components.Models.Services
         }
         private async Task<bool> ConnectLocal(SettingsService Settings)
         {
+            if (Settings.User.SelfInferenceConfig.ModelPath==string.Empty)
+            {
+                return false;
+            }
             ModelParams modelParams = new ModelParams(Settings.User.SelfInferenceConfig.ModelPath)
             {
                 ContextSize = (uint)Settings.User.SelfInferenceConfig.ContextSize,

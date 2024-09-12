@@ -6,6 +6,7 @@
 @inject ChatState State
 @inject SettingsService Settings
 @inject ProviderService Provider
+@inject TranslatorService Transalor
 
 @if (State.ChatHistory != null)
 {
@@ -24,7 +25,7 @@
     <MudDivider DividerType="DividerType.Middle"></MudDivider>
     <MudExpansionPanels MultiExpansion Class="ma-3">
          <MudExpansionPanel Text="📖 Narrator">
-             <MudTextField @bind-Value="State.ChatHistory.PlayerWishes" Label="Player's wishes" Variant="Variant.Outlined" Clearable AutoGrow Lines="2" HelperText="Here you can write what you want the narrator do in his turn" HelperTextOnFocus=true></MudTextField>
+             <MudTextField @bind-Value="State.ChatHistory.PlayerWishes" Label="Player's wishes" Variant="Variant.Outlined" Adornment="Adornment.End" Clearable AdornmentIcon="@Icons.Material.Filled.GTranslate" OnAdornmentClick="TranslatePlayerWishes" AdornmentAriaLabel="Translate to LLM Language" AutoGrow Lines="2" HelperText="Here you can write what you want the narrator do in his turn" HelperTextOnFocus=true></MudTextField>
              <MudButton Color="Color.Primary" Class="mt-3" Disabled="@(_Main.messengerPage.isBusy || _Main.messengerPage.isGenerating || !Provider.Status)" OnClick="ForceNarrator" Variant="Variant.Filled">Force Narrator</MudButton>
          </MudExpansionPanel>
          <MudExpansionPanel Text="⚖️ Summarize">
@@ -141,7 +142,11 @@
     string OOCPreview = "";
     string maxContextsize = "no data";
 
-
+    async Task TranslatePlayerWishes()
+    {
+        State.ChatHistory.PlayerWishes = await Transalor.TranslateForLLM(State.ChatHistory.PlayerWishes);
+        StateHasChanged();
+    }
 
 
     public void ReRender()
@@ -160,28 +165,29 @@
 
     }
 
-    void AddOOCToNextMessage()
+    async Task AddOOCToNextMessage()
     {
         if (OOCPreview != string.Empty)
         {
-            State.ChatHistory.OCC_PlayerWishes = OOCFormatter();
+            State.ChatHistory.OCC_PlayerWishes  = await OOCFormatter();
             OOCPreview = "";
             StateHasChanged();
         }
 
     }
-    void AddOOCToTextField()
+    async Task AddOOCToTextField()
     {
         if (OOCPreview != string.Empty)
         {
-            _Main.messengerPage.FillTextField(OOCFormatter());
+            _Main.messengerPage.FillTextField(await OOCFormatter());
             OOCPreview = "";
             StateHasChanged();
         }
 
     }
-    string OOCFormatter()
+    async Task<string> OOCFormatter()
     {
+        OOCPreview = await Transalor.TranslateForLLM(OOCPreview);
         return $"`[OOC:{OOCPreview}]`";
     }
 
