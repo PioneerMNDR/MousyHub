@@ -1,0 +1,179 @@
+﻿@using LLMRP.Components.Models
+@using LLMRP.Components.Models.Model
+@using LLMRP.Components.Pages
+@using LLMRP.Components.Models.Services
+@using LLMRP.Components.Models.User
+@inject ProviderService Service
+@inject SettingsService Settings
+@implements IDisposable
+
+@if (Settings != null && Settings.PresetsList != null)
+{
+    <MudContainer>
+        <MudText Typo="Typo.h4">Generation parameters</MudText>
+        <MudGrid Justify="Justify.SpaceAround" Class="align-end">
+            <MudItem md="10" xs="8">
+                <MudSelect OnAdornmentClick="@(()=>isWaitNameInput=true)" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Edit" Label="Presets" ToStringFunc="converter" @bind-Value="Settings.CurrentGenerationConfig">
+                    @foreach (var item in Settings.PresetsList)
+                    {
+                        <MudSelectItem Value="item">@item.ConfigName</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem md="1" xs="2">
+                <MudIconButton Variant="Variant.Outlined"
+                               OnClick="@(()=>{Settings.CurrentGenerationConfig.CloneInList(Settings.PresetsList);
+                Settings.PresetsList=Settings.PresetsList.OrderBy(x => x.ConfigName).ToList();})" Icon="@Icons.Material.Filled.ContentCopy" title="Clone"></MudIconButton>
+            </MudItem>
+            <MudItem md="1" xs="2">
+                <MudIconButton Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Delete" OnClick="Settings.DeleteGenConfigPreset" title="Delete"></MudIconButton>
+            </MudItem>
+        </MudGrid>
+
+        @if (isWaitNameInput)
+        {
+            <MudStack Row AlignItems="AlignItems.End" Class="mt-3">
+                 <MudTextField Label="Rename preset" @bind-Value="Settings.CurrentGenerationConfig.ConfigName"></MudTextField>
+                 <MudButton StartIcon="@Icons.Material.Filled.Check" Variant="Variant.Filled" Color="Color.Success" OnClick="@(()=>isWaitNameInput=false)">Accept</MudButton>
+             </MudStack>
+
+
+        }
+
+        <MudGrid Class="configEditor mt-5">
+            <MudItem Class="d-flex flex-column" md="12" xs=12>
+                <MudText>Max new tokens: <b>@Settings.User.CurrentMaxToken</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" Color="Color.Success" @bind-Value=Settings.User.CurrentMaxToken Step="(int)50" Min="0" Max="1000" Immediate></MudSlider>
+             </MudItem>
+             <MudItem Class="d-flex flex-column" md="12" xs=12>
+                 <MudText>Context length: <b>@Settings.User.CurrentContextLength</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" Color="Color.Tertiary" @bind-Value=Settings.User.CurrentContextLength Step="(int)2048" Min="2048" Max="65536" Immediate></MudSlider>
+             </MudItem>
+             <MudItem Class="d-flex flex-column" md="12" xs=12>
+                 <MudText>Temperature: <b>@Settings.CurrentGenerationConfig.temp</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" Color="Color.Warning" @bind-Value=@Settings.CurrentGenerationConfig.temp Step="(double)0.1" Min="0" Max="2" Immediate></MudSlider>
+             </MudItem>
+             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                 <MudText>Ren.Pen.: <b>@Settings.CurrentGenerationConfig.rep_pen</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.rep_pen Step="(double)0.1" Min="0" Max="2" Immediate></MudSlider>
+             </MudItem>
+             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                 <MudText>Ren.Pen Range: <b>@Settings.CurrentGenerationConfig.rep_pen_range</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.rep_pen_range Step="(int)32" Min="0" Max="4096" Immediate></MudSlider>
+             </MudItem>
+             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                 <MudText>Ren.Pen Slope: <b>@Settings.CurrentGenerationConfig.rep_pen_slope</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.rep_pen_slope Step="(double)0.1" Min="0" Max="2" Immediate></MudSlider>
+             </MudItem>
+             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                 <MudText>Top-a: <b>@Settings.CurrentGenerationConfig.top_a</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.top_a Step="(double)0.1" Min="0" Max="1" Immediate></MudSlider>
+             </MudItem>
+             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                 <MudText>Top-k: <b>@Settings.CurrentGenerationConfig.top_k</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.top_k Step="(int)1" Min="0" Max="100" Immediate></MudSlider>
+             </MudItem>
+             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                 <MudText>Top-p: <b>@Settings.CurrentGenerationConfig.top_p</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.top_p Step="(double)0.1" Min="0" Max="1" Immediate></MudSlider>
+             </MudItem>
+             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                 <MudText>Typical: <b>@Settings.CurrentGenerationConfig.typical</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.typical Step="(double)0.1" Min="0" Max="1" Immediate></MudSlider>
+             </MudItem>
+             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                 <MudText>Tfs: <b>@Settings.CurrentGenerationConfig.tfs</b> </MudText>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.tfs Step="(double)0.1" Min="0" Max="1" Immediate></MudSlider>
+             </MudItem>
+             <MudItem md="12" xs=12>
+                 <MudExpansionPanels MultiExpansion Elevation="4">
+                     <MudExpansionPanel Text="Mirostat" Expanded=true>
+                         <MudGrid>
+                             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                                 <MudText>Mirostat: <b>@Settings.CurrentGenerationConfig.mirostat</b> </MudText>
+                                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.mirostat Step="(double)1" Min="0" Max="2" Immediate></MudSlider>
+                             </MudItem>
+                             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                                 <MudText>Mirostat-tau: <b>@Settings.CurrentGenerationConfig.mirostat_tau</b> </MudText>
+                                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.mirostat_tau Step="(double)0.2" Min="0" Max="10" Immediate></MudSlider>
+                             </MudItem>
+                             <MudItem Class="d-flex flex-column" md="6" xs=6>
+                                 <MudText>Mirostat-eta: <b>@Settings.CurrentGenerationConfig.mirostat_eta</b> </MudText>
+                                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.mirostat_eta Step="(double)0.1" Min="0" Max="1" Immediate></MudSlider>
+                             </MudItem>
+                         </MudGrid>
+                     </MudExpansionPanel>
+                     @if (Service.SelectType.Key == ProviderService.APIType.KoboldCPP)
+                    {
+                        <MudExpansionPanel Text="DRY sampler">
+                            <MudGrid>
+                                <MudItem Class="d-flex flex-column" md="6" xs=6>
+                                    <MudText>Dry multiplier (0=disable): <b>@Settings.CurrentGenerationConfig.dry_multiplier</b> </MudText>
+                                    <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.dry_multiplier Step="(double)0.1" Min="0" Max="2" Immediate></MudSlider>
+                                 </MudItem>
+                                 <MudItem Class="d-flex flex-column" md="6" xs=6>
+                                     <MudText>Dry base: <b>@Settings.CurrentGenerationConfig.dry_base</b> </MudText>
+                                    <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.dry_base Step="(double)0.1" Min="0" Max="5" Immediate></MudSlider>
+                                 </MudItem>
+                                 <MudItem Class="d-flex flex-column" md="6" xs=6>
+                                     <MudText>Dry Allowed length: <b>@Settings.CurrentGenerationConfig.dry_allowed_length</b> </MudText>
+                                    <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.dry_allowed_length Step="(int)1" Min="0" Max="100" Immediate></MudSlider>
+                                 </MudItem>
+                                 <MudItem Class="d-flex flex-column" md="12" xs=12>
+                                     <MudTextField Label="Dry sequence breakers" HelperText="value1, value2 (separator: ',')" @bind-Value="Settings.CurrentGenerationConfig.dry_sequence_breakers_string"></MudTextField>
+                                 </MudItem>
+                             </MudGrid>
+                        </MudExpansionPanel>
+                        <MudExpansionPanel Text="Dynamic temperature">
+                            <MudGrid>
+                                <MudItem Class="d-flex flex-column" md="6" xs=6>
+                                    <MudText>Enabled: <b>@Settings.CurrentGenerationConfig.dynatemp.ToString()</b> </MudText>
+                                    <MudSwitch @bind-Value=Settings.CurrentGenerationConfig.dynatemp Color="Color.Primary" Size="Size.Large"></MudSwitch>
+                                 </MudItem>
+                                <MudItem Class="d-flex flex-column" md="6" xs=6>
+                                    <MudText>DynaTemp Exponent: <b>@Settings.CurrentGenerationConfig.dynatemp_exponent</b> </MudText>
+                                    <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.dynatemp_exponent Step="(double)1" Min="0" Max="10" Immediate></MudSlider>
+                                 </MudItem>
+                                 <MudItem Class="d-flex flex-column" md="6" xs=6>
+                                    <MudText>Min temp: <b>@Settings.CurrentGenerationConfig.min_temp</b> </MudText>
+                                    <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.min_temp Step="(double)0.1" Min="0" Max="2" Immediate></MudSlider>
+                                 </MudItem>
+                                 <MudItem Class="d-flex flex-column" md="6" xs=6>
+                                     <MudText>Max temp: <b>@Settings.CurrentGenerationConfig.max_temp</b> </MudText>
+                                    <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.max_temp Step="(double)0.1" Min="0" Max="2" Immediate></MudSlider>
+                                 </MudItem>                        
+                             </MudGrid>
+                         </MudExpansionPanel>
+                    }
+
+                </MudExpansionPanels>
+            </MudItem>
+
+        </MudGrid>
+    </MudContainer>
+}
+
+
+
+
+
+@code {
+
+    [CascadingParameter]
+    public Main Main { get; set; }
+    Func<GenerationConfig, string> converter = p => p?.ConfigName;
+    bool isWaitNameInput = false;
+    protected override async Task OnInitializedAsync()
+    {
+        Service.ConnectionChangeEvent += RefreshState;
+    }
+    public void RefreshState()
+    {
+        StateHasChanged();
+    }
+    public void Dispose()
+    {
+        Service.ConnectionChangeEvent -= RefreshState;
+    }
+
+}

@@ -1,0 +1,47 @@
+﻿@using LLMRP.Components.Models.Services
+@inject DiagnosticsService Service;
+
+@if (Service.isRun)
+{
+    @switch (Mode)
+    {
+        case MonitorMode.RAM:
+            <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Dns">@Service.Available_RAM</MudAlert>
+            break;
+        case MonitorMode.CPU:
+            <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Memory">@Service.CPU_Usage</MudAlert>
+            break;
+    }
+}
+
+
+
+
+
+@code {
+
+    public enum MonitorMode
+    {
+        RAM,
+        CPU
+    }
+    [Parameter]
+    public MonitorMode Mode { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _ = AutoRefresh();
+
+    }
+
+    async Task AutoRefresh()
+    {
+        while (true)
+        {
+            await Task.Delay(1000);
+            StateHasChanged();
+        }
+
+    }
+
+}

@@ -1,0 +1,141 @@
+﻿@using LLMRP.Components.Pages
+@using Models
+@inject ChatState Chat
+@inject IJSRuntime JSRuntime
+@if (Message.Content != null && Message.Content != "")
+{
+    <MudAnimate Selector=".mes1" AnimationType="AnimationType.Scale" AnimationTiming="AnimationTiming.Ease" Value=1 Duration="0.2" Infinite=false>
+
+    </MudAnimate>
+    <MudGrid Class="mt-1 mes1" Spacing="0">
+
+        <MudItem md="1" xs="2">
+
+            <MudAvatar  Class="mt-2" Size="@(Main.isMobile ? Size.Medium :Size.Large)">
+                @{
+                    var imageSrc = Convert.ToBase64String(Message.Owner.Avatar);
+                }
+                <MudImage @onclick="@(()=>ClickAvatar.InvokeAsync(imageSrc))" Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
+            </MudAvatar>
+        </MudItem>
+        <MudItem md="11" xs="10">
+            <div class="d-flex align-center">
+                <MudText Color="Color.Tertiary">@Message.Owner.Name</MudText>
+                    <span class="me-2"> </span>
+                    <MudText Typo="Typo.body2">@Message.dateTimeString</MudText>
+                    <span class="me-2"> </span>
+                    @if (Message.isSummarized)
+                {
+                    <MudIcon Icon="@Icons.Material.Filled.CleaningServices" Color="Color.Default" Size="Size.Small" Title="This messages is optimized(summarized)"></MudIcon>
+                }
+                <div style="margin-left:auto">
+                    <MudStack Row Justify="Justify.FlexEnd" Spacing="0">
+                         <MudIconButton Size="Size.Small" OnClick="@(()=>{isEditing=true;Oldmessage=Message;})" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+                         <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(()=>{DeleteEvent.InvokeAsync(Message);})"></MudIconButton>
+                     </MudStack>
+                 </div>
+             </div>
+
+             @{
+                string cssClass = "messageElement mud-elevation-3 ";
+                if (Message.isGenerating)
+                {
+                    cssClass += "generationMessage";
+                }
+            }
+            <MudPaper Elevation="0" Outlined Class="@cssClass">
+                 @if (isEditing)
+                {
+                    <MudTextField Variant="Variant.Filled" Label="Editing message" AutoGrow Value="Message.Content" ValueChanged="@((string newContent)=>UpdateEditingMessage(Message,newContent))">
+
+                     </MudTextField>
+                    <MudStack Row Justify="Justify.FlexEnd" Spacing="0">
+                         <MudIconButton Size="Size.Small" Color="Color.Error" OnClick="@(()=>{isEditing=false;Message=Oldmessage;})" Icon="@Icons.Material.Outlined.Cancel"></MudIconButton>
+                         <MudIconButton Size="Size.Small" Color="Color.Success" OnClick="@(()=>isEditing=false)" Icon="@Icons.Material.Filled.Save"></MudIconButton>
+
+
+                     </MudStack>
+                }
+                else
+                {
+
+                    if (isChatPageLoaded)
+                    {
+                        <MudFocusTrap>
+                            <div class="MarkdownFormatting">
+                                @if (Message.TranslatedContent != "" && Message.TranslatedContent != null)
+                                {
+                                    <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16" Value="@Message.TranslatedContent"></MudMarkdown>
+                                }
+                                else
+                                {
+                                    <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16"  Value="@Message.Content"></MudMarkdown>
+                                }
+
+                            </div>
+                        </MudFocusTrap>
+                    }
+                    else
+                    {
+                        <div class="MarkdownFormatting">
+                            <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16" Value="@Message.Content"></MudMarkdown>
+                        </div>
+                    }
+                }
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+}
+
+
+
+
+
+
+
+@code {
+    //for animation
+    [Parameter]
+    public bool isChatPageLoaded { get; set; }
+
+    bool isEditing = false;
+
+
+    [CascadingParameter]
+    public Main Main { get; set; }
+    [Parameter]
+    public Message Message { get; set; }
+
+    public Message Oldmessage { get; set; }
+
+    [Parameter]
+    public EventCallback<Message> DeleteEvent { get; set; }
+    [Parameter]
+    public EventCallback<string> ClickAvatar { get; set; }
+
+
+    private void UpdateEditingMessage(Message message, string newContent)
+    {
+        if (message.Owner.IsUser)
+        {
+            message.InstructContent = message.InstructContent.Replace(message.Content, newContent);
+        }
+        message.Content = newContent;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+ 
+
+    }
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+
+}

@@ -1,0 +1,132 @@
+﻿@using LLMRP.Components.Models
+@using LLMRP.Components.Models.Misc
+@using LLMRP.Components.Models.Services
+@inject ProviderService Provider
+@inject AlertServices Alert
+@if (charCard != null)
+{
+
+    <MudGrid Class="mt-4 mb-5">
+        <MudItem md="3">
+            <MudPaper>
+                <MudGrid Class="p-3" Justify="Justify.Center">
+                    <MudItem md="10">
+                        @{
+                            var imageSrc = Convert.ToBase64String(charCard.avatarPNG);
+                        }
+                        <MudImage Fluid Src="@($"data:image/png;base64,{imageSrc}")">
+
+                         </MudImage>
+                     </MudItem>
+                     <MudItem md="12">
+                         <div class="d-flex mini-scroll" style="overflow:auto">
+                             @foreach (var item in charCard.data.tags.Take(4))
+                            {
+                                <MudChip T="string" Size="Size.Small">@item</MudChip>
+                            }
+                        </div>
+                    </MudItem>
+                    <MudItem md="12">
+                        <MudStack Row Justify="Justify.Center">
+                             <MudButton Color="Color.Success" OnClick="SaveCard" Variant="Variant.Filled">Save</MudButton>
+                             <MudButton Color="Color.Error" OnClick="DeleteCard" Variant="Variant.Outlined">Delete</MudButton>
+                         </MudStack>
+                     </MudItem>
+                 </MudGrid>
+             </MudPaper>
+
+         </MudItem>
+         <MudItem md="9">
+             <MudPaper>
+                 <MudGrid Class="p-3">
+                     <MudItem md="12">
+                         <MudTextField @bind-Value=charCard.data.name Label="Name" Variant="Variant.Filled"></MudTextField>
+                     </MudItem>
+                     <MudItem md="6">
+                         <MudTextField @bind-Value=charCard.data.description MaxLines="10" AutoGrow Label="Description" Variant="Variant.Filled"></MudTextField>
+                     </MudItem>
+                     <MudItem md="6">
+                         <MudTextField @bind-Value=charCard.data.first_mes Label="First Message" AutoGrow MaxLines="10" Variant="Variant.Filled"></MudTextField>
+                     </MudItem>
+                     <MudItem md="6">
+                         <MudTextField @bind-Value=charCard.data.scenario Label="Scenario" MaxLines="5" AutoGrow Variant="Variant.Filled"></MudTextField>
+                     </MudItem>
+                     <MudItem md="6">
+                         <MudTextField @bind-Value=charCard.data.mes_example Label="Message example" MaxLines="5" AutoGrow Variant="Variant.Filled"></MudTextField>
+                     </MudItem>
+                     <MudItem md="12">
+                         @if (!isModelLoading)
+                        {
+                            <MudTextField @bind-Value=charCard.data.short_description Label="Short description" Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.AutoAwesome" HelperText="Click to wizard generate" OnAdornmentClick="GenerateShortDescription" MaxLines="5" AutoGrow Variant="Variant.Filled"></MudTextField>
+                        }
+                        else
+                        {
+                            <MudProgressCircular Indeterminate></MudProgressCircular>
+                        }
+
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+
+        </MudItem>
+    </MudGrid>
+
+}
+
+
+
+
+
+@code {
+
+    [Parameter]
+    public CharCard charCard { get; set; }
+
+    bool isModelLoading = false;
+    public async Task GenerateShortDescription()
+    {
+        isModelLoading = true;
+        await Alert.InfoAlertAsync("Generating short description... please, wait");
+        if (Provider.WizardStatus)
+        {
+            await Task.Run(async () =>
+          {
+              await InvokeAsync(async () =>
+          {
+
+              var res = await Provider.Wizard.WizardRequest(charCard.data.description, Wizard.WizardFunction.CharDescription);
+              if (res.IsSuccess)
+              {
+                  charCard.data.short_description = res.Content;
+              }
+              else
+              {
+                  Alert.ErrorAlert(res.ErrorMessage);
+              }
+
+
+              StateHasChanged();
+          });
+
+          });
+        }
+
+        else
+            Alert.WarningAlert("No wizard connection");
+        isModelLoading = false;
+
+    }
+    public void SaveCard()
+    {
+        Alert.SuccessAlert("Saved");
+        Saver.SaveToJson(charCard, charCard.data.name + "_CharCard");
+    }
+    public void DeleteCard()
+    {
+        Alert.SuccessAlert("Deleted");
+        Saver.Delete(charCard, charCard.data.name + "_CharCard");
+    }
+
+
+}

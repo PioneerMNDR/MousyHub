@@ -1,0 +1,126 @@
+﻿@using LLMRP.Components.Models
+@using LLMRP.Components.Models.Model
+@using LLMRP.Components.Pages
+@using System.Text.RegularExpressions
+@using System.Linq.Expressions
+@using System.Reflection
+@using LLMRP.Components.Models.Services
+@inject ProviderService Service
+@using LLMRP.Components.Models.User
+@inject SettingsService Settings
+
+@if (Settings.InstructList != null && Settings.CurrentInstruct != null)
+{
+    <MudContainer Gutters>
+        <MudText Typo="Typo.h4">Instruct parameters</MudText>
+        <MudGrid Justify="Justify.SpaceAround" Class="align-end">
+            <MudItem md="10" xs="8">
+                <MudSelect OnAdornmentClick="@(()=>isWaitNameInput=true)" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Rounded.Edit" Label="Presets" ToStringFunc="converter" @bind-Value="Settings.CurrentInstruct">
+                    @foreach (var item in Settings.InstructList)
+                    {
+                        <MudSelectItem Value="item">@item.name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem md="1" xs="2">
+                <MudIconButton Variant="Variant.Outlined" Icon="@Icons.Material.Filled.ContentCopy"
+                               OnClick="@(()=>
+                                {Settings.CurrentInstruct.CloneInList(Settings.InstructList);
+                                Settings.InstructList = Settings.InstructList.OrderBy(x => x.name).ToList();})" title="Clone"></MudIconButton>
+            </MudItem>
+            <MudItem md="1" xs="2">
+                <MudIconButton Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Delete" OnClick="Settings.DeleteInstructPreset" title="Delete"></MudIconButton>
+            </MudItem>
+        </MudGrid>
+
+        @if (isWaitNameInput)
+        {
+            <MudStack Row AlignItems="AlignItems.End" Class="mt-3">
+                 <MudTextField Label="Rename preset" @bind-Value="Settings.CurrentInstruct.name"></MudTextField>
+                 <MudButton StartIcon="@Icons.Material.Filled.Check" Variant="Variant.Filled" Color="Color.Success" OnClick="@(()=>isWaitNameInput=false)">Accept</MudButton>
+             </MudStack>
+        }
+
+        <MudGrid  Class="configEditor mt-5">
+            @if (Settings.CurrentInstruct.forWizard==false)
+            {
+                <MudItem md="12" xs=12>
+                    <MudTextField Label="System promt" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.system_prompt) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.system_prompt)) Variant="Variant.Filled"></MudTextField>
+                </MudItem>
+            }
+            <MudItem md="6" xs=6>
+                <MudTextField Label="System sequence" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.system_sequence) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.system_sequence)) Variant="Variant.Filled"></MudTextField>
+            </MudItem>
+            <MudItem md="6" xs=6>
+                <MudTextField Label="Input sequence" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.input_sequence) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.input_sequence)) Variant="Variant.Filled"></MudTextField>
+            </MudItem>
+            <MudItem md="6" xs=6>
+                <MudTextField Label="Output sequence" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.output_sequence) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.output_sequence)) Variant="Variant.Filled"></MudTextField>
+            </MudItem>
+            <MudItem md="6" xs=6>
+                <MudTextField Label="System suffix" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.system_suffix) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.system_suffix)) Variant="Variant.Filled"></MudTextField>
+            </MudItem>
+            <MudItem md="6" xs=6>
+                <MudTextField Label="Input suffix" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.input_suffix) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.input_suffix)) Variant="Variant.Filled"></MudTextField>
+            </MudItem>
+            <MudItem md="6" xs=6>
+                <MudTextField Label="Output suffix" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.output_suffix) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.output_suffix)) Variant="Variant.Filled"></MudTextField>
+            </MudItem>
+            <MudItem md="12" xs=12>
+                <MudTextField Label="Stop sequence" HelperText="(stopS1,stopS2,stopsSn...)" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.stop_sequence) ValueChanged=@((string e)=>{TextChanged<Instruct>(e,x=>x.stop_sequence);}) Variant="Variant.Filled"></MudTextField>
+            </MudItem>
+            <MudItem md="6" xs=6>
+                <MudSwitch Label="Include names" Color="Color.Primary" @bind-Value=Settings.CurrentInstruct.names></MudSwitch>
+            </MudItem>
+            <MudItem md="12" xs=12 Class="d-flex flex-column">
+                <MudText><MudIconButton Icon="@Icons.Material.Filled.Refresh" OnClick="@(()=>{PreviewGenerator(Settings.CurrentInstruct);})"></MudIconButton>Instruct preview: </MudText>
+                <MudMarkdown CodeBlockTheme="CodeBlockTheme.A11yDark" Value="@preview"></MudMarkdown>
+            </MudItem>
+        </MudGrid>
+    </MudContainer>
+}
+
+
+
+
+
+@code {
+
+    [CascadingParameter]
+    public Main Main { get; set; }
+    Func<Instruct, string> converter = p => p?.name;
+    string symbol = "@";
+    string preview { get; set; } = "";
+    bool isWaitNameInput = false;
+    private void TextChanged<T>(string val, Expression<Func<T, object>> propertyExpession)
+    {
+        var property = (PropertyInfo)((MemberExpression)propertyExpession.Body).Member;
+        property.SetValue(Settings.CurrentInstruct, Regex.Unescape(val));
+    }
+    private async Task PreviewGenerator(Instruct instruct)
+    {
+        var n1 = "{{user}}: ";
+        var n2 = "{{char}}: ";
+        if (instruct.names == false)
+        {
+            n1 = ""; n2 = "";
+        }
+        if (instruct.wrap && instruct.input_suffix == "")
+        {
+            instruct.input_suffix = "\n";
+        }
+        if (instruct.wrap && instruct.output_suffix == "")
+        {
+            instruct.output_suffix = "\n";
+        }
+
+        preview = "Loading...";
+        StateHasChanged();
+        await Task.Delay(100);
+
+            preview = "```" + "\n" + instruct.system_sequence + "\n" + "(System_Promt+Char_Info)" + instruct.input_suffix + instruct.input_sequence + "\n" + n1 + "(User_Message)" + instruct.output_suffix + instruct.output_sequence + "\n" + n2 + "(Char_Message)";
+        
+        StateHasChanged();
+    }
+
+}

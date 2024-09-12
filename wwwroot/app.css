@@ -1,0 +1,350 @@
+/*
+	This CSS file matches the color scheme from MudBlazor to Bootstrap when utilized for authentication.
+	The file remains available at all times for demonstration purposes,
+	but it is exclusively employed in the 'App.razor' component when authentication is enabled.
+*/
+
+
+/* roboto-300 - cyrillic_cyrillic-ext_greek_greek-ext_latin_latin-ext_vietnamese */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 300;
+    src: url('../fonts/Roboto/roboto-v30-cyrillic_cyrillic-ext_greek_greek-ext_latin_latin-ext_vietnamese-300.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* roboto-regular - cyrillic_cyrillic-ext_greek_greek-ext_latin_latin-ext_vietnamese */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    src: url('../fonts/Roboto/roboto-v30-cyrillic_cyrillic-ext_greek_greek-ext_latin_latin-ext_vietnamese-regular.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* roboto-500 - cyrillic_cyrillic-ext_greek_greek-ext_latin_latin-ext_vietnamese */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 500;
+    src: url('../fonts/Roboto/roboto-v30-cyrillic_cyrillic-ext_greek_greek-ext_latin_latin-ext_vietnamese-500.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+/* roboto-700 - cyrillic_cyrillic-ext_greek_greek-ext_latin_latin-ext_vietnamese */
+@font-face {
+    font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 700;
+    src: url('../fonts/Roboto/roboto-v30-cyrillic_cyrillic-ext_greek_greek-ext_latin_latin-ext_vietnamese-700.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
+}
+
+:root {
+    --char-card-h: 85%;
+    --char-card-w: 19%;
+    --register-card-h: auto;
+    --register-card-w: auto;
+}
+
+@media(max-width:600px) {
+    :root {
+        --char-card-h: 90%;
+        --char-card-w: 45%;
+    }
+}
+
+.btn-primary {
+    text-transform: uppercase;
+    --bs-btn-bg: var(--mud-palette-primary) !important;
+    --bs-btn-hover-bg: var(--mud-palette-primary-darken) !important;
+}
+
+.nav-pills {
+    --bs-nav-pills-link-active-bg: var(--mud-palette-primary) !important;
+}
+
+.nav {
+    --bs-nav-link-color: var(--mud-palette-primary) !important;
+    --bs-nav-link-hover-color: var(--mud-palette-primary-darken) !important;
+}
+
+
+.asa {
+    display: flex;
+    flex-grow: 1;
+}
+
+.fixed-to-bottom {
+    position: fixed;
+    bottom: 0;
+    width: 100%
+}
+
+.CharCard ::-webkit-scrollbar {
+    width: 2px !important;
+    height: 2px !important;
+}
+
+.mini-scroll::-webkit-scrollbar {
+    width: 2px !important;
+    height: 2px !important;
+}
+
+
+.CharCard {
+    margin-top: 4px;
+    height: var(--char-card-h);
+    width: var(--char-card-w);
+    position: relative
+}
+
+
+
+
+@property --rotate {
+    syntax: "<angle>";
+    initial-value: 132deg;
+    inherits: false;
+}
+
+.regCard {
+    height: var(--register-card-h);
+    width: var(--register-card-w);
+
+    position: relative
+}
+    .regCard::before {
+        content: "";
+        width: 104%;
+        height: 110%;
+        border-radius: 8px;
+        background-image: linear-gradient(var(--rotate), var(--mud-palette-secondary),var(--mud-palette-primary));
+        position: absolute;
+        z-index: -1;
+        top: -5%;
+        left: -2%;
+        animation: spinCard 3s linear infinite;
+    }
+    .regCard::after {
+        position: absolute;
+        content: "";
+        top: calc(var(--register-card-h) / 8);
+        left: 0;
+        right: 0;
+        z-index: -1;
+        height: 100%;
+        width: 100%;
+        margin: 0 auto;
+        transform: scale(0.9);
+        filter: blur(60px);
+        background-image: linear-gradient(var(--rotate), var(--mud-palette-secondary),var(--mud-palette-primary));
+        opacity: 1;
+        transition: opacity .5s;
+        animation: spinCard 3s linear infinite;
+    }
+
+.newCard {
+    margin-right: 5px;
+    margin-left: 5px;
+}
+    .newCard:hover {
+        transition: 0.2s;  
+        text-shadow: 0 0 5px
+    }
+    .newCard::before {
+        content: "";
+        width: 104%;
+        height: 102%;
+        border-radius: 8px;
+        background-image: linear-gradient(var(--rotate), var(--mud-palette-success),var(--mud-palette-primary));
+        position: absolute;
+        z-index: -1;
+        top: -1%;
+        left: -2%;
+        animation: spinCard 3s linear infinite;
+    }
+    .newCard::after {
+        position: absolute;
+        content: "";
+        top: calc(var(--char-card-h) / 8);
+        left: 0;
+        right: 0;
+        z-index: -1;
+        height: 100%;
+        width: 100%;
+        margin: 0 auto;
+        transform: scale(0.8);
+        filter: blur(30px);
+        background-image: linear-gradient(var(--rotate), var(--mud-palette-success),var(--mud-palette-primary));
+        opacity: 1;
+        transition: opacity .5s;
+        animation: spinCard 3s linear infinite;
+    }
+
+@keyframes spinCard {
+    0% {
+        --rotate: 0deg;
+    }
+
+    100% {
+        --rotate: 360deg;
+    }
+}
+
+
+
+
+.CharContent {
+    height: 30%;
+    overflow: hidden;
+    text-align: justify;
+    text-overflow: ellipsis;
+}
+
+    .CharContent.Header {
+        height: 15%;
+        justify-content: space-between;
+    }
+
+
+
+@media(max-width:600px) {
+    .CharContent.Header .mud-typography-h6 {
+        font-size: 15px !important;
+        line-height: 15px;
+    }
+}
+
+.noselect {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.mainTab {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height:100vh;
+
+}
+.mainPanels{
+    height:100vh;
+}
+
+.generationMessage {
+    animation: gradient-border-animation 2s infinite ease-out;
+}
+
+@keyframes gradient-border-animation {
+    0% {
+        border-image: linear-gradient(45deg,var(--mud-palette-primary-lighten), var(--mud-palette-primary-darken)) 1;
+    }
+
+    50% {
+        border-image: linear-gradient(45deg, var(--mud-palette-primary-darken), var(--mud-palette-primary-lighten)) 1;
+    }
+
+    100% {
+        border-image: linear-gradient(45deg,var(--mud-palette-primary-lighten), var(--mud-palette-primary-darken)) 1;
+    }
+}
+
+.animationText {
+    background: linear-gradient(-45deg,var(--mud-palette-secondary),var(--mud-palette-primary));
+    background-size: 300%;
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 5rem;
+    animation: animated_text 10s ease-out infinite;
+    font-weight: 700;
+}
+@keyframes animated_text{
+    0%{background-position: 0px 50%}
+    50% {background-position: 100% 50%}
+    100% {background-position: 0px 50%}
+}
+
+
+
+.chatEnterTab {
+    flex: 0 1 auto;
+}
+
+.messageElement {
+    padding: 12px;
+    padding-bottom: 0rem !important
+}
+
+body {
+    height: 100vh
+}
+
+.childTab {
+    overflow-y: auto;
+    max-height: 95vh;
+}
+
+@media(max-width:600px) {
+    .AdaptiveFont {
+        font-size:12px;
+    }
+}
+
+@media(max-width:600px) {
+    .childTab {
+        overflow-y: auto;    
+    }
+}
+
+@media(max-width:600px) {
+    .mainTab {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0
+    }
+}
+
+.p-3 {
+    padding: 12px !important;
+}
+.QuickReplyClass{
+    font-size:small;
+}
+
+.inputNoMargin.mud-input-control > .mud-input-control-input-container > div.mud-input.mud-input-text {
+    margin-top: 5px !important;
+}
+
+.FixedCollapsing.mud-collapse-exiting {
+    animation: mud-collapse-anim 1s cubic-bezier(.55, .30, 0, 1) 0ms 1 forwards;
+}
+
+.MarkdownFormatting i {
+    color: var(--mud-palette-text-secondary);
+}
+
+.MarkdownFormatting p {
+    color: var(--mud-palette-text-primary);
+}
+
+.MarkdownFormatting b {
+    color: var(--mud-palette-warning);
+}
+@keyframes appear {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.last-char {
+    display: inline-block;
+    animation: appear 1s ease-in-out;
+}

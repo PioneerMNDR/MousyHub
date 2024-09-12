@@ -1,0 +1,153 @@
+﻿@using LLMRP.Components.Models
+@using LLMRP.Components.Models.Misc
+@using LLMRP.Components.Models.Model
+@using LLMRP.Components.Models.Services
+@using LLMRP.Components.Models.User
+@using LLama.Common
+@using static LLMRP.Components.Models.Misc.QuickReplySetting
+@inject ProviderService Provider
+@inject SettingsService Settings
+@inject UploaderService Uploader
+@inject AlertServices Alert
+@inject ChatState State
+<MudThemeProvider Theme="@Settings.Theme.MudTheme" IsDarkMode="true" />
+@* <MudThemeManagerButton OnClick="@((e)=>{themeOpen=!themeOpen;})"></MudThemeManagerButton> *@
+@*   <MudThemeManager @bind-Open=themeOpen ColorPickerView="ColorPickerView.Spectrum" IsDarkMode @bind-Theme=ManagerTheme ></MudThemeManager> *@
+<MudGrid>
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-3">
+            <MudText Typo="Typo.h4">Wizard</MudText>
+            <MudDivider></MudDivider>
+            <MudGrid>
+                <MudItem xs="12" md="12">
+                    <MudSelect Label="Wizard generation config" ToStringFunc="converter3" @bind-Value="Settings.GenConfigWizard">
+                        @foreach (var item in Settings.PresetsList)
+                        {
+                            <MudSelectItem Value="item">@item.ConfigName</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6" md="6">
+                    <MudTooltip Text="On/off auto summarization each N of messages">
+                        <MudSwitch @bind-Value=Settings.User.AutoSummarize Color="Color.Primary" Label="Auto summarize"></MudSwitch>
+                    </MudTooltip>
+                </MudItem>
+                <MudItem xs="6" md="6">
+                    <MudTooltip Text="On/off auto generation quick reply before user turn">
+                        <MudSwitch @bind-Value=Settings.User.AnswerAssistant Color="Color.Primary" Label="Auto quick reply"></MudSwitch>
+                    </MudTooltip>
+                </MudItem>
+                <MudItem xs="6" md="6">
+                    <MudTooltip Text="Through how many messages the auto summarization will be activated">
+                        <MudNumericField @bind-Value=Settings.User.SummarizeMessageCount Label="Auto sum. messages count"></MudNumericField>
+                    </MudTooltip>
+                </MudItem>
+                <MudItem xs="12" md="12">
+                    <MudStack Row AlignItems="AlignItems.Baseline">
+                        <MudText Typo="Typo.h6">Quick reply options</MudText>
+                        <MudText Typo="Typo.caption">assign the mood of quick replies</MudText>
+                    </MudStack>
+                    <MudDivider></MudDivider>
+                    @if (Settings!=null && Settings.User != null)
+                    {
+                        @for (int i = 0; i < Settings.User.QuickRepliesSetings.Length; i++)
+                        {
+                            var n = i;
+                            <MudItem xs="12" md="12">
+                                <MudStack Row AlignItems="AlignItems.Baseline">
+                                 <MudText>@(n+1)</MudText>
+                                     <MudSelect @bind-Value="Settings.User.QuickRepliesSetings[n].Emotion" Style="width:120px" Label="Classification">
+                                         @foreach (ResponseEmotion emotion in Enum.GetValues(typeof(ResponseEmotion)))
+                                        {
+                                            <MudSelectItem Value="@emotion">@emotion @Settings.User.QuickRepliesSetings[n].GetEmoji(emotion)</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                     <MudSelect @bind-Value="Settings.User.QuickRepliesSetings[n].MudColor" Style="width:120px" AdornmentColor="Settings.User.QuickRepliesSetings[n].MudColor" Label="Color">
+                                     @foreach (Color color in Enum.GetValues(typeof(Color)))
+                                        {
+                                            <MudSelectItem Value="@color">@color</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudStack>
+                            </MudItem>
+                        }
+                    }
+               
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-3">
+            <MudText Typo="Typo.h4">Profile</MudText>
+            <MudDivider></MudDivider>
+            <MudGrid Justify="Justify.SpaceAround" Class="align-end pe-3">
+                <MudItem xs="10" md="10">
+                    <MudSelect Label="Select your person" ToStringFunc="converter4" @bind-Value="Settings.CurrentUserProfile">
+                        @foreach (var item in Settings.ProfileList)
+                        {
+                            <MudSelectItem Value="item">@item.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="1" md="1">
+                    <MudIconButton Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Delete" OnClick="Settings.DeleteProfile" title="Delete"></MudIconButton>
+                </MudItem>
+                <MudItem xs="1" md="1">
+                    <MudIconButton Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Add" OnClick="@(()=>{Person p = new Person("", "", true, "main"); Settings.CurrentUserProfile=p;Settings.ProfileList.Add(p);})" title="Delete"></MudIconButton>
+                </MudItem>
+                @if (Settings.CurrentUserProfile != null)
+                {
+                    <MudItem xs="6" md="6">
+                        <MudTextField Label="Name" @bind-Value="Settings.CurrentUserProfile.Name"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="6" md="6">
+                        <MudTextField Label="Description" @bind-Value="Settings.CurrentUserProfile.Description"></MudTextField>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudSelect Label="Select theme" Value=Settings.Theme ValueChanged="@((Theme th)=>{Settings.Theme=th;})">
+            @foreach (var item in Settings.ThemeList)
+            {
+                <MudSelectItem Value="@item">@item.Name</MudSelectItem>
+            }
+        </MudSelect>
+
+    </MudItem>
+</MudGrid>
+
+
+@code {
+
+
+
+
+    Func<GenerationConfig, string> converter3 = p => p?.ConfigName;
+    Func<Person, string> converter4 = p => p?.Name;
+    bool themeOpen = false;
+    string themeName = "";
+    // private ThemeManagerTheme ManagerTheme = new ThemeManagerTheme();
+
+    // private void savepreset()
+    // {
+    //     Theme newt = new Theme()
+    //         {
+    //             Name = themeName,
+    //             MudTheme = ManagerTheme.Theme
+    //         };
+    //     Saver.SaveToJson<Theme>(newt, themeName);
+    // }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+
+    }
+
+
+
+
+}

@@ -1,0 +1,227 @@
+﻿@using LLMRP.Components.Models
+@using LLMRP.Components.Models.Misc
+@using LLMRP.Components.Models.Services
+@using LLMRP.Components.Pages
+@using MudBlazor.Utilities
+@inject ChatState State
+@inject SettingsService Settings
+@inject ProviderService Provider
+
+@if (State.ChatHistory != null)
+{
+
+
+    <MudStack Row Justify="Justify.Center" Wrap="Wrap.Wrap" Class="ma-3">
+         <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined">Context: @State.ChatHistory.ChatContextSize/@Provider.MaxContextSize</MudAlert>
+        <SystemMonitor Mode="SystemMonitor.MonitorMode.RAM"></SystemMonitor>
+    </MudStack>
+
+
+
+
+
+    <MudText Typo="Typo.h5" Align="Align.Center">Functions</MudText>
+    <MudDivider DividerType="DividerType.Middle"></MudDivider>
+    <MudExpansionPanels MultiExpansion Class="ma-3">
+         <MudExpansionPanel Text="📖 Narrator">
+             <MudTextField @bind-Value="State.ChatHistory.PlayerWishes" Label="Player's wishes" Variant="Variant.Outlined" Clearable AutoGrow Lines="2" HelperText="Here you can write what you want the narrator do in his turn" HelperTextOnFocus=true></MudTextField>
+             <MudButton Color="Color.Primary" Class="mt-3" Disabled="@(_Main.messengerPage.isBusy || _Main.messengerPage.isGenerating || !Provider.Status)" OnClick="ForceNarrator" Variant="Variant.Filled">Force Narrator</MudButton>
+         </MudExpansionPanel>
+         <MudExpansionPanel Text="⚖️ Summarize">
+             <MudTextField @bind-Value="State.ChatHistory.SummarizeContext" Label="Summarize value" Variant="Variant.Outlined" AutoGrow Lines="4" HelperText="The meaning of dialog summarization" HelperTextOnFocus=true></MudTextField>
+         </MudExpansionPanel>
+         <MudExpansionPanel Text="🎭 OOC">
+             <MudTextField @bind-Value="OOCPreview" Label="Give the character a hint outside the context of the dialogue" Variant="Variant.Outlined" AutoGrow Lines="4" HelperText="Example: let the character be less shy" HelperTextOnFocus=true></MudTextField>
+             <MudStack Class="mt-3" Row>
+             <MudButton Color="Color.Primary" Disabled="@(_Main.messengerPage.isBusy || _Main.messengerPage.isGenerating || !Provider.Status)" OnClick="AddOOCToTextField" Variant="Variant.Filled">add to text field</MudButton>
+             <MudButton Color="Color.Secondary" Disabled="@(_Main.messengerPage.isBusy || _Main.messengerPage.isGenerating || !Provider.Status)" OnClick="AddOOCToNextMessage" Variant="Variant.Filled">add to next message</MudButton>
+         </MudStack>
+     </MudExpansionPanel>
+ </MudExpansionPanels>
+
+    <MudText Typo="Typo.h5" Align="Align.Center">Action Queue</MudText>
+    <MudDivider DividerType="DividerType.Middle"></MudDivider>
+    <MudDropContainer T="Speaker" Items="State.ChatHistory.SpeakerQueue"
+                      @ref="_container" ItemDisabled="@((item)=>item.isWriting==true)" ItemsSelector="@((item,dropzone)=>item.isAction == bool.Parse(dropzone))"
+                      ItemDropped="DropZoneItemUpdate" Class="d-flex  justify-space-around ">
+        <ChildContent>
+            <MudStack Justify="Justify.SpaceBetween" Class="ma-3" Row Wrap="Wrap.Wrap">
+                 <MudPaper Width="@(_Main.isMobile ? "100%" :"48%")">
+                     <MudList T="string" Class="d-flex flex-column mud-height-full">
+                         <MudListSubheader Class="noselect">Not in action</MudListSubheader>
+                         <MudDropZone T="Speaker" Identifier="false" CanDropClass="mud-alert-text-error" ApplyDropClassesOnDragStarted="true" Class="flex-grow-1" AllowReorder></MudDropZone>
+                     </MudList>
+                 </MudPaper>
+                 <MudPaper Width="@(_Main.isMobile ? "100%" :"48%")">
+                     <MudList T="string" Class="d-flex flex-column mud-height-full">
+                         <MudListSubheader Class="noselect">In action</MudListSubheader>
+                         <MudDropZone T="Speaker" CanDropClass="mud-alert-text-success" ApplyDropClassesOnDragStarted="true" Identifier="true" AllowReorder Class="flex-grow-1"></MudDropZone>
+                     </MudList>
+                 </MudPaper>
+             </MudStack>
+
+         </ChildContent>
+         <ItemRenderer>
+             @if (context.isWriting)
+            {
+                <MudListItem T="string" Ripple="false" Style="border: 1px solid" Class="generationMessage noselect">
+                    <ChildContent>
+                        <MudStack Row Reverse Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="0">
+                             <MudItem md="9">
+                                 <MudText>@($"{context.Person.Name} - {context.SkipNow}")</MudText>
+                             </MudItem>
+                             <MudItem md="3">
+                                 <MudAvatar Class="noselect" draggable="false">
+                                     @{
+                                        var imageSrc = Convert.ToBase64String(context.Person.Avatar);
+                                    }
+                                    <MudImage Src="@($"data:image/png;base64,{imageSrc}")" Class="noselect" draggable="false"></MudImage>
+                                </MudAvatar>
+                            </MudItem>
+                        </MudStack>
+                    </ChildContent>
+
+                </MudListItem>
+            }
+            else
+            {
+                string borderClass = "";
+                if (context.SkipNow != 0)
+                {
+                    borderClass = "border-2 border-dashed mud-border-error";
+                }
+                <MudListItem Ripple="false" T="string" Class="noselect">
+                    <ChildContent>
+                        <MudStack Row Reverse Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="0">
+                             <MudItem md="2">
+                                 <MudTooltip Text="How many times will not move in queue">
+                                     <MudNumericField Class="inputNoMargin" Underline=false Label="Skip" Value="context.SkipCount" ValueChanged="@((int newt)=>{context.SkipCount=newt;context.SkipNow=newt;})" Min="0" HideSpinButtons></MudNumericField>
+                                 </MudTooltip>
+                             </MudItem>
+                             <MudItem md="7">
+                                 <MudText>@($"{Util.TruncateString(context.Person.Name, 3)} - {context.SkipNow}")</MudText>
+                             </MudItem>
+                             <MudItem md="3">
+                                 <MudAvatar Class="@borderClass">
+                                     @{
+                                        var imageSrc = Convert.ToBase64String(context.Person.Avatar);
+                                    }
+                                    <MudImage Src="@($"data:image/png;base64,{imageSrc}")" Class="noselect" draggable="false"></MudImage>
+                                </MudAvatar>
+                            </MudItem>
+                        </MudStack>
+                    </ChildContent>
+
+
+                </MudListItem>
+            }
+        </ItemRenderer>
+    </MudDropContainer>
+
+    <MudPaper Class="ma-3">
+     <MudStack Wrap="Wrap.Wrap" Row>
+         <MudSwitch Class="ma-2" @bind-Value=Settings.User.PauseBeforeGenerating Color="Color.Info" Label="Pause before generation" title="Bot, will wait for your confirmation after the answer of other bot."></MudSwitch>
+         <MudSwitch Class="ma-2" @bind-Value=Settings.User.AutoSummarize Color="Color.Info" Label="Auto summarize" title="Automatic summarization at achievement of a certain border of a context"></MudSwitch>
+     </MudStack>
+ </MudPaper>
+
+
+
+
+}
+
+
+
+
+@code {
+    private MudDropContainer<Speaker> _container;
+    [CascadingParameter]
+    public Main _Main { get; set; }
+    string nextWord = "Chat now";
+    string OOCPreview = "";
+    string maxContextsize = "no data";
+
+
+
+
+    public void ReRender()
+    {
+
+        StateHasChanged();
+        if (_container != null)
+        {
+            _container.Refresh();
+        }
+
+    }
+    async Task ForceNarrator()
+    {
+        await _Main.messengerPage.StartGeneration(Provider.Wizard.Narrator, true);
+
+    }
+
+    void AddOOCToNextMessage()
+    {
+        if (OOCPreview != string.Empty)
+        {
+            State.ChatHistory.OCC_PlayerWishes = OOCFormatter();
+            OOCPreview = "";
+            StateHasChanged();
+        }
+
+    }
+    void AddOOCToTextField()
+    {
+        if (OOCPreview != string.Empty)
+        {
+            _Main.messengerPage.FillTextField(OOCFormatter());
+            OOCPreview = "";
+            StateHasChanged();
+        }
+
+    }
+    string OOCFormatter()
+    {
+        return $"`[OOC:{OOCPreview}]`";
+    }
+
+
+    public void DropZoneItemUpdate(MudItemDropInfo<Speaker> dropItem)
+    {
+        ///Fix bug with multiply dragging
+        if (dropItem.Item.isWriting)
+        {
+            MudItemDropInfo<Speaker> mudItemDrop = new MudItemDropInfo<Speaker>(dropItem.Item, dropItem.DropzoneIdentifier, 0);
+            State.ChatHistory.SpeakerQueue.UpdateOrder(mudItemDrop, item => item.Order, 0);
+            State.ChatHistory.SpeakerQueue = State.ChatHistory.SpeakerQueue.OrderBy(x => x.Order).ToList();
+            StateHasChanged();
+            _container.Refresh();
+            return;
+        }
+
+        dropItem.Item.isAction = bool.Parse(dropItem.DropzoneIdentifier);
+        var firstitem = State.ChatHistory.SpeakerQueue.FirstOrDefault(x => x.isWriting);
+
+        var indexOffset = dropItem.DropzoneIdentifier switch
+        {
+            "false" => State.ChatHistory.SpeakerQueue.Count(x => x.isAction == true),
+            _ => 0
+        };
+
+        if (dropItem.IndexInZone == 0 && dropItem.Item.isAction == true)
+        {
+            MudItemDropInfo<Speaker> mudItemDrop = new MudItemDropInfo<Speaker>(dropItem.Item, dropItem.DropzoneIdentifier, 1);
+            State.ChatHistory.SpeakerQueue.UpdateOrder(mudItemDrop, item => item.Order, 0);
+
+        }
+        else
+        {
+            State.ChatHistory.SpeakerQueue.UpdateOrder(dropItem, item => item.Order, indexOffset);
+        }
+
+        State.ChatHistory.SpeakerQueue = State.ChatHistory.SpeakerQueue.OrderBy(x => x.Order).ToList();
+        StateHasChanged();
+        _container.Refresh();
+    }
+
+}

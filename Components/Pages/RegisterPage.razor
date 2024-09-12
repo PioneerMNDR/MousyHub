@@ -1,0 +1,62 @@
+﻿@using LLMRP.Components.Models
+@using LLMRP.Components.Models.Services
+
+@inject SettingsService Settings
+
+<MudThemeProvider Theme="@Settings.Theme.MudTheme" IsDarkMode="true" />
+
+
+<MudAnimate Selector=".animationText" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" ValueSecondary="-1000" Duration="0.6" Infinite=false/>
+<MudAnimate Selector=".a1" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" ValueSecondary="-1000" Duration="0.8" Infinite=false />
+<MudAnimate Selector=".a2" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" ValueSecondary="1000" Duration="0.6" Infinite=false />
+<MudAnimate Selector=".a3" Paused=pause AnimationType="AnimationType.Blur" AnimationTiming=AnimationTiming.Ease Value="1000" ValueSecondary="0" Duration="2" Infinite=false />
+<MudContainer  Class="a3" >
+
+    <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center" Style="height:100vh" >
+        <MudText Class="animationText"  Typo="Typo.h3">Welcome to the MousyHub</MudText>
+        <MudText Typo="Typo.input" Class="a1" Color="Color.Secondary" GutterBottom>Create your first person</MudText>
+        <MudCard Class="regCard">
+            <MudCardContent>
+                <MudGrid> 
+                    <MudItem md="12" xs="12">
+                        <MudTextField @bind-Value=newPerson.Name Error="error" ErrorText="Enter name"  Variant=Variant.Filled Label="Name"></MudTextField>
+                    </MudItem>
+                    <MudItem md="12" xs="12">
+                        <MudTextField @bind-Value=newPerson.Description  Variant=Variant.Filled Lines="3" AutoGrow Label="Description"></MudTextField>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+         <MudButton Class="mt-4 a2" Variant="Variant.Filled" OnClick=CreatePerson Style="box-shadow:0 30px 40px -10px rgba(0,0,0,0.5),0 10px 10px -5px rgba(0,0,0,0.2)" Color="Color.Secondary">Create!</MudButton>
+    </MudStack>
+
+
+</MudContainer>
+
+
+
+
+
+
+ @code {
+    Person newPerson { get; set; } = new Person("", "", true, "main");
+    bool error = false;
+    bool pause = true;
+    [CascadingParameter]
+    public Main Main { get; set; }
+    private async Task CreatePerson()
+    {
+        if (newPerson.Name==string.Empty)
+        {
+            error = true;
+            return;
+        }
+        Settings.CurrentUserProfile = newPerson;
+        Settings.ProfileList.Add(newPerson);
+        StateHasChanged();
+        pause = false;
+        await Task.Delay(1000);
+        Main.ReRenderState(new object(),EventArgs.Empty);
+    }
+
+}

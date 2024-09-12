@@ -1,0 +1,231 @@
+﻿@using LLMRP.Components.Models.Misc
+@using LLMRP.Components.Models.Services
+@inject IJSRuntime JSRuntime
+@inject SettingsService Settings
+@inject ProviderService Provider
+@inject ChatState State
+@using LLMRP.Components.Models.User
+@using Models;
+
+
+@if (isLoaded == false)
+{
+    <MudAnimate Selector=".anim1" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" Paused=isLoaded ValueSecondary=1000 Duration="0.6" Infinite=false>
+
+    </MudAnimate>
+
+}
+<MudPopover Open="isOpenAvatar" OverflowBehavior="OverflowBehavior.FlipNever" Fixed AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.CenterRight">
+
+     <MudImage ObjectFit="ObjectFit.Fill" Height="450" @onclick="@(()=>ToggleAvatar(AvatarUrl))" Src="@($"data:image/png;base64,{AvatarUrl}")"></MudImage>
+ </MudPopover>
+
+
+
+ @if (ChatHistory != null)
+{
+    <MudPaper Style="display:flex;flex-direction:column;height:86vh;" Class="anim1">
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-2 pb-2" id="chat" Style="flex-grow:1;overflow-y:auto;">
+            <div>
+                @foreach (var message in ChatHistory.Messages)
+                {
+
+                    <LLMRP.Components.TinyComponents.ChatMessageComponent ClickAvatar="ToggleAvatar" DeleteEvent=DeleteMessage Message="message" isChatPageLoaded=isLoaded></LLMRP.Components.TinyComponents.ChatMessageComponent>
+                }
+
+            </div>
+        </MudContainer>
+        @if (Provider.Status)
+        {
+            @if (FastAnswers.Count > 0)
+            {
+                <MudStack Row Justify="Justify.Center" StretchItems="StretchItems.All" Class=" mx-4">
+                     @for (int i = 0; i < FastAnswers.Count; i++)
+                    {
+                        int n = i;
+                        <MudButton IconColor="Settings.User.QuickRepliesSetings[n].MudColor" StartIcon="@Icons.Material.Filled.Brightness1" Class="QuickReplyClass" Variant="Variant.Outlined" Color="Color.Default" OnClick="@(()=>EnterFastAnswer(FastAnswers[n]))">@FastAnswers[n]</MudButton>
+                    }
+                </MudStack>
+
+            }
+
+
+            <MudTextFieldExtended OnKeyUp="EnterEvent" OnKeyDown="DeleteNewlineOnEnterEvent" @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
+                 <AdornmentStart>
+                     <MudMenu Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu">
+                         <MudMenuItem Icon="@Icons.Material.Filled.Quickreply" OnClick="QuickReplyGenerate" title="Generate quick reply on the last message">Quick reply</MudMenuItem>
+                         <MudMenuItem Icon="@Icons.Material.Filled.Sync" OnClick="()=>ClickRegenerate.InvokeAsync(State.ChatHistory.GetLastMessage().Owner)">Regenerate</MudMenuItem>
+                         <MudMenuItem Icon="@Icons.Material.Filled.AddComment" OnClick="()=>ClickContinueGenerate.InvokeAsync(State.ChatHistory.GetLastMessage())">Continue</MudMenuItem>
+                     </MudMenu>
+                 </AdornmentStart>
+                 <AdornmentEnd>
+                     <div class="me-3">
+                         @if (isBusy)
+                        {
+                            <MudAnimate Selector=".animbusy" AnimationTiming=AnimationTiming.Linear Value="0" Paused=false ValueSecondary=1000 Duration="2" AnimationType="AnimationType.Rotate" Infinite>
+                 </MudAnimate>
+
+                            <MudTooltip Text="The model is occupied with other process">
+                                <MudIcon Class="animbusy" Color=Color.Error Icon="@Icons.Material.Filled.Cyclone"></MudIcon>
+                            </MudTooltip>
+
+
+                        }
+                        else if (isVisibleUnpauseButton)
+                        {
+                            <MudIconButton OnClick="@(()=>{ClickSend.InvokeAsync(State.NextPerson);isVisibleUnpauseButtonChanged.InvokeAsync(false);})" Title="Next generation" Color=Color.Info Icon="@Icons.Material.Filled.PlayCircle"></MudIconButton>
+                        }
+                        else if (isGenerating)
+                        {
+                            <MudIconButton OnClick="@(async()=>await AbortCallback.InvokeAsync())" Color=Color.Error Icon="@Icons.Material.Filled.Stop"></MudIconButton>
+                        }
+
+                        else
+                        {
+                            <MudIconButton OnClick="SendMessage" Color=Color.Info Icon="@Icons.Material.Filled.Send"></MudIconButton>
+                        }
+                    </div>
+
+                </AdornmentEnd>
+            </MudTextFieldExtended>
+        }
+        else
+        {
+            <MudAlert Severity="Severity.Error">No connection</MudAlert>
+        }
+    </MudPaper>
+
+}
+
+
+
+
+
+@code {
+    //for animation
+    public bool isLoaded { get; set; }
+
+
+    [Parameter]
+    public ChatHistory? ChatHistory { get; set; }
+    [Parameter]
+    public string CurrentMessage { get; set; } = "";
+    [Parameter]
+    public bool isGenerating { get; set; }
+    [Parameter]
+    public EventCallback<bool> isGeneratingChanged { get; set; }
+    [Parameter]
+    public EventCallback AbortCallback { get; set; }
+    [Parameter]
+    public EventCallback<string> CurrentMessageChanged { get; set; }
+    [Parameter]
+    public EventCallback<Person> ClickSend { get; set; }
+    [Parameter]
+    public EventCallback<Person> ClickRegenerate { get; set; }
+    [Parameter]
+    public EventCallback<Message> ClickContinueGenerate { get; set; }
+    [Parameter]
+    public bool isVisibleUnpauseButton { get; set; }
+    [Parameter]
+    public bool isBusy { get; set; }
+    [Parameter]
+    public EventCallback<bool> isVisibleUnpauseButtonChanged { get; set; }
+
+    public List<string> FastAnswers { get; set; } = new List<string>();
+
+    bool isOpenAvatar = false;
+    string AvatarUrl = "";
+
+    [CascadingParameter]
+    public Main Main { get; set; }
+
+    MudTextFieldExtended<string> mudText;
+    private async Task SendMessage()
+    {
+        Person NextPerson = ChatHistory.QueueMoveOrder();
+
+        if (!string.IsNullOrWhiteSpace(CurrentMessage) && isGenerating == false)
+        {
+            await ChatHistory.AddMessage(CurrentMessage, ChatHistory.MainUser, Settings.CurrentInstruct);
+            await ClearMessage();
+            StateHasChanged();
+            _ = ClickSend.InvokeAsync(NextPerson);
+            FastAnswers.Clear();
+
+        }
+
+    }
+
+    private async Task DeleteMessage(Message message)
+    {
+        await ChatHistory.DeleteMessage(message);
+        StateHasChanged();
+    }
+
+    async Task ClearMessage()
+    {
+        await mudText.Clear();
+        StateHasChanged();
+    }
+
+    private void ToggleAvatar(string avatar_url)
+    {
+        AvatarUrl = avatar_url;
+        isOpenAvatar = !isOpenAvatar;
+        StateHasChanged();
+    }
+
+    async Task EnterEvent(KeyboardEventArgs e)
+    {
+
+        if (e.Key == "Enter" && e.ShiftKey == false && !string.IsNullOrWhiteSpace(CurrentMessage))
+        {
+            CurrentMessage = CurrentMessage.TrimEnd('\n');
+            await SendMessage();
+        }
+    }
+    async Task DeleteNewlineOnEnterEvent(KeyboardEventArgs e)
+    {
+
+        if (e.Key == "Enter" && e.ShiftKey == false && !string.IsNullOrWhiteSpace(CurrentMessage))
+        {
+            CurrentMessage = CurrentMessage.TrimEnd('\n');
+            await mudText.SetText(CurrentMessage);
+
+        }
+    }
+
+    async Task QuickReplyGenerate()
+    {
+        var stringResp = await State.AnswerAssistant();
+        FastAnswers = Util.ExtractFastAnswers(stringResp).ToList();
+        StateHasChanged();
+    }
+    void EnterFastAnswer(string answer)
+    {
+        FastAnswers.Clear();
+        CurrentMessage = answer;
+        StateHasChanged();
+    }
+
+    public void FillTextField(string textToField)
+    {
+        CurrentMessage += textToField;
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        isLoaded = true;
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+
+
+
+
+
+    }
+
+}

@@ -1,0 +1,245 @@
+﻿@page "/messenger"
+@using LLMRP.Components.Models
+@using LLMRP.Components.Models.KoboldCPP
+@using LLMRP.Components.Models.Misc
+@using LLMRP.Components.Models.Model
+@using LLMRP.Components.Models.Services
+@using LLMRP.Components.Models.User
+@inject ProviderService Provider
+@inject ChatState State
+@inject SettingsService Settings
+@inject UploaderService Uploader
+@inject AlertServices Alert
+@inject IJSRuntime JS
+
+<MudCollapse @bind-Expanded="@isCharEditMode" Class="FixedCollapsing">
+    <MudGrid Spacing="0" Justify="Justify.Center">
+        <MudItem md="1">
+            <MudButton StartIcon="@Icons.Material.Filled.Close" Color="Color.Primary" OnClick="@(()=> isCharEditMode = false)" Variant="Variant.Filled">Close</MudButton>
+        </MudItem>
+    </MudGrid>
+    <LLMRP.Components.TinyComponents.CardEditor charCard="EditingChar"></LLMRP.Components.TinyComponents.CardEditor>
+</MudCollapse>
+
+<MudCollapse @bind-Expanded="@isCharSelectMode" Class="FixedCollapsing ">
+    <CharactersPage @bind-Cards="Cards" StartChatClick="OnStartChat" EditCharClick="EditCharCard"></CharactersPage>
+</MudCollapse>
+
+@if (!isCharSelectMode)
+{
+
+
+    <MudStack Row Justify="Justify.SpaceAround"  Class="mb-3">
+        <MudButton Variant="Variant.Outlined" OnClick="CloseChat" StartIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">Back to select</MudButton>
+        <MudButton Variant="Variant.Outlined" OnClick="RestartChat" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small">New chat</MudButton>
+        <MudButton Variant="Variant.Outlined" OnClick="@(Main.ToggleDrawer)" StartIcon="@Icons.Material.Filled.OpenInFull" Size="Size.Small">Wizard</MudButton>
+    </MudStack>
+
+    <Chat @ref=ChatPage ChatHistory="State.ChatHistory" @bind-isVisibleUnpauseButton=isPaused AbortCallback="StopGeneration" isBusy="isBusy" isGenerating=isGenerating ClickSend="@((Person per)=>StartGeneration(per,false))" ClickRegenerate="Regenerate" ClickContinueGenerate="ContinueGeneration"></Chat>
+
+
+}
+@code {
+    public bool isCharSelectMode = true;
+    public bool isCharEditMode = false;
+    public bool isGenerating = false;
+    public bool isPaused = false;
+    public bool isBusy { get { if (!isGenerating) return Provider.LLModel?.isBusy ?? false ; else return false; } } // if summarizing or other inference process run (while isn't generating)
+    public List<CharCard> Cards = new List<CharCard>();
+    [CascadingParameter]
+    public Main Main { get; set; }
+    public CharCard EditingChar = null;
+    private Chat ChatPage;
+    protected override async Task OnInitializedAsync()
+    {
+
+        Cards = Uploader.TestLocalLoadCard();
+        foreach (var item in Cards)
+        {
+            State.AddPerson(item);
+        }
+
+
+    }
+    async Task OnStartChat(CharCard card)
+    {
+        await State.CheckChatHistory(card);
+        card.isNew = false;
+        if (State.ChatHistory != null)
+        {
+            isCharSelectMode = false;
+            isCharEditMode = false;
+            await State.ChatHistory.ClearIsGenerationBorder();       
+            StateHasChanged();
+        }
+
+
+    }
+    async Task EditCharCard(CharCard card)
+    {
+        EditingChar = card;
+        isCharEditMode = true;
+    }
+
+    async Task RestartChat()
+    {
+        await State.ClearAndNewChatHistory();
+        isPaused = false;
+        Main.RefreshWizardPage();
+    }
+    async Task CloseChat()
+    {
+        State.SaveChatHistory(null, EventArgs.Empty);
+        isCharSelectMode = true;
+        Main.CloseDrawer();
+        StateHasChanged();
+        if (Provider.Status && isGenerating)
+            await StopGeneration();
+    }
+    /// <summary>
+    /// The method begins generation with the chosen character if it is not the user.
+    /// </summary>
+    /// <param name="person"></param>
+    /// <param name="Force">If it is noted, then the beginning of generation does not change a turn order, that is it is generation of the character out of turn</param>
+    /// <returns></returns>
+    public async Task StartGeneration(Person person, bool Force = false)
+    {
+        if (person.IsUser)
+        {
+            return;
+        }
+        Main.RefreshWizardPage();
+        StateHasChanged();
+        //AddEmptyMessage run before PromtToLLM for include next bot name in message
+        Guid currentGuid = State.ChatHistory.AddEmptyMessage(person, Settings.CurrentInstruct);
+        var promt = await State.ChatHistory.PromtToLLM(Settings.CurrentInstruct, person);
+        await Generation(currentGuid, person, promt);
+        if (Force==false)
+        {
+            State.NextPerson = State.ChatHistory.QueueMoveOrder();
+            Main.RefreshWizardPage();
+        }       
+        //Check new messages for summarize (auto summarize)
+        if (Settings.User.AutoSummarize && State.ChatHistory.Messages.Count(x => x.isSummarized == false) > Settings.User.SummarizeMessageCount)
+        {
+            Alert.InfoAlert("Summarizing... please, wait.");
+            bool isSuccess = await State.ChatSummarize();
+            if (!isSuccess)
+                Alert.ErrorAlert("Summarizing error");
+            else
+                Alert.SuccessAlert("Summarized!");
+
+            StateHasChanged();
+        }
+
+        if (State.NextPerson!=null && State.NextPerson.IsUser == false && State.NextPerson!= person) 
+        {
+            if (Settings.User.PauseBeforeGenerating == false)
+            {
+                await StartGeneration(State.NextPerson);
+            }
+            else
+            {
+                isPaused = true;
+            }
+        }
+        else if(Settings.User.AnswerAssistant)
+        {
+            var stringResp = await State.AnswerAssistant();
+            ChatPage.FastAnswers = Util.ExtractFastAnswers(stringResp).ToList();
+            StateHasChanged();
+        }
+        StateHasChanged();
+    }
+    async Task ContinueGeneration(Message lastMessage)
+    {
+
+        Main.RefreshWizardPage();
+        StateHasChanged();
+        var promt = await State.ChatHistory.PromtToLLM(Settings.CurrentInstruct, lastMessage.Owner);
+        Guid currentGuid = lastMessage.GuidMessage;
+        await Generation(currentGuid, lastMessage.Owner, promt);
+
+    }
+
+
+    async Task Generation(Guid messageGuid, Person person, string promt)
+    {
+
+        await JS.InvokeVoidAsync("initializeScrollTracker", "chat");
+        await JS.InvokeVoidAsync("resetUserScroll");
+        isGenerating = true;
+        StateHasChanged();
+        Message? message = null;
+        string stop_seq = Settings.CurrentInstruct.stop_sequence + PromtBuilder.TagPlaceholder(",{{user}}:,{{char}}:", State.ChatHistory.MainUser.Name, State.ChatHistory.MainCharacter.Name);
+        await Task.Run(async () =>
+        {
+            await Provider.LLModel.GenerateStreamTextAsync(promt, Settings.CurrentGenerationConfig, Settings.User.CurrentMaxToken, Settings.User.CurrentContextLength, stop_seq, person.Key, onTokenReceived: async messageResponse =>
+            {
+                if (messageResponse.IsSuccess==false)
+                {
+                    Console.WriteLine("Error: " + messageResponse.ErrorMessage);
+                    Alert.ErrorAlert("Error: " + messageResponse.ErrorMessage);
+                    await Provider.CheckMainAPIStatus();
+                    return;
+                }
+
+                await InvokeAsync(async () =>
+                {
+                    message = await State.ChatHistory.StreamLLMEditingMessage(messageResponse.Content, messageGuid);
+                    await JS.InvokeVoidAsync("scrollToBottom", "chat");
+                    StateHasChanged();
+                });
+            });
+        });
+        if (Provider.Translator!=null && message!=null)
+        {
+            // message.TranslatedContent = await Provider.Translator.Translate(message.Content);
+        }
+
+        await State.SetContextSize();
+
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+            isGenerating = false;
+            if (message != null)
+            {
+                message.isGenerating = false;
+                if (message.Content == string.Empty)
+                {
+                    Alert.WarningAlert("Your character answered nothing. Perhaps its instruction wrong or you cancelled generation");
+                }
+            }
+
+        });
+    }
+
+    public void FillTextField(string textToField)
+    {
+        if (ChatPage!=null)
+        {
+            ChatPage.FillTextField(textToField);
+        }     
+    }
+
+    async Task Regenerate(Person person)
+    {
+        if (isGenerating == false && State.ChatHistory.Messages.Count > 0)
+        {
+            isGenerating = true;
+            await State.ChatHistory.DeleteLastMessage();
+            await StartGeneration(person);
+        }
+    }
+
+    async Task StopGeneration()
+    {
+        Alert.WarningAlert("Aborting generation...");
+
+        await Provider.LLModel.Abort();
+        isGenerating = false;
+        await State.ChatHistory.ClearIsGenerationBorder();
+    }
+
+}

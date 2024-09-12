@@ -1,0 +1,20 @@
+﻿<MudDialog>
+    <TitleContent>
+        Add new card from URL
+    </TitleContent>
+    <DialogContent>
+        <MudTextField Variant="Variant.Outlined" Style="width:30vw" FullWidth=true @bind-Value=Url Label="Url from Chub.ai"></MudTextField>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Error">Cancel</MudButton>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Success">Load</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; }
+    private string Url { get; set; }
+
+    private void Cancel() => MudDialog.Cancel();
+}

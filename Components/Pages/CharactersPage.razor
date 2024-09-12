@@ -1,0 +1,147 @@
+﻿@using LLMRP.Components.Models
+@using LLMRP.Components.Models.Misc
+@using LLMRP.Components.TinyComponents
+@using Microsoft.Extensions.Localization
+@inject ScreenSize SC;
+@inject IStringLocalizer<Resource> Loc
+@inject IDialogService DialogService
+
+
+@if (Cards != null && Cards.Count != 0)
+{
+    <MudStack Row AlignItems="AlignItems.End" Justify="Justify.SpaceBetween" Class="mb-3">
+         <MudFab Color="Color.Primary" Label="Add new" DropShadow=true EndIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddCardDialog"></MudFab>
+         <div class="d-flex align-center  align-content-center" style="height:50px"> <MudDivider FlexItem Vertical></MudDivider></div>
+         <MudFab Color="Color.Default" Label="Name" DropShadow=false OnClick="ToggleNameSort" EndIcon="@(nameSort ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward)"></MudFab>
+         <MudFab Color="Color.Default" Label="Date" DropShadow=false OnClick="ToggleDateSort" EndIcon="@(dateSort ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward)"></MudFab>
+         <MudSpacer></MudSpacer>
+         <MudTextField @bind-Value=Search Immediate AdornmentIcon="@Icons.Material.Filled.Search" OnKeyDown="SearchKeyDown" Variant="Variant.Filled" Adornment="Adornment.End" Label="Search"></MudTextField>
+     </MudStack>
+
+
+
+
+    <MudCarousel TData="object" Class="anim2" AutoCycle=false Style="height:65vh;">
+        @for (int i = 0; i < Cards.Count; i += ElementPerPage)
+        {
+            int f = i;
+            <MudCarouselItem Class="d-flex justify-space-between">
+                @for (int j = f; j < Math.Min(f + ElementPerPage, Cards.Count); j++)
+                {
+                    int s = j;
+                    var imageSrc = Convert.ToBase64String(Cards[s].avatarPNG);
+                    string newClassDynamic = "CharCard bg-info";
+                    if (Cards[s].isNew)
+                        newClassDynamic = "CharCard bg-info newCard";
+               
+                        <MudCard Class="@newClassDynamic">
+                            <MudCardHeader Class="CharContent Header">
+                                <MudText Style="width:85%" Align="Align.Start" Typo="Typo.h6">@Cards[s].data.name</MudText>
+                                    <MudCardActions>
+                                        <MudIconButton Edge="Edge.End" Icon="@Icons.Material.Rounded.Edit" OnClick="@(()=>EditCharClick.InvokeAsync(Cards[s]))"></MudIconButton>
+                                    </MudCardActions>
+                                </MudCardHeader>
+                                <MudCardMedia Style="height:35%" Image="@($"data:image/png;base64,{imageSrc}")">
+                                </MudCardMedia>
+                                <MudCardContent Class="CharContent pb-0">
+                                    <MudText Style="height:60%;overflow:auto" Typo="Typo.body2">@Util.TruncateString(Cards[s].data.creator_notes, 50)</MudText>
+                                    <MudDivider></MudDivider>
+                                    <div class="d-flex" style="overflow:auto">
+                                        @foreach (var item in @Cards[s].data.tags.Take(4))
+                                    {
+                                        <MudChip T="string" Size="Size.Small">@item</MudChip>
+                                    }
+                                </div>
+                            </MudCardContent>
+                            <MudCardActions Style="height:15%" Class="d-flex justify-center pt-0">
+                                <MudStack Spacing=0 Justify="Justify.Center">
+                                <MudBadge Content="@newWord" Color="Color.Success" Overlap  Visible=Cards[s].isNew>
+                                    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async()=>await StartChatClick.InvokeAsync(Cards[s]))" Size="Size.Large">Chat</MudButton>
+                                    </MudBadge>
+                              
+                                </MudStack>
+                            </MudCardActions>
+
+                        </MudCard>           
+                }
+            </MudCarouselItem>
+        }
+    </MudCarousel>
+
+
+
+}
+
+
+@code {
+    int ElementPerPage = 5;
+    [Parameter]
+    public List<CharCard> Cards { get; set; }
+    [Parameter]
+    public EventCallback<List<CharCard>> CardsChanged { get; set; }
+    [Parameter]
+    public EventCallback<CharCard> StartChatClick { get; set; }
+    [Parameter]
+    public EventCallback<CharCard> EditCharClick { get; set; }
+    private int ScreenWidth;
+    private string Search;
+
+    private bool nameSort = false;
+    private bool dateSort = false;
+    string newWord;
+
+    private void ToggleNameSort()
+    {
+        nameSort = !nameSort;
+        if (nameSort)
+            Cards = Cards.OrderBy(x => x.data.name).ToList();
+        else
+            Cards = Cards.OrderByDescending(x => x.data.name).ToList();
+        StateHasChanged();
+        CardsChanged.InvokeAsync(Cards);
+    }
+    private void ToggleDateSort()
+    {
+        dateSort = !dateSort;
+        if (nameSort)
+            Cards = Cards.OrderBy(x => x.date).ToList();
+        else
+            Cards = Cards.OrderByDescending(x => x.date).ToList();
+        StateHasChanged();
+        CardsChanged.InvokeAsync(Cards);
+    }
+    private void SearchKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            if (Search != null && Search != "")
+            {
+                Cards = Cards.OrderByDescending(x => x.data.name.StartsWith(Search, StringComparison.OrdinalIgnoreCase)).ThenBy(item => item.data.name).ToList();
+                CardsChanged.InvokeAsync(Cards);
+            }
+
+            StateHasChanged();
+        }
+
+    }
+
+    private Task OpenAddCardDialog()
+    {
+        var options = new DialogOptions { CloseOnEscapeKey = true, MaxWidth = MaxWidth.Large };
+        return DialogService.ShowAsync<AddCardDialog>("New title", options);
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        newWord = Loc["New"];
+        var sc = await SC.GetScreenSize();
+        ScreenWidth = sc.Width;
+        if (ScreenWidth <= 600)
+        {
+            ElementPerPage = 2;
+        }
+    }
+
+
+}

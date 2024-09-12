@@ -1,0 +1,206 @@
+﻿@page "/"
+@using LLMRP.Components.Models
+@using LLMRP.Components.Models.KoboldCPP
+@using LLMRP.Components.Models.Misc
+@using LLMRP.Components.Models.Model
+@using LLMRP.Components.Models.Services
+@using LLMRP.Components.Models.User
+@using LLMRP.Components.TinyComponents
+@using System.Globalization
+@using Microsoft.Extensions.Localization
+@rendermode InteractiveServer
+@inject ProviderService Provider
+@inject UploaderService uploader
+
+@inject ScreenSize SC;
+@inject SettingsService Settings
+@inject IStringLocalizer<Resource> Loc
+
+
+@implements IDisposable
+
+
+
+
+<CascadingValue Value="MainClass">
+    @if (Settings.CurrentUserProfile == null)
+    {
+        <RegisterPage></RegisterPage>
+    }
+    else
+    {
+        <MudTabs Class="mainTab background-main" KeepPanelsAlive MinimumTabWidth="5vw" Centered Position="PositionTabs" PanelClass="mainPanels">
+             <MudTabPanel Text="@(!isMobile ? Loc["Provider"] : string.Empty)" Icon="@Icons.Material.Filled.Usb" BadgeDot BadgeColor="colorBagde" Style="width:30vw" OnClick="@(()=>isChatPageClick(false))">
+                 <ChildContent>
+                     <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab ">
+                         <ProviderPage></ProviderPage>
+                     </MudContainer>
+                 </ChildContent>
+             </MudTabPanel>
+             <MudTabPanel Text="@(!isMobile ? Loc["Messenger"] : string.Empty)" Icon="@Icons.Material.Filled.Message" Style="width:30vw" OnClick="@(()=>isChatPageClick(true))">
+                 <MudDrawerContainer>
+                     @if (isFocusOnChatPage)
+                    {
+
+                        <MudDrawer @bind-Open="@DrawerOpen" Anchor="Anchor" Width="@drawerWidth" Variant="drawerVariant" Elevation="1">
+                            <LLMRP.Components.TinyComponents.WizardPage @ref=wizardPage></LLMRP.Components.TinyComponents.WizardPage>
+                        </MudDrawer>
+                    }
+
+                    <div>
+                        <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
+                            <Messenger @ref=messengerPage></Messenger>
+                        </MudContainer>
+                    </div>
+
+                </MudDrawerContainer>
+            </MudTabPanel>
+
+            <MudTabPanel Text="@(!isMobile ? Loc["Settings"] : string.Empty)" Icon="@Icons.Material.Filled.Settings" Style="width:25vw" OnClick="@(()=>isChatPageClick(false))">
+                <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
+                    <SettingsPage></SettingsPage>
+                </MudContainer>
+            </MudTabPanel>
+            <MudTabPanel  Icon="@Icons.Material.Filled.Category" Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
+
+                    <LLMRP.Components.Pages.ExtraPages.MainExtraPage ></LLMRP.Components.Pages.ExtraPages.MainExtraPage>
+
+            </MudTabPanel>
+        </MudTabs>
+    }
+
+</CascadingValue>
+
+
+
+
+
+
+
+<style>
+    body {
+        background: @BodyStyle
+    }
+</style>
+
+
+
+@code {
+    Position PositionTabs = Position.Top;
+    public Main MainClass { get; set; }
+
+    //drawerOptions
+    bool DrawerOpen = false;
+    Anchor Anchor = Anchor.End;
+    DrawerVariant drawerVariant = DrawerVariant.Persistent;
+    string drawerWidth = "30vw";
+
+    public bool isMobile { get; private set; } = false;
+    public bool isFocusOnChatPage = false;
+
+    public WizardPage wizardPage { get; set; }
+    public Messenger messengerPage { get; set; }
+
+    string BodyStyle = "radial-gradient(ellipse 100% 30% at bottom, color-mix(in oklab,var(--mud-palette-error) 20%,var(--mud-palette-background)) 0%,var(--mud-palette-background) 80%);";
+
+
+    private Color colorBagde = Color.Error;
+    protected override async Task OnInitializedAsync()
+    {
+        MainClass = this;
+        StateHasChanged();
+        var sc = await SC.GetScreenSize();
+        await GetData();
+
+        if (sc.Width <= 600)
+        {
+            isMobile = true;
+            PositionTabs = Position.Bottom;
+            drawerWidth = "70vw";
+            drawerVariant = DrawerVariant.Responsive;
+        }
+
+        Provider.ConnectionEvent += new ProviderService.TaskBoolDelegate(ConnectChanged);
+        await Provider.CheckMainAPIStatus();
+    }
+
+    public async Task GetData()
+    {
+
+    }
+
+    public void ToggleDrawer()
+    {
+        DrawerOpen = !DrawerOpen;
+        StateHasChanged();
+        wizardPage.ReRender();
+
+    }
+
+    public void RefreshWizardPage()
+    {
+        wizardPage?.ReRender();
+        StateHasChanged();
+
+    }
+    public void CloseDrawer()
+    {
+        DrawerOpen = false;
+        StateHasChanged();
+
+    }
+    public void ReRenderState(object sender, EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
+
+    }
+
+    private async Task isChatPageClick(bool ischatpage)
+    {
+
+        isFocusOnChatPage = ischatpage;
+    }
+
+    public async Task ConnectChanged(bool status)
+    {
+        if (status)
+        {
+
+            await InvokeAsync(() =>
+        {
+            colorBagde = Color.Success;
+            BodyStyle = "radial-gradient(ellipse 100% 30% at bottom, color-mix(in oklab,var(--mud-palette-primary) 20%,var(--mud-palette-background)) 0%,var(--mud-palette-background) 80%);";
+            Provider.LLModel.BusyChanged += ReRenderState;
+            StateHasChanged();
+        });
+        }
+        else
+        {
+
+            await InvokeAsync(() =>
+            {
+                colorBagde = Color.Error;
+                BodyStyle = "radial-gradient(ellipse 100% 30% at bottom, color-mix(in oklab,var(--mud-palette-error) 20%,var(--mud-palette-background)) 0%,var(--mud-palette-background) 80%);";
+                Provider.LLModel.BusyChanged -= ReRenderState;
+                StateHasChanged();
+            });
+
+
+        }
+    }
+
+
+    public void Dispose()
+    {
+        uploader.SavePresets();
+        Settings.User.SaveSettings(Settings);
+        Provider.ConnectionEvent -= new ProviderService.TaskBoolDelegate(ConnectChanged);
+        if (Provider.Status)
+        {
+            Provider.LLModel.BusyChanged -= ReRenderState;
+        }
+
+    }
+
+
+}
