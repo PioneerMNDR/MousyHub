@@ -230,7 +230,7 @@
         {
             isGenerating = true;
             await State.ChatHistory.DeleteLastMessage();
-            await StartGeneration(person);
+            await StartGeneration(person,true);
         }
     }
 

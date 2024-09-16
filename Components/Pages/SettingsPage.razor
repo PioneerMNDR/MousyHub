@@ -8,6 +8,7 @@
 @inject ProviderService Provider
 @inject SettingsService Settings
 @inject UploaderService Uploader
+@inject TranslatorService Translator
 @inject AlertServices Alert
 @inject ChatState State
 <MudThemeProvider Theme="@Settings.Theme.MudTheme" IsDarkMode="true" />
@@ -113,11 +114,11 @@
             <MudStack Row>
                 <MudText Typo="Typo.h4">Translator</MudText>
                 <MudSpacer></MudSpacer>
-                <MudSwitch Label="Enabled" Color="Color.Primary" @bind-Value=Settings.User.TranslatorOptions.isEnabled></MudSwitch>
+             
             </MudStack>
 
             <MudDivider></MudDivider>
-            <MudGrid Justify="Justify.SpaceAround">
+            <MudGrid >
                 <MudItem xs="6" md="6">
                     <MudSelect Label="Select your language" @bind-Value="Settings.User.TranslatorOptions.SelectLanguage">
                         @foreach (var item in TranslatorOptions.LanguageCodes)
@@ -127,12 +128,15 @@
                     </MudSelect>
                 </MudItem>
                 <MudItem xs="6" md="6">
-                    <MudSelect Label="Select translate provider" @bind-Value="Settings.User.TranslatorOptions.CurrentService">
+                    <MudSelect Label="Select translate provider" Value="Settings.User.TranslatorOptions.CurrentService" ValueChanged="@((GTranslate.TranslationServices newService)=>{Settings.User.TranslatorOptions.CurrentService=newService;Translator.ChangeProvider(newService);})">
                         @foreach (GTranslate.TranslationServices item in Enum.GetValues(typeof(GTranslate.TranslationServices)))
                         {
                             <MudSelectItem Value="@item">@item</MudSelectItem>
                         }
                     </MudSelect>
+                </MudItem>
+                <MudItem xs="6" md="6">
+                    <MudSwitch Label="Fixed formatting" Color="Color.Info" @bind-Value=Settings.User.TranslatorOptions.CorrectedFormatting></MudSwitch>
                 </MudItem>
             </MudGrid>
         </MudPaper>

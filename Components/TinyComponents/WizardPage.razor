@@ -30,6 +30,7 @@
          </MudExpansionPanel>
          <MudExpansionPanel Text="⚖️ Summarize">
              <MudTextField @bind-Value="State.ChatHistory.SummarizeContext" Label="Summarize value" Variant="Variant.Outlined" AutoGrow Lines="4" HelperText="The meaning of dialog summarization" HelperTextOnFocus=true></MudTextField>
+             <MudButton OnClick="State.ChatSummarize">summ</MudButton>
          </MudExpansionPanel>
          <MudExpansionPanel Text="🎭 OOC">
              <MudTextField @bind-Value="OOCPreview" Label="Give the character a hint outside the context of the dialogue" Variant="Variant.Outlined" AutoGrow Lines="4" HelperText="Example: let the character be less shy" HelperTextOnFocus=true></MudTextField>

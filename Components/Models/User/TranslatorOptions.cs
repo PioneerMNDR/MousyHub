@@ -118,6 +118,7 @@ namespace LLMRP.Components.Models.User
         public KeyValuePair<string, string> SelectLanguage = new KeyValuePair<string, string>();
 
         public bool isEnabled { get; set; } = false;
+        public bool CorrectedFormatting { get; set; } = false;
         public TranslatorOptions()
         {
             CurrentService = TranslationServices.Google;

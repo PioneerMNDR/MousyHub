@@ -360,31 +360,7 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+*.json
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/wwwroot/chatHistory/Azumi.json
-/wwwroot/config/Profiles/Artem.json
-/wwwroot/chatHistory/Azumi.json
-/wwwroot/chatHistory/Cecelia.json
-/wwwroot/chatHistory/EduBot the Smart Assistant.json
-/wwwroot/chatHistory/EduBot the Smart School Assistant.json
-/wwwroot/chatHistory/Elissa.json
-/wwwroot/chatHistory/Fire Azula.json
-/wwwroot/chatHistory/Fire Princess Azula.json
-/wwwroot/chatHistory/Gender Ratio World.json
-/wwwroot/chatHistory/Hiroe Yuu.json
-/wwwroot/chatHistory/Julia von Lehndorff.json
-/wwwroot/chatHistory/Kuroho.json
-/wwwroot/chatHistory/Nadia.json
-/wwwroot/chatHistory/Olga.json
-/wwwroot/config/Profiles/Artem.json
-/wwwroot/config/User.json
-/wwwroot/testfiles/Anonymous_cecelia-immergreen-4655512ffc53.json
-/wwwroot/testfiles/frightening_significance_303_azumi-secretary-and-support-operator-ce804188981c.json
-/wwwroot/testfiles/imperatorcreator12_julia-von-lehndorff-7f69dae5.json
-/wwwroot/testfiles/Nadia.json
-/wwwroot/testfiles/Olga.json
-/wwwroot/testfiles/thecooler_elissa-c973d49a.json
-/wwwroot/testfiles/TopBots_edubot-the-smart-school-assistant-437406f98c46.json
-/wwwroot/models/L3-8B-Stheno-v3.2-Q6_K.gguf
-/wwwroot/LocalModels/L3-8B-Stheno-v3.2-Q6_K.gguf
+

@@ -323,7 +323,7 @@ namespace LLMRP.Components.Models
             {
                 return null;
             }
-
+            message.isGenerating=true;
             message.Content += newtoken;
             return message;
             await Task.CompletedTask;

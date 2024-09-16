@@ -44,27 +44,22 @@ namespace LLMRP.Components.Models.Misc
         }
         public static string[] ExtractFastAnswers(string input)
         {
+            // Обновленное регулярное выражение для поиска всех текстов внутри квадратных скобок
+            string pattern = @"\[(.*?)\]";
+            MatchCollection matches = Regex.Matches(input, pattern);
 
-            string pattern = @"\{(\[.*?\])\}";
-            Match match = Regex.Match(input, pattern);
+            // Создаем массив для хранения результатов
+            string[] elements = new string[matches.Count];
 
-            if (match.Success)
+            // Извлекаем все найденные строки
+            for (int i = 0; i < matches.Count; i++)
             {
-                string elementsString = match.Groups[1].Value;
-                // Используем регулярное выражение для разделения строки
-                string[] elements = Regex.Split(elementsString, @"\],\s*\[");
-
-                // Удаляем лишние символы и пробелы
-                for (int i = 0; i < elements.Length; i++)
-                {
-                    elements[i] = elements[i].Trim('[', ' ', ']');
-                }          
-                return elements;
+                elements[i] = matches[i].Groups[1].Value;
             }
 
-            return new string[0];
-
+            return elements;
         }
+
         public static MudBlazor.Color RandomColor()
         {
             Random random = new Random();

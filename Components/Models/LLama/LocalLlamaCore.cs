@@ -297,7 +297,7 @@ namespace LLMRP.Components.Models.LLama
             int TokensCount = 0;
             List<ConversationElement> trash = new List<ConversationElement>();
 
-            foreach (var item in conversationElements.Where(x => x != currentConversation && x.Id != "main").ToList())
+            foreach (var item in conversationElements.Where(x => x != currentConversation).ToList())
             {
 
                 TokensCount += item._tokens.Count;

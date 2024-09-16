@@ -1,6 +1,8 @@
-﻿@using LLMRP.Components.Pages
+﻿@using LLMRP.Components.Models.Services
+@using LLMRP.Components.Pages
 @using Models
 @inject ChatState Chat
+@inject TranslatorService Translator
 @inject IJSRuntime JSRuntime
 @if (Message.Content != null && Message.Content != "")
 {
@@ -51,9 +53,7 @@
                      </MudTextField>
                     <MudStack Row Justify="Justify.FlexEnd" Spacing="0">
                          <MudIconButton Size="Size.Small" Color="Color.Error" OnClick="@(()=>{isEditing=false;Message=Oldmessage;})" Icon="@Icons.Material.Outlined.Cancel"></MudIconButton>
-                         <MudIconButton Size="Size.Small" Color="Color.Success" OnClick="@(()=>isEditing=false)" Icon="@Icons.Material.Filled.Save"></MudIconButton>
-
-
+                         <MudIconButton Size="Size.Small" Color="Color.Success" OnClick="@(()=>{isEditing=false;_=SaveMessage();})" Icon="@Icons.Material.Filled.Save"></MudIconButton>
                      </MudStack>
                 }
                 else
@@ -63,7 +63,7 @@
                     {
                         <MudFocusTrap>
                             <div class="MarkdownFormatting">
-                                @if (Message.UserNativeLanguageContent != "" && Message.UserNativeLanguageContent != null)
+                                @if (Message.UserNativeLanguageContent != "" && Message.UserNativeLanguageContent != null && Message.isGenerating==false)
                                 {
                                     <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16" Value="@Message.UserNativeLanguageContent"></MudMarkdown>
                                 }
@@ -113,6 +113,7 @@
     [Parameter]
     public EventCallback<string> ClickAvatar { get; set; }
 
+    private bool isEdited = false;
 
     private void UpdateEditingMessage(Message message, string newContent)
     {
@@ -121,6 +122,18 @@
             message.InstructContent = message.InstructContent.Replace(message.Content, newContent);
         }
         message.Content = newContent;
+        isEdited = true;
+    }
+    private async Task SaveMessage()
+    {
+
+        //Do not translate if the message has not changed in any way
+        if (isEdited)
+        {
+            await Message.TranslateMessage(Translator);
+        }
+        StateHasChanged();
+        isEdited = false;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
