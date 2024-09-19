@@ -24,7 +24,6 @@ namespace LLMRP.Components.Models
             this.UploaderService = uploaderService;
             this.Settings = settingsService;
             this.Provider = Provider;
-            AddPerson(Provider.Wizard.John);
             AddPerson(Provider.Wizard.Narrator);
             if (settingsService.CurrentUserProfile != null)
             {
@@ -51,12 +50,13 @@ namespace LLMRP.Components.Models
         public async Task NewChatHistory(CharCard charCard)
         {
             ChatHistory newchat = new ChatHistory(Settings.CurrentUserProfile, TakePerson(charCard), AllPersons);
-
             ChatHistory = newchat;
             ChatHistory.AddToQueue(AllPersons.Where(x => x.Name == "Narrator").FirstOrDefault(), false);
             //FirstMessage
             var mes = await ChatHistory.AddMessage(ChatHistory.FirstMessage, ChatHistory.MainCharacter, Settings.CurrentInstruct);
             await mes.TranslateMessage(TranslatorService);
+            //AltMessages
+            ChatHistory.FillAltFirstMessagesList(ChatHistory.MainCharacter, Settings.CurrentInstruct);
         }
         public async Task ClearAndNewChatHistory()
         {
@@ -67,8 +67,9 @@ namespace LLMRP.Components.Models
             //FirstMessage
             var mes = await ChatHistory.AddMessage(ChatHistory.FirstMessage, ChatHistory.MainCharacter, Settings.CurrentInstruct);
             await mes.TranslateMessage(TranslatorService);
+            //AltMessages
+            ChatHistory.FillAltFirstMessagesList(ChatHistory.MainCharacter, Settings.CurrentInstruct);
             await SetContextSize();
-
         }
 
         public async Task SetContextSize()

@@ -1,7 +1,10 @@
-﻿using DocumentFormat.OpenXml.Wordprocessing;
-using Json.Schema.Generation;
+﻿
 using Newtonsoft.Json;
 using System.Text.RegularExpressions;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
 
 namespace LLMRP.Components.Models.Misc
 {
@@ -66,12 +69,52 @@ namespace LLMRP.Components.Models.Misc
             Array array = Enum.GetValues(typeof(MudBlazor.Color));
 
             MudBlazor.Color rColor = (MudBlazor.Color)array.GetValue(random.Next(array.Length));
-            if (rColor==MudBlazor.Color.Transparent || rColor == MudBlazor.Color.Surface)
+            if (rColor == MudBlazor.Color.Transparent || rColor == MudBlazor.Color.Surface)
             {
                 rColor = RandomColor();
             }
             return rColor;
 
+        }
+
+        public static byte[] CompressImage(byte[] imageData)
+        {
+            // Определяем формат изображения
+            using (var inputStream = new MemoryStream(imageData))
+            {
+                var imageFormat = Image.DetectFormat(inputStream);
+
+                // Если формат неизвестен, выбрасываем исключение
+                if (imageFormat == null)
+                {
+                    throw new ArgumentException("Неизвестный формат изображения.");
+                }
+
+                // Загружаем изображение
+                using (var image = Image.Load(inputStream))
+                using (var outputStream = new MemoryStream())
+                {
+                    // Если изображение PNG, конвертируем его в JPEG
+                    if (imageFormat.Name == "PNG")
+                    {
+                        image.Mutate(x => x.BackgroundColor(Color.Gray)); // Установить фоновый цвет белым (или другим)
+                    }
+
+                    // Удаляем метаданные для уменьшения размера файла
+                    image.Metadata.ExifProfile = null;
+
+                    // Настраиваем JPEG энкодер
+                    var encoder = new JpegEncoder
+                    {
+                        Quality = 30 // Устанавливаем качество сжатия JPEG                      
+                    };
+
+                    // Сохраняем изображение как JPEG
+                    image.Save(outputStream, encoder);
+
+                    return outputStream.ToArray();
+                }
+            }
         }
 
 
@@ -85,3 +128,4 @@ namespace LLMRP.Components.Models.Misc
         }
     }
 }
+

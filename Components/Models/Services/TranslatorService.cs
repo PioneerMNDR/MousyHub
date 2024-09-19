@@ -1,4 +1,5 @@
 ﻿using GTranslate.Translators;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace LLMRP.Components.Models.Services
@@ -81,11 +82,34 @@ namespace LLMRP.Components.Models.Services
                 {
                     return input;
                 }
-                return Regex.Replace(input, @"\*\s", "*");
+
+                int starCount = 0;
+                StringBuilder result = new StringBuilder(input.Length);
+
+                for (int i = 0; i < input.Length; i++)
+                {
+                    char currentChar = input[i];
+
+                    if (currentChar == '*')
+                    {
+                        starCount++;
+                        result.Append(currentChar);
+                    }
+                    else if (currentChar == ' ' && starCount % 2 == 1 && i > 0 && input[i - 1] == '*')
+                    {
+                        // Skip this space because it is after an odd count of stars and directly follows a star.
+                    }
+                    else
+                    {
+                        result.Append(currentChar);
+                    }
+                }
+
+                return result.ToString();
             }
             return input;
-    
         }
+
 
     }
 }

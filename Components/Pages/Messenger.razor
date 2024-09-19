@@ -5,6 +5,7 @@
 @using LLMRP.Components.Models.Model
 @using LLMRP.Components.Models.Services
 @using LLMRP.Components.Models.User
+@implements IDisposable
 @inject ProviderService Provider
 @inject ChatState State
 @inject SettingsService Settings
@@ -12,6 +13,7 @@
 @inject AlertServices Alert
 @inject TranslatorService Translator
 @inject IJSRuntime JS
+
 
 <MudCollapse @bind-Expanded="@isCharEditMode" Class="FixedCollapsing">
     <MudGrid Spacing="0" Justify="Justify.Center">
@@ -30,11 +32,11 @@
 {
 
 
-    <MudStack Row Justify="Justify.SpaceAround"  Class="mb-3">
-        <MudButton Variant="Variant.Outlined" OnClick="CloseChat" StartIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">Back to select</MudButton>
-        <MudButton Variant="Variant.Outlined" OnClick="RestartChat" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small">New chat</MudButton>
-        <MudButton Variant="Variant.Outlined" OnClick="@(Main.ToggleDrawer)" StartIcon="@Icons.Material.Filled.OpenInFull" Size="Size.Small">Wizard</MudButton>
-    </MudStack>
+    <MudStack Row Justify="Justify.SpaceAround" Class="mb-3">
+         <MudButton Variant="Variant.Outlined" OnClick="CloseChat" StartIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">Back to select</MudButton>
+         <MudButton Variant="Variant.Outlined" OnClick="RestartChat" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small">New chat</MudButton>
+         <MudButton Variant="Variant.Outlined" OnClick="@(Main.ToggleDrawer)" StartIcon="@Icons.Material.Filled.OpenInFull" Size="Size.Small">Wizard</MudButton>
+     </MudStack>
 
     <Chat @ref=ChatPage ChatHistory="State.ChatHistory" @bind-isVisibleUnpauseButton=isPaused AbortCallback="StopGeneration" isBusy="isBusy" isGenerating=isGenerating ClickSend="@((Person per)=>StartGeneration(per,false))" ClickRegenerate="Regenerate" ClickContinueGenerate="ContinueGeneration"></Chat>
 
@@ -45,7 +47,7 @@
     public bool isCharEditMode = false;
     public bool isGenerating = false;
     public bool isPaused = false;
-    public bool isBusy { get { if (!isGenerating) return Provider.LLModel?.isBusy ?? false ; else return false; } } // if summarizing or other inference process run (while isn't generating)
+    public bool isBusy { get { if (!isGenerating) return Provider.LLModel?.isBusy ?? false; else return false; } } // if summarizing or other inference process run (while isn't generating)
     public List<CharCard> Cards = new List<CharCard>();
     [CascadingParameter]
     public Main Main { get; set; }
@@ -53,28 +55,33 @@
     private Chat ChatPage;
     protected override async Task OnInitializedAsync()
     {
-
-        Cards = Uploader.TestLocalLoadCard();
+        Uploader.ReloadCardEvent += LoadCards;
+        LoadCards(null, EventArgs.Empty);
+    }
+    void LoadCards(object? obj, EventArgs e)
+    {
+        Cards = Uploader.LoadCards();
         foreach (var item in Cards)
         {
             State.AddPerson(item);
         }
-
-
+        StateHasChanged();
     }
     async Task OnStartChat(CharCard card)
     {
         await State.CheckChatHistory(card);
-        card.isNew = false;
+        if (card.isNew)
+        {
+            card.isNew = false;
+            Saver.SaveToJson(card, card.system_name);
+        }
         if (State.ChatHistory != null)
         {
             isCharSelectMode = false;
             isCharEditMode = false;
-            await State.ChatHistory.ClearIsGenerationBorder();       
+            await State.ChatHistory.ClearIsGenerationBorder();
             StateHasChanged();
         }
-
-
     }
     async Task EditCharCard(CharCard card)
     {
@@ -115,11 +122,11 @@
         Guid currentGuid = State.ChatHistory.AddEmptyMessage(person, Settings.CurrentInstruct);
         var promt = await State.ChatHistory.PromtToLLM(Settings.CurrentInstruct, person);
         await Generation(currentGuid, person, promt);
-        if (Force==false)
+        if (Force == false)
         {
             State.NextPerson = State.ChatHistory.QueueMoveOrder();
             Main.RefreshWizardPage();
-        }       
+        }
         //Check new messages for summarize (auto summarize)
         if (Settings.User.AutoSummarize && State.ChatHistory.Messages.Count(x => x.isSummarized == false) > Settings.User.SummarizeMessageCount)
         {
@@ -133,7 +140,7 @@
             StateHasChanged();
         }
 
-        if (State.NextPerson!=null && State.NextPerson.IsUser == false && State.NextPerson!= person) 
+        if (State.NextPerson != null && State.NextPerson.IsUser == false && State.NextPerson != person)
         {
             if (Settings.User.PauseBeforeGenerating == false)
             {
@@ -144,7 +151,7 @@
                 isPaused = true;
             }
         }
-        else if(Settings.User.AnswerAssistant)
+        else if (Settings.User.AnswerAssistant)
         {
             var stringResp = await State.AnswerAssistant();
             ChatPage.FastAnswers = Util.ExtractFastAnswers(stringResp).ToList();
@@ -177,7 +184,7 @@
         {
             await Provider.LLModel.GenerateStreamTextAsync(promt, Settings.CurrentGenerationConfig, Settings.User.CurrentMaxToken, Settings.User.CurrentContextLength, stop_seq, person.Key, onTokenReceived: async messageResponse =>
             {
-                if (messageResponse.IsSuccess==false)
+                if (messageResponse.IsSuccess == false)
                 {
                     Console.WriteLine("Error: " + messageResponse.ErrorMessage);
                     Alert.ErrorAlert("Error: " + messageResponse.ErrorMessage);
@@ -218,10 +225,10 @@
 
     public void FillTextField(string textToField)
     {
-        if (ChatPage!=null)
+        if (ChatPage != null)
         {
             ChatPage.FillTextField(textToField);
-        }     
+        }
     }
 
     async Task Regenerate(Person person)
@@ -230,7 +237,7 @@
         {
             isGenerating = true;
             await State.ChatHistory.DeleteLastMessage();
-            await StartGeneration(person,true);
+            await StartGeneration(person, true);
         }
     }
 
@@ -241,6 +248,11 @@
         await Provider.LLModel.Abort();
         isGenerating = false;
         await State.ChatHistory.ClearIsGenerationBorder();
+    }
+    public void Dispose()
+    {
+        Uploader.ReloadCardEvent -= LoadCards;
+
     }
 
 }

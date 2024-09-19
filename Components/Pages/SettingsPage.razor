@@ -18,16 +18,8 @@
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
             <MudText Typo="Typo.h4">Wizard</MudText>
-            <MudDivider></MudDivider>
+            <MudDivider Class="mb-4"></MudDivider>
             <MudGrid>
-                <MudItem xs="12" md="12">
-                    <MudSelect Label="Wizard generation config" ToStringFunc="converter3" @bind-Value="Settings.GenConfigWizard">
-                        @foreach (var item in Settings.PresetsList)
-                        {
-                            <MudSelectItem Value="item">@item.ConfigName</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
                 <MudItem xs="6" md="6">
                     <MudTooltip Text="On/off auto summarization each N of messages">
                         <MudSwitch @bind-Value=Settings.User.AutoSummarize Color="Color.Primary" Label="Auto summarize"></MudSwitch>
@@ -48,7 +40,7 @@
                          <MudText Typo="Typo.h6">Quick reply options</MudText>
                          <MudText Typo="Typo.caption">assign the mood of quick replies</MudText>
                      </MudStack>
-                     <MudDivider></MudDivider>
+                     <MudDivider Class="mb-4"></MudDivider>
                      @if (Settings != null && Settings.User != null)
                     {
                         @for (int i = 0; i < Settings.User.QuickRepliesSetings.Length; i++)
@@ -81,11 +73,19 @@
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
             <MudText Typo="Typo.h4">Profile</MudText>
-            <MudDivider></MudDivider>
+            <MudDivider Class="mb-4"></MudDivider>
             <MudGrid Justify="Justify.SpaceAround" Class="align-end pe-3">
-                <MudItem xs="10" md="10">
-                    <MudSelect Label="Select your person" ToStringFunc="converter4" @bind-Value="Settings.CurrentUserProfile">
-                        @foreach (var item in Settings.ProfileList)
+                <MudItem >
+                    @{
+                        var imageSrc = Convert.ToBase64String(Settings.CurrentUserProfile.Avatar);
+                    }
+                    <MudAvatar Rounded Style="display:flex" Size="Size.Large">
+                        <MudImage Fluid  Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
+                     </MudAvatar>
+                 </MudItem>
+                 <MudItem xs="8" md="8">
+                     <MudSelect Label="Select your person" ToStringFunc="converter4" @bind-Value="Settings.CurrentUserProfile">
+                         @foreach (var item in Settings.ProfileList)
                         {
                             <MudSelectItem Value="item">@item.Name</MudSelectItem>
                         }
@@ -95,15 +95,22 @@
                     <MudIconButton Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Delete" OnClick="Settings.DeleteProfile" title="Delete"></MudIconButton>
                 </MudItem>
                 <MudItem xs="1" md="1">
-                    <MudIconButton Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Add" OnClick="@(()=>{Person p = new Person("", "", true, "main"); Settings.CurrentUserProfile=p;Settings.ProfileList.Add(p);})" title="Delete"></MudIconButton>
+                    <MudIconButton Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Add" OnClick="@(()=>{Person p = new Person("", "", true, "main"); Settings.CurrentUserProfile=p;Settings.ProfileList.Add(p);})" title="Add"></MudIconButton>
                 </MudItem>
                 @if (Settings.CurrentUserProfile != null)
                 {
-                    <MudItem xs="6" md="6">
+                    <MudItem xs="5" md="5">
                         <MudTextField Label="Name" @bind-Value="Settings.CurrentUserProfile.Name"></MudTextField>
                     </MudItem>
                     <MudItem xs="6" md="6">
                         <MudTextField Label="Description" @bind-Value="Settings.CurrentUserProfile.Description"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="1" md="1">
+                        <MudFileUpload T="IBrowserFile" FilesChanged="UploadFile" Accept=".png, .jpg">
+                            <ActivatorContent>
+                                <MudIconButton Color="Color.Primary" Variant="Variant.Outlined" Icon="@Icons.Material.Rounded.Image"></MudIconButton>
+                            </ActivatorContent>
+                        </MudFileUpload>
                     </MudItem>
                 }
             </MudGrid>
@@ -112,13 +119,13 @@
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
             <MudStack Row>
-                <MudText Typo="Typo.h4">Translator</MudText>
+                <MudText Typo="Typo.h4">Translator</MudText>    
                 <MudSpacer></MudSpacer>
-             
+           <MudSwitch Label="Enabled" Color="Color.Primary" @bind-Value=Settings.User.TranslatorOptions.isEnabled></MudSwitch>
             </MudStack>
 
-            <MudDivider></MudDivider>
-            <MudGrid >
+            <MudDivider Class="mb-4"></MudDivider>
+            <MudGrid>
                 <MudItem xs="6" md="6">
                     <MudSelect Label="Select your language" @bind-Value="Settings.User.TranslatorOptions.SelectLanguage">
                         @foreach (var item in TranslatorOptions.LanguageCodes)
@@ -158,7 +165,6 @@
 
 
 
-    Func<GenerationConfig, string> converter3 = p => p?.ConfigName;
     Func<Person, string> converter4 = p => p?.Name;
     Func<string, string> converter5 = p => p;
     bool themeOpen = false;
@@ -183,5 +189,25 @@
 
 
 
+    private async Task UploadFile(IBrowserFile file)
+    {
+        try
+        {
+            if (file != null && file.Size != 0)
+            {
+                var MemoryStream = new MemoryStream();
+                await file.OpenReadStream().CopyToAsync(MemoryStream);
+                Settings.CurrentUserProfile.Avatar = Util.CompressImage(MemoryStream.ToArray());
+                StateHasChanged();
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Alert.ErrorAlert(ex.Message);
+            Console.WriteLine(ex.Message);
+        }
+
+    }
 
 }

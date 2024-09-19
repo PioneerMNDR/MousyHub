@@ -1,5 +1,6 @@
 ﻿using LLMRP.Components.Models.Misc;
 using LLMRP.Components.Models.Model;
+using Newtonsoft.Json;
 
 namespace LLMRP.Components.Models
 {
@@ -19,11 +20,18 @@ namespace LLMRP.Components.Models
         {
             foreach (var item in Messages)
             {
-                if (item.Owner.Name == UserPerson.Name)
+                if (item.IdOwner == UserPerson.Id)
                 {
                     item.Owner = UserPerson;
                 }
-                if (item.Owner.Name == CharacterPerson.Name)
+                if (item.IdOwner == CharacterPerson.Id)
+                {
+                    item.Owner = CharacterPerson;
+                }
+            }
+            foreach (var item in AlterativeFirstMessages)
+            {
+                if (item.IdOwner == CharacterPerson.Id)
                 {
                     item.Owner = CharacterPerson;
                 }
@@ -34,7 +42,7 @@ namespace LLMRP.Components.Models
             {
                 for (int j = 0; j < AllPerson.Count; j++)
                 {
-                    if (SpeakerQueue[i].Person.Name == AllPerson[j].Name)
+                    if (SpeakerQueue[i].Id == AllPerson[j].Id)
                     {
                         SpeakerQueue[i].Person = AllPerson[j];
                     }
@@ -45,7 +53,7 @@ namespace LLMRP.Components.Models
 
             MainCharacter = CharacterPerson;
             MainUser = UserPerson;
-            ChatName = CharacterPerson.Name;
+            ChatName = CharacterPerson.CharacterCard.system_name;
             if (CharacterPerson.CharacterCard != null)
             {
                 Mes_Example = CharacterPerson.CharacterCard.data.mes_example;
@@ -54,6 +62,7 @@ namespace LLMRP.Components.Models
                 CharDesription = CharacterPerson.CharacterCard.data.description;
                 Personality = CharacterPerson.CharacterCard.data.personality;
                 CharShortDesription = CharacterPerson.CharacterCard.data.short_description;
+                Alt_greetings = CharacterPerson.CharacterCard.data.alternate_greetings;
             }
             AddToQueue(MainUser, true);
             AddToQueue(MainCharacter, true);
@@ -74,6 +83,8 @@ namespace LLMRP.Components.Models
 
         public string? Personality { get; set; }
 
+        public string?[] Alt_greetings { get; set; }
+
         public string? SummarizeContext { get; set; }
         public string? PlayerWishes { get; set; }
 
@@ -84,9 +95,12 @@ namespace LLMRP.Components.Models
 
         public List<Message> Messages { get; set; }
 
-        public List<Speaker> SpeakerQueue { get; set; } = new List<Speaker>();
+        public List<Message> AlterativeFirstMessages { get; set; } = new List<Message>();
 
+        public List<Speaker> SpeakerQueue { get; set; } = new List<Speaker>();
+        [JsonIgnore]
         public Person MainUser { get; set; }
+        [JsonIgnore]
         public Person MainCharacter { get; set; }
 
 
@@ -135,8 +149,6 @@ namespace LLMRP.Components.Models
 
             return finalpromt;
         }
-
-
         public async Task<Message> AddMessage(string content, Person person, Instruct instruct, string NativeLangContent = "")
         {
             if (person.IsUser == true)
@@ -291,7 +303,32 @@ namespace LLMRP.Components.Models
             Messages.Add(message);
             return message.GuidMessage;
         }
+        public void FillAltFirstMessagesList(Person person, Instruct instruct)
+        {
+            AlterativeFirstMessages.Clear();
+            var InstructContent = PromtBuilder.BotMessageFormatting(instruct, person.Name);
+            foreach (var item in Alt_greetings)
+            {
+                string content = item;
+                if (content == null) continue;
+                content = PromtBuilder.TagPlaceholder(content, MainUser.Name, MainCharacter.Name);
+                var newMes = new Message(content, InstructContent, person);
+                AlterativeFirstMessages.Add(newMes);
+            }
+            var newMesAsMainFirst = new Message(FirstMessage, InstructContent, person);
+            AlterativeFirstMessages.Add(newMesAsMainFirst);
+        }
 
+        public void NextFirstMessage()
+        {
+            if (AlterativeFirstMessages.Count>1)
+            {
+                int oldIndex = AlterativeFirstMessages.IndexOf(Messages[0]);
+                int newIndex = (oldIndex + 1) % AlterativeFirstMessages.Count;
+                Messages[0] = AlterativeFirstMessages[newIndex];
+            }
+
+        }
 
         public Message GetLastMessage(bool avoidNarrator = false)
         {

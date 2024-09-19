@@ -30,8 +30,7 @@ namespace LLMRP.Components.Models
                 }
                 if (typeof(T) == typeof(CharCard))
                 {
-                    directory += "testfiles/";
-                    fileName = fileName.Replace('/', '_');
+                    directory += "Cards/";
                 }
                 if (typeof(T) == typeof(Theme))
                 {
@@ -71,7 +70,7 @@ namespace LLMRP.Components.Models
                 }
                 if (typeof(T) == typeof(CharCard))
                 {
-                    directory += "testfiles/";
+                    directory += "Cards/";
                 }
                 if (typeof(T) == typeof(Theme))
                 {
@@ -108,15 +107,8 @@ namespace LLMRP.Components.Models
                 {
                     directory += "config/Profiles/";
                 }
-
-                //Delete all old presets
-                foreach (var file in Directory.GetFiles(directory))
-                {
-                    if (directory != Environment.CurrentDirectory + "/wwwroot/")
-                    {
-                        File.Delete(file);
-                    }
-                }
+                // Получить список существующих файлов
+                var existingFiles = Directory.GetFiles(directory).Select(Path.GetFileNameWithoutExtension).ToList();
                 //Write all new presets and any old
                 foreach (var item in List)
                 {
@@ -137,11 +129,17 @@ namespace LLMRP.Components.Models
                         filename = i.Name;
                     }
                     string path = Path.Combine(directory, filename + ".json");
+                    existingFiles.Remove(filename);
                     string json = JsonConvert.SerializeObject(item, Formatting.Indented);
                     File.WriteAllText(path, json);
                 }
 
-
+                // Удалить старые файлы, которые не присутствуют в новом списке
+                foreach (var file in existingFiles)
+                {
+                    string path = Path.Combine(directory, file + ".json");
+                    File.Delete(path);
+                }
             }
             catch (Exception ex)
             {

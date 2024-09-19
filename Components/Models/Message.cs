@@ -1,5 +1,5 @@
-﻿using DocumentFormat.OpenXml.Bibliography;
-using LLMRP.Components.Models.Services;
+﻿using LLMRP.Components.Models.Services;
+using Newtonsoft.Json;
 
 namespace LLMRP.Components.Models
 {
@@ -15,6 +15,7 @@ namespace LLMRP.Components.Models
             Owner = owner;
             dateTime=DateTime.Now;
             dateTimeString = dateTime.ToString("dd MMMM, yyyy HH:mm");
+            IdOwner = owner.Id;
         }
         public Message(string content,string InstructContent, Person owner)
         {
@@ -23,6 +24,7 @@ namespace LLMRP.Components.Models
             Owner = owner;
             dateTime = DateTime.Now;
             dateTimeString = dateTime.ToString("dd MMMM, yyyy HH:mm");
+            IdOwner = owner.Id;
         }
 
         public async Task TranslateMessage(TranslatorService translatorService)
@@ -47,9 +49,10 @@ namespace LLMRP.Components.Models
         public bool isSummarized { get; set; } = false;
 
         public string dateTimeString { get; set; }
-
+        [JsonIgnore]
         public Person Owner { get; set; }
         public Guid GuidMessage { get; set; } =  Guid.NewGuid();
+        public string IdOwner { get; set; }
 
     }
 }

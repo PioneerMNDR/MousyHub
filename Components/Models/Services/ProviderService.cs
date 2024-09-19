@@ -54,13 +54,13 @@ namespace LLMRP.Components.Models.Services
                     bool IsSuccessK = await ConnectKoboldCPP();
                     if (!IsSuccessK)
                         return "";
-                    await NewWizardConnect(Settings.CurrentInstruct, Settings.GenConfigWizard, Settings.User);
+                    await NewWizardConnect(Settings.CurrentInstruct,  Settings.User);
                     return await LLModel.Model();
                 case APIType.Self_Inference:
                     bool IsSuccessL = await ConnectLocal(Settings);
                     if (!IsSuccessL)
                         return "";
-                    await NewWizardConnect(Settings.CurrentInstruct, Settings.GenConfigWizard, Settings.User);
+                    await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
                     return await LLModel.Model();
                 case APIType.Chat_Completions:
                     break;
@@ -158,11 +158,11 @@ namespace LLMRP.Components.Models.Services
 
 
         }
-        public async Task<string> NewWizardConnect(Instruct instruct, GenerationConfig generationConfig, UserState userState)
+        public async Task<string> NewWizardConnect(Instruct instruct, UserState userState)
         {
             if (Status)
             {
-                Wizard.Run(LLModel, instruct, generationConfig, userState);
+                Wizard.Run(LLModel, instruct, userState);
                 WizardStatus = true;
                 return "";
             }

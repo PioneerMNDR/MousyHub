@@ -1,4 +1,5 @@
 ﻿@using LLMRP.Components.Models
+@using LLMRP.Components.Models.Misc
 @using LLMRP.Components.Models.Services
 @inject SettingsService Settings
 @inject AdvancedQueryService QueryService
@@ -213,7 +214,7 @@
     {
         StateHasChanged();
         string FinalPromt = CharToString() + currentStep.PrePromt + "\n{{user}}'s wishes: " + currentStep.UserRequest;
-        var res = await QueryService.Generate(SystemPromt, FinalPromt, Settings.GenConfigWizard, Settings.CurrentInstruct, "Character Build Assistant", PromtAfterOutputSequence: currentStep.StepName + ":");
+        var res = await QueryService.Generate(SystemPromt, FinalPromt, Provider.Wizard.DeterministicConfig, Settings.CurrentInstruct, "Character Build Assistant", PromtAfterOutputSequence: currentStep.StepName + ":");
         currentStep.Response = res.Content.Trim();
         StateHasChanged();
     }
@@ -221,7 +222,7 @@
     {
         StateHasChanged();
         string FinalPromt = CharToString() + currentStep.PrePromt + "\n{{user}}'s wishes: " + currentStep.UserRequest;
-        var res = await QueryService.Continue(SystemPromt, FinalPromt, currentStep.Response, Settings.GenConfigWizard, Settings.CurrentInstruct, "Character Build Assistant", PromtAfterOutputSequence: currentStep.StepName + ":");
+        var res = await QueryService.Continue(SystemPromt, FinalPromt, currentStep.Response, Provider.Wizard.DeterministicConfig, Settings.CurrentInstruct, "Character Build Assistant", PromtAfterOutputSequence: currentStep.StepName + ":");
         currentStep.Response += res.Content.Trim();
         StateHasChanged();
     }
@@ -236,6 +237,7 @@
         if (Tags.Count > 0)
         {
             NewCard.data.tags = Tags.ToArray();
+
         }
     }
     private void NextStep()
@@ -270,7 +272,7 @@
             {
                 var MemoryStream = new MemoryStream();
                 await file.OpenReadStream().CopyToAsync(MemoryStream);
-                NewCard.avatarPNG = MemoryStream.ToArray();
+                NewCard.avatarPNG = Util.CompressImage(MemoryStream.ToArray());
                 StateHasChanged();
             }
 

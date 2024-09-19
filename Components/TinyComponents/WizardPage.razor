@@ -30,7 +30,6 @@
          </MudExpansionPanel>
          <MudExpansionPanel Text="⚖️ Summarize">
              <MudTextField @bind-Value="State.ChatHistory.SummarizeContext" Label="Summarize value" Variant="Variant.Outlined" AutoGrow Lines="4" HelperText="The meaning of dialog summarization" HelperTextOnFocus=true></MudTextField>
-             <MudButton OnClick="State.ChatSummarize">summ</MudButton>
          </MudExpansionPanel>
          <MudExpansionPanel Text="🎭 OOC">
              <MudTextField @bind-Value="OOCPreview" Label="Give the character a hint outside the context of the dialogue" Variant="Variant.Outlined" AutoGrow Lines="4" HelperText="Example: let the character be less shy" HelperTextOnFocus=true></MudTextField>
@@ -73,11 +72,11 @@
                                  <MudText>@($"{context.Person.Name} - {context.SkipNow}")</MudText>
                              </MudItem>
                              <MudItem md="3">
-                                 <MudAvatar Class="noselect" draggable="false">
+                                 <MudAvatar Class="noselect"  draggable="false">
                                      @{
                                         var imageSrc = Convert.ToBase64String(context.Person.Avatar);
                                     }
-                                    <MudImage Src="@($"data:image/png;base64,{imageSrc}")" Class="noselect" draggable="false"></MudImage>
+                                    <MudImage Src="@($"data:image/jpg;base64,{imageSrc}")" Fluid Class="noselect" draggable="false"></MudImage>
                                 </MudAvatar>
                             </MudItem>
                         </MudStack>

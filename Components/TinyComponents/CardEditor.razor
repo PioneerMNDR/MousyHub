@@ -2,6 +2,7 @@
 @using LLMRP.Components.Models.Misc
 @using LLMRP.Components.Models.Services
 @inject ProviderService Provider
+@inject UploaderService Uploader
 @inject AlertServices Alert
 @if (charCard != null)
 {
@@ -71,8 +72,13 @@
 
         </MudItem>
     </MudGrid>
-
 }
+else
+{
+    <MudAlert Severity="Severity.Warning">Deleted</MudAlert>
+}
+
+
 
 
 
@@ -120,12 +126,16 @@
     public void SaveCard()
     {
         Alert.SuccessAlert("Saved");
-        Saver.SaveToJson(charCard, charCard.data.name + "_CharCard");
+        Saver.SaveToJson(charCard, charCard.system_name);
     }
     public void DeleteCard()
     {
+
         Alert.SuccessAlert("Deleted");
-        Saver.Delete(charCard, charCard.data.name + "_CharCard");
+        Saver.Delete(charCard, charCard.system_name);
+        charCard = null;
+        StateHasChanged();
+        Uploader.ReloadCards();
     }
 
 

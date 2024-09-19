@@ -2,6 +2,7 @@
 @using LLMRP.Components.Pages
 @using Models
 @inject ChatState Chat
+@inject SettingsService Settings
 @inject TranslatorService Translator
 @inject IJSRuntime JSRuntime
 @if (Message.Content != null && Message.Content != "")
@@ -10,19 +11,17 @@
 
     </MudAnimate>
     <MudGrid Class="mt-1 mes1" Spacing="0">
-
         <MudItem md="1" xs="2">
-
-            <MudAvatar  Class="mt-2" Size="@(Main.isMobile ? Size.Medium :Size.Large)">
+            <MudAvatar Class="mt-2" Size="@(Main.isMobile ? Size.Medium :Size.Large)" Elevation="2" Rounded="Settings.User.SquareAvatars">
                 @{
                     var imageSrc = Convert.ToBase64String(Message.Owner.Avatar);
                 }
-                <MudImage @onclick="@(()=>ClickAvatar.InvokeAsync(imageSrc))" Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
-            </MudAvatar>
-        </MudItem>
-        <MudItem md="11" xs="10">
-            <div class="d-flex align-center">
-                <MudText Color="Color.Tertiary">@Message.Owner.Name</MudText>
+                <MudImage @onclick="@(()=>ClickAvatar.InvokeAsync(imageSrc))" Fluid Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
+             </MudAvatar>
+         </MudItem>
+         <MudItem md="11" xs="10">
+             <div class="d-flex align-center">
+                 <MudText Color="Color.Tertiary">@Message.Owner.Name</MudText>
                     <span class="me-2"> </span>
                     <MudText Typo="Typo.body2">@Message.dateTimeString</MudText>
                     <span class="me-2"> </span>
@@ -34,11 +33,16 @@
                     <MudStack Row Justify="Justify.FlexEnd" Spacing="0">
                          <MudIconButton Size="Size.Small" OnClick="@(()=>{isEditing=true;Oldmessage=Message;})" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
                          <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(()=>{DeleteEvent.InvokeAsync(Message);})"></MudIconButton>
-                     </MudStack>
-                 </div>
-             </div>
+                         @if (Chat.ChatHistory.Messages.First() == Message && Chat.ChatHistory.Alt_greetings != null && Chat.ChatHistory.Alt_greetings.Length > 0)
+                        {
+                            <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.NextPlan" OnClick="@(()=>NextFirstMessageEvent.InvokeAsync())" title="Alternative message"></MudIconButton>
+                        }
 
-             @{
+                    </MudStack>
+                </div>
+            </div>
+
+            @{
                 string cssClass = "messageElement mud-elevation-3 ";
                 if (Message.isGenerating)
                 {
@@ -58,32 +62,22 @@
                 }
                 else
                 {
-
-                    if (isChatPageLoaded)
-                    {
-                        <MudFocusTrap>
-                            <div class="MarkdownFormatting">
-                                @if (Message.UserNativeLanguageContent != "" && Message.UserNativeLanguageContent != null && Message.isGenerating==false)
-                                {
-                                    <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16" Value="@Message.UserNativeLanguageContent"></MudMarkdown>
-                                }
-                                else
-                                {
-                                    <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16"  Value="@Message.Content"></MudMarkdown>
-                                }
-
-                            </div>
-                        </MudFocusTrap>
-                    }
-                    else
-                    {
-                        <div class="MarkdownFormatting">
+                    <div class="MarkdownFormatting">
+                        @if (Message.UserNativeLanguageContent != "" && Message.UserNativeLanguageContent != null && Message.isGenerating == false)
+                        {
+                            <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16" Value="@Message.UserNativeLanguageContent"></MudMarkdown>
+                        }
+                        else
+                        {
                             <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16" Value="@Message.Content"></MudMarkdown>
-                        </div>
-                    }
+                        }
+
+                    </div>
                 }
             </MudPaper>
+
         </MudItem>
+
     </MudGrid>
 }
 
@@ -112,6 +106,8 @@
     public EventCallback<Message> DeleteEvent { get; set; }
     [Parameter]
     public EventCallback<string> ClickAvatar { get; set; }
+    [Parameter]
+    public EventCallback NextFirstMessageEvent { get; set; }
 
     private bool isEdited = false;
 
@@ -139,7 +135,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
 
- 
+
 
     }
 

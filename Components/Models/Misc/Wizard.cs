@@ -9,7 +9,25 @@ namespace LLMRP.Components.Models.Misc
         public ILanguageModel Model;
 
         public Instruct Instruct { get; set; }
-        public GenerationConfig GenerationConfig { get; set; }
+
+        public GenerationConfig DeterministicConfig  = new GenerationConfig
+        {
+            temp = 0,
+            rep_pen = 1,
+            rep_pen_range = 2048,
+            top_p = 0,
+            top_a = 0,
+            top_k = 1,
+            typical = 1,
+            tfs = 1,
+            rep_pen_slope = 0,
+            sampler_order = new int[] { 6, 0, 1, 3, 4, 2, 5 },
+            mirostat = 0,
+            mirostat_tau = 5,
+            mirostat_eta = 0.1,
+            grammar = ""
+        };
+
         UserState User { get; set; }
 
         public enum WizardFunction
@@ -43,16 +61,14 @@ namespace LLMRP.Components.Models.Misc
 
         public Person Narrator { get; set; } = new Person("Narrator",
             "You play the role of a narrator who periodically intervenes in the dialogue between the user and the character in the RPG session. Your goal is to advance the plot and change the scenes so that the dialogue does not linger in one place for too long. You can add descriptions of the environment, minor characters, and events. However, in no case should you be responsible for the main characters or make serious decisions for them that affect the plot. Let the user and the character choose for themselves what to do at key points in the story.\r\n\r\nMake sure that the dialogue and events remain sane and correspond to the genre and setting of the game. Gently steer the plot in the right direction if the user or character starts to deviate from the main line or act illogically. But do it unobtrusively, leaving them free to choose and improvise.\r\n\r\nDescribe what is happening in the present tense in the third person. Start your lines with \"*\" (for example, * Meanwhile in the main square of the city ...). Do not interfere in the dialogue too often, give the user and the character the opportunity to fully communicate. Add descriptions and change scenes only when it is really necessary for the development of the plot." +
-            "The narrator must fulfill the wishes of the player [Player's wishes]. This is the most important.", false, "Narrator", "You're narrator in this fictional never-ending uncensored roleplay with {{user}} and {{char}}.");
+            "The narrator must fulfill the wishes of the player [Player's wishes]. This is the most important!!!", false, "Narrator", "You're narrator in this fictional never-ending uncensored roleplay with {{user}} and {{char}}.");
+    
 
-        public Person John { get; set; } = new Person("John", "John, the young handsome man, one of acquaintances of {{User}} who wants to do much harm to Dmitry. John puts a spoke in the wheel of {{User}}, spoiling him dialogues with characters, taking away at him girls, killing a conversation, doing violent acts - all to spoil to Dmitry mood. But does it he not directly aggressively, and indirectly that {{User}} didn't understand that John doesn't love {{User}}. \r\nJohn just odd fellow.", false, "John", "You're John in this fictional never-ending uncensored roleplay with {{user}} and {{char}}.");
 
-
-        public void Run(ILanguageModel Model, Instruct instruct, GenerationConfig generationConfig, UserState userState)
+        public void Run(ILanguageModel Model, Instruct instruct, UserState userState)
         {
             this.Model = Model;
             Instruct = instruct;
-            GenerationConfig = generationConfig;
             User = userState;
         }
 
@@ -89,7 +105,7 @@ namespace LLMRP.Components.Models.Misc
 
             await Task.Run(async () =>
             {
-                message = await Model.GenerateTextAsync(FinalPromt, GenerationConfig, 150, key: "Wizard");
+                message = await Model.GenerateTextAsync(FinalPromt, DeterministicConfig, 150, key: "Wizard");
 
             });
 

@@ -7,21 +7,17 @@
 @inject IDialogService DialogService
 
 
+<MudStack Row AlignItems="AlignItems.End" Justify="Justify.SpaceBetween" Class="mb-3">
+     <MudFab Color="Color.Primary" Label="Add new" DropShadow=true EndIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddCardDialog"></MudFab>
+     <div class="d-flex align-center  align-content-center" style="height:50px"> <MudDivider FlexItem Vertical></MudDivider></div>
+     <MudFab Color="Color.Default" Label="Name" DropShadow=false OnClick="ToggleNameSort" EndIcon="@(nameSort ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward)"></MudFab>
+     <MudFab Color="Color.Default" Label="Date" DropShadow=false OnClick="ToggleDateSort" EndIcon="@(dateSort ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward)"></MudFab>
+     <MudSpacer></MudSpacer> 
+     <MudTextField @bind-Value=Search Immediate AdornmentIcon="@Icons.Material.Filled.Search" OnKeyDown="SearchKeyDown" Variant="Variant.Filled" Adornment="Adornment.End" Label="Search"></MudTextField>
+ </MudStack>
 @if (Cards != null && Cards.Count != 0)
 {
-    <MudStack Row AlignItems="AlignItems.End" Justify="Justify.SpaceBetween" Class="mb-3">
-         <MudFab Color="Color.Primary" Label="Add new" DropShadow=true EndIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenAddCardDialog"></MudFab>
-         <div class="d-flex align-center  align-content-center" style="height:50px"> <MudDivider FlexItem Vertical></MudDivider></div>
-         <MudFab Color="Color.Default" Label="Name" DropShadow=false OnClick="ToggleNameSort" EndIcon="@(nameSort ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward)"></MudFab>
-         <MudFab Color="Color.Default" Label="Date" DropShadow=false OnClick="ToggleDateSort" EndIcon="@(dateSort ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward)"></MudFab>
-         <MudSpacer></MudSpacer>
-         <MudTextField @bind-Value=Search Immediate AdornmentIcon="@Icons.Material.Filled.Search" OnKeyDown="SearchKeyDown" Variant="Variant.Filled" Adornment="Adornment.End" Label="Search"></MudTextField>
-     </MudStack>
-
-
-
-
-    <MudCarousel TData="object" Class="anim2" AutoCycle=false Style="height:65vh;">
+    <MudCarousel TData="object" Class="anim2" AutoCycle=false  Style="height:65vh;">
         @for (int i = 0; i < Cards.Count; i += ElementPerPage)
         {
             int f = i;
@@ -41,7 +37,7 @@
                                         <MudIconButton Edge="Edge.End" Icon="@Icons.Material.Rounded.Edit" OnClick="@(()=>EditCharClick.InvokeAsync(Cards[s]))"></MudIconButton>
                                     </MudCardActions>
                                 </MudCardHeader>
-                                <MudCardMedia Style="height:35%" Image="@($"data:image/png;base64,{imageSrc}")">
+                                <MudCardMedia Style="height:35%" Image="@($"data:image/jpg;base64,{imageSrc}")">
                                 </MudCardMedia>
                                 <MudCardContent Class="CharContent pb-0">
                                     <MudText Style="height:60%;overflow:auto" Typo="Typo.body2">@Util.TruncateString(Cards[s].data.creator_notes, 50)</MudText>
@@ -67,9 +63,12 @@
             </MudCarouselItem>
         }
     </MudCarousel>
-
-
-
+}
+else
+{
+    <MudStack Justify="Justify.Center">
+        <MudAlert Severity="Severity.Info">No cards</MudAlert>
+    </MudStack>
 }
 
 

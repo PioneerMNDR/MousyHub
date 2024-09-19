@@ -1,13 +1,29 @@
-﻿<MudDialog>
+﻿@using LLMRP.Components.Models.Services.URLHandle
+@inject URLImporterService Importer
+
+<MudDialog>
     <TitleContent>
         Add new card from URL
     </TitleContent>
     <DialogContent>
-        <MudTextField Variant="Variant.Outlined" Style="width:30vw" FullWidth=true @bind-Value=Url Label="Url from Chub.ai"></MudTextField>
+        @if (isLoading)
+        {
+            <MudStack Justify="Justify.Center" Class="ma-3">
+                <MudProgressLinear Indeterminate Color="Color.Secondary"></MudProgressLinear>
+            </MudStack>      
+        }
+        else
+        {
+            <MudStack Justify="Justify.Center" Class="ma-3">
+                <MudTextField Variant="Variant.Outlined" Style="width:30vw" FullWidth=true @bind-Value=Url Label="Url from Chub.ai"></MudTextField>
+            </MudStack>
+       
+        }
+
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Error">Cancel</MudButton>
-        <MudButton OnClick="Cancel" Variant="Variant.Filled" Color="Color.Success">Load</MudButton>
+        <MudButton OnClick="Cancel" Variant="Variant.Filled" Disabled="isLoading" Color="Color.Error">Cancel</MudButton>
+        <MudButton OnClick="LoadClick" Variant="Variant.Filled"  Disabled="isLoading" Color="Color.Success">Load</MudButton>
     </DialogActions>
 </MudDialog>
 
@@ -17,4 +33,17 @@
     private string Url { get; set; }
 
     private void Cancel() => MudDialog.Cancel();
+
+    private bool isLoading = false;
+    private async Task LoadClick()
+    {
+        if (Url!=string.Empty)
+        {
+            isLoading = true;
+            await Importer.ImportURL(Url);
+            isLoading = false;
+        }
+        MudDialog.Cancel();
+
+    }
 }

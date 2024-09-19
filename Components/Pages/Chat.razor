@@ -31,7 +31,7 @@
                 @foreach (var message in ChatHistory.Messages)
                 {
 
-                    <LLMRP.Components.TinyComponents.ChatMessageComponent ClickAvatar="ToggleAvatar" DeleteEvent=DeleteMessage Message="message" isChatPageLoaded=isLoaded></LLMRP.Components.TinyComponents.ChatMessageComponent>
+                    <LLMRP.Components.TinyComponents.ChatMessageComponent ClickAvatar="ToggleAvatar" DeleteEvent=DeleteMessage Message="message" isChatPageLoaded=isLoaded NextFirstMessageEvent="NextFirstMessage"></LLMRP.Components.TinyComponents.ChatMessageComponent>
                 }
 
             </div>
@@ -40,8 +40,8 @@
         {
             @if (FastAnswers.Count > 0)
             {
-                <MudStack Row Justify="Justify.Center" StretchItems="StretchItems.All" Class=" mx-4">
-                     @for (int i = 0; i < FastAnswers.Count; i++)
+                <MudStack Row Justify="Justify.Center" StretchItems="StretchItems.All" Class="mx-4 mb-2">
+                     @for (int i = 0; i < Math.Min(FastAnswers.Count, 3); i++)
                     {
                         int n = i;
                         <MudButton IconColor="Settings.User.QuickRepliesSetings[n].MudColor" StartIcon="@Icons.Material.Filled.Brightness1" Class="QuickReplyClass" Variant="Variant.Outlined" Color="Color.Default" OnClick="@(()=>EnterFastAnswer(FastAnswers[n]))">@FastAnswers[n]</MudButton>
@@ -51,7 +51,7 @@
             }
 
 
-            <MudTextFieldExtended OnKeyUp="EnterEvent" OnKeyDown="DeleteNewlineOnEnterEvent" @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
+            <MudTextFieldExtended OnKeyUp="EnterEvent" OnKeyDown="DeleteNewlineOnEnterEvent"  @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
                  <AdornmentStart>
                      <MudMenu Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu">
                          <MudMenuItem Icon="@Icons.Material.Filled.Quickreply" OnClick="QuickReplyGenerate" title="Generate quick reply on the last message">Quick reply</MudMenuItem>
@@ -86,7 +86,6 @@
                             <MudIconButton OnClick="SendMessage" Color=Color.Info Icon="@Icons.Material.Filled.Send"></MudIconButton>
                         }
                     </div>
-
                 </AdornmentEnd>
             </MudTextFieldExtended>
         }
@@ -148,10 +147,11 @@
         if (!string.IsNullOrWhiteSpace(CurrentMessage) && isGenerating == false)
         {
             var nativeLangContent = CurrentMessage;
-            if (Translator.isEnabled)
-                CurrentMessage = await Translator.TranslateForLLM(CurrentMessage);
-            var mes = await ChatHistory.AddMessage(CurrentMessage, ChatHistory.MainUser, Settings.CurrentInstruct, nativeLangContent);
+            string llmContent = CurrentMessage;
             await ClearMessage();
+            if (Translator.isEnabled)
+                llmContent = await Translator.TranslateForLLM(llmContent);
+            var mes = await ChatHistory.AddMessage(llmContent, ChatHistory.MainUser, Settings.CurrentInstruct, nativeLangContent);
             StateHasChanged();
             _ = ClickSend.InvokeAsync(NextPerson);
             FastAnswers.Clear();
@@ -171,6 +171,15 @@
         await mudText.Clear();
         StateHasChanged();
     }
+    async Task NextFirstMessage()
+    {
+        ChatHistory.NextFirstMessage();
+        if (string.IsNullOrEmpty(ChatHistory.Messages.First().UserNativeLanguageContent))
+        {
+            await ChatHistory.Messages.First().TranslateMessage(Translator);
+        }
+        StateHasChanged();
+    }
 
     private void ToggleAvatar(string avatar_url)
     {
@@ -184,8 +193,7 @@
 
         if (e.Key == "Enter" && e.ShiftKey == false && !string.IsNullOrWhiteSpace(CurrentMessage))
         {
-            CurrentMessage = CurrentMessage.TrimEnd('\n');
-            await SendMessage();
+            await ClearMessage();
         }
     }
     async Task DeleteNewlineOnEnterEvent(KeyboardEventArgs e)
@@ -194,7 +202,10 @@
         if (e.Key == "Enter" && e.ShiftKey == false && !string.IsNullOrWhiteSpace(CurrentMessage))
         {
             CurrentMessage = CurrentMessage.TrimEnd('\n');
-            await mudText.SetText(CurrentMessage);
+            await  SendMessage();
+            await ClearMessage();
+            await mudText.SetText("");
+            StateHasChanged();
 
         }
     }

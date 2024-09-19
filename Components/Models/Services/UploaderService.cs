@@ -11,22 +11,23 @@ namespace LLMRP.Components.Models.Services
         public SettingsService settingsService;
         public bool isBusy { get; private set; }
         public event EventHandler SaveInfoEvent;
+        public event EventHandler ReloadCardEvent;
 
-
-
-
-        public List<CharCard> TestLocalLoadCard()
+        public void ReloadCards()
         {
-            string directory = Environment.CurrentDirectory + "/wwwroot/testfiles/";
+            ReloadCardEvent.Invoke(null, EventArgs.Empty);
+        }
+        public List<CharCard> LoadCards()
+        {
+            string directory = Environment.CurrentDirectory + "/wwwroot/Cards/";
             List<CharCard> charCards = new List<CharCard>();
 
             foreach (string file in Directory.GetFiles(directory, "*.json"))
             {
                 string json = File.ReadAllText(file);
                 CharCard charCard = JsonConvert.DeserializeObject<CharCard>(json);
-                charCard.avatarPNG = LoadDefaultAvatar();
                 charCards.Add(charCard);
-            }
+            }       
             return charCards;
         }
         public List<Instruct> LoadInstructs(bool Default = false)
@@ -111,7 +112,7 @@ namespace LLMRP.Components.Models.Services
         }
         public ChatHistory? LoadChatHistory(CharCard charCard)
         {
-            string path = Environment.CurrentDirectory + "/wwwroot/chatHistory/" + charCard.data.name + ".json";
+            string path = Environment.CurrentDirectory + "/wwwroot/chatHistory/" + charCard.system_name + ".json";
             if (File.Exists(path))
             {
                 string json = File.ReadAllText(path);

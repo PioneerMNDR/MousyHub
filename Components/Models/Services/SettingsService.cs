@@ -49,7 +49,6 @@ namespace LLMRP.Components.Models.Services
             //Main
             CurrentInstruct = LoadInstruct(DefaultName: "ChatML");
             CurrentGenerationConfig = LoadGenConfig(DefaultName: "simple-proxy-for-tavern", User.GenConfigName);
-            GenConfigWizard = LoadGenConfig(DefaultName: "Deterministic", User.WizardGenConfigName);
             Theme = LoadTheme(DefaultName: "Default");
             //UserProfile
             if (User.ProfileName != null && User.ProfileName != "")
@@ -62,8 +61,6 @@ namespace LLMRP.Components.Models.Services
 
         public Instruct CurrentInstruct { get; set; }
         public GenerationConfig CurrentGenerationConfig { get; set; }
-        public GenerationConfig GenConfigWizard { get; set; }
-
         public Theme Theme { get; set; }
 
         public Person? CurrentUserProfile { get; set; }
