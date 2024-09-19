@@ -11,31 +11,34 @@ namespace LLMRP.Components.Models
 
         public static void SaveToJson<T>(T obj, string fileName) where T : class
         {
-
             try
             {
-                string directory = Environment.CurrentDirectory + "/wwwroot/";
+                string directory = Path.Combine(Environment.CurrentDirectory, "wwwroot");
 
                 if (typeof(T) == typeof(Instruct))
                 {
-                    directory += "InstructConfigs/";
+                    directory = Path.Combine(directory, "InstructConfigs");
                 }
-                if (typeof(T) == typeof(GenerationConfig))
+                else if (typeof(T) == typeof(GenerationConfig))
                 {
-                    directory += "Presets/";
+                    directory = Path.Combine(directory, "Presets");
                 }
-                if (typeof(T) == typeof(UserState))
+                else if (typeof(T) == typeof(UserState))
                 {
-                    directory += "config/";
+                    directory = Path.Combine(directory, "config");
                 }
-                if (typeof(T) == typeof(CharCard))
+                else if (typeof(T) == typeof(CharCard))
                 {
-                    directory += "Cards/";
+                    directory = Path.Combine(directory, "Cards");
                 }
-                if (typeof(T) == typeof(Theme))
+                else if (typeof(T) == typeof(Theme))
                 {
-                    directory += "MudThemes/";
+                    directory = Path.Combine(directory, "MudThemes");
                 }
+
+                // Create the directory if it doesn't exist
+                Directory.CreateDirectory(directory);
+
                 string path = Path.Combine(directory, fileName + ".json");
 
                 string json = JsonConvert.SerializeObject(obj, Formatting.Indented);
@@ -45,13 +48,10 @@ namespace LLMRP.Components.Models
             catch (Exception ex)
             {
                 Console.WriteLine("SaveToJson Error: " + ex.Message);
-
             }
-
         }
         public static void Delete<T>(T obj, string fileName) where T : class
         {
-
             try
             {
                 string directory = Environment.CurrentDirectory + "/wwwroot/";
@@ -76,6 +76,8 @@ namespace LLMRP.Components.Models
                 {
                     directory += "MudThemes/";
                 }
+            
+
                 string path = Path.Combine(directory, fileName + ".json");
                 File.Delete(path);
                 Console.WriteLine("Deleted " + path);
@@ -96,17 +98,18 @@ namespace LLMRP.Components.Models
                 string filename = "NewFile";
                 if (typeof(T) == typeof(Instruct))
                 {
-                    directory += "InstructConfigs/";
-
+                    directory = Path.Combine(directory, "InstructConfigs");
                 }
                 if (typeof(T) == typeof(GenerationConfig))
                 {
-                    directory += "Presets/";
+                    directory = Path.Combine(directory, "Presets");
                 }
                 if (typeof(T) == typeof(Person))
                 {
-                    directory += "config/Profiles/";
+                    directory = Path.Combine(directory, "config", "Profiles");
                 }
+                // Create the directory if it doesn't exist
+                Directory.CreateDirectory(directory);
                 // Получить список существующих файлов
                 var existingFiles = Directory.GetFiles(directory).Select(Path.GetFileNameWithoutExtension).ToList();
                 //Write all new presets and any old
@@ -155,6 +158,7 @@ namespace LLMRP.Components.Models
             try
             {
                 string directory = Environment.CurrentDirectory + "/wwwroot/chatHistory";
+                Directory.CreateDirectory(directory);
                 string filename = chatHistory.ChatName;
                 string json = JsonConvert.SerializeObject(chatHistory, Formatting.Indented);
                 string path = Path.Combine(directory, filename + ".json");

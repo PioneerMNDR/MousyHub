@@ -39,8 +39,6 @@
   
   <ItemGroup>
     <Folder Include="ThemeManager\" />
-    <Folder Include="wwwroot\chatHistory\" />
-    <Folder Include="wwwroot\config\Profiles\" />
     <Folder Include="wwwroot\Cards\" />
   </ItemGroup>
 

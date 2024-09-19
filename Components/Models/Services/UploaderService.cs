@@ -21,7 +21,10 @@ namespace LLMRP.Components.Models.Services
         {
             string directory = Environment.CurrentDirectory + "/wwwroot/Cards/";
             List<CharCard> charCards = new List<CharCard>();
-
+            if (!Directory.Exists(directory))
+            {
+                return charCards;
+            }
             foreach (string file in Directory.GetFiles(directory, "*.json"))
             {
                 string json = File.ReadAllText(file);
@@ -35,10 +38,11 @@ namespace LLMRP.Components.Models.Services
             string directory = Environment.CurrentDirectory + "/wwwroot/InstructConfigs/";
             if (Default)
                 directory = Environment.CurrentDirectory + "/wwwroot/default/InstructConfigs/";
-
             List<Instruct> list = new List<Instruct>();
-
-
+            if (!Directory.Exists(directory))
+            {
+                return list;
+            }
             foreach (string file in Directory.GetFiles(directory, "*.json"))
             {
                 string json = File.ReadAllText(file);
@@ -53,12 +57,14 @@ namespace LLMRP.Components.Models.Services
         }
         public List<GenerationConfig> LoadPresets(bool Default = false)
         {
-            string directory = Environment.CurrentDirectory + "/wwwroot/Presets/";
+            string directory = Environment.CurrentDirectory + "/wwwroot/Presets/";       
             if (Default)
                 directory = Environment.CurrentDirectory + "/wwwroot/default/Presets/kobold";
             List<GenerationConfig> list = new List<GenerationConfig>();
-
-
+            if (!Directory.Exists(directory))
+            {
+                return list;
+            }
             foreach (string file in Directory.GetFiles(directory, "*.json"))
             {
                 string json = File.ReadAllText(file);
@@ -86,6 +92,10 @@ namespace LLMRP.Components.Models.Services
         {
             string directory = Environment.CurrentDirectory + "/wwwroot/config/Profiles";
             List<Person> list = new List<Person>();
+            if (!Directory.Exists(directory))
+            {
+                return list;
+            }
             foreach (string file in Directory.GetFiles(directory, "*.json"))
             {
                 string json = File.ReadAllText(file);
@@ -98,10 +108,11 @@ namespace LLMRP.Components.Models.Services
         public List<Theme> LoadThemes()
         {
             string directory = Environment.CurrentDirectory + "/wwwroot/MudThemes/";
-
             List<Theme> list = new List<Theme>();
-
-
+            if (!Directory.Exists(directory))
+            {
+                return list;
+            }
             foreach (string file in Directory.GetFiles(directory, "*.json"))
             {
                 string json = File.ReadAllText(file);
@@ -125,6 +136,10 @@ namespace LLMRP.Components.Models.Services
         {
             string directory = Environment.CurrentDirectory + "/wwwroot/LocalModels/";
             List<string> list = new List<string>();
+            if (!Directory.Exists(directory))
+            {
+                return list;
+            }
             foreach (string file in Directory.GetFiles(directory, "*.gguf"))
             {
                 list.Add(file);
