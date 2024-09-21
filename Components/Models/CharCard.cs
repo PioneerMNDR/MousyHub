@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace LLMRP.Components.Models
+namespace MousyHub.Components.Models
 {
     public class CharCard
     {

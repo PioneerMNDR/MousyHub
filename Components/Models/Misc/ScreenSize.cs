@@ -1,6 +1,6 @@
 ﻿using Microsoft.JSInterop;
 
-namespace LLMRP.Components.Models.Misc
+namespace MousyHub.Components.Models.Misc
 {
     public class ScreenSize
     {

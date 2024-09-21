@@ -1,6 +1,6 @@
-﻿@using LLMRP.Components.Models
-@using LLMRP.Components.Models.Services
-@using LLMRP.Components.Models.User
+﻿@using MousyHub.Components.Models
+@using MousyHub.Components.Models.Services
+@using MousyHub.Components.Models.User
 @inject ProviderService Service
 @inject SettingsService Settings
 
@@ -121,10 +121,10 @@
 <MudPaper  Class="mt-5 pa-4">
     <MudGrid  Spacing="2">
         <MudItem md="6">
-            <LLMRP.Components.TinyComponents.TextGenParamEditor></LLMRP.Components.TinyComponents.TextGenParamEditor>
+            <TextGenParamEditor></TextGenParamEditor>
         </MudItem>
         <MudItem md="6">
-            <LLMRP.Components.TinyComponents.InstructEditor></LLMRP.Components.TinyComponents.InstructEditor>
+            <InstructEditor></InstructEditor>
         </MudItem>
     </MudGrid>
 </MudPaper>

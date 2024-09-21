@@ -1,8 +1,8 @@
-﻿using LLMRP.Components.Models.LLama;
-using LLMRP.Components.Models.Misc;
-using LLMRP.Components.Models.Services;
+﻿using MousyHub.Components.Models.LLama;
+using MousyHub.Components.Models.Misc;
+using MousyHub.Components.Models.Services;
 
-namespace LLMRP.Components.Models.User
+namespace MousyHub.Components.Models.User
 {
     public class UserState
     {
@@ -24,8 +24,7 @@ namespace LLMRP.Components.Models.User
         public bool AutoSummarize { get; set; } = true;
 
         public int SummarizeMessageCount = 10;
-        public bool AnswerAssistant { get; set; } = true;
-
+        public bool AnswerAssistant { get; set; } = false;
         public bool SquareAvatars { get; set; } = false;
         public QuickReplySetting[] QuickRepliesSetings { get; set; } = { new QuickReplySetting(QuickReplySetting.ResponseEmotion.Positive), new QuickReplySetting(QuickReplySetting.ResponseEmotion.Neutral), new QuickReplySetting(QuickReplySetting.ResponseEmotion.Negative) };
 

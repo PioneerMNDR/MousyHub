@@ -1,7 +1,7 @@
-﻿using LLMRP.Components.Models.Misc;
-using LLMRP.Components.Models.Model;
+﻿using MousyHub.Components.Models.Misc;
+using MousyHub.Components.Models.Model;
 
-namespace LLMRP.Components.Models.Services
+namespace MousyHub.Components.Models.Services
 {
     public class AdvancedQueryService
     {

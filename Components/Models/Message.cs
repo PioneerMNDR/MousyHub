@@ -1,7 +1,7 @@
-﻿using LLMRP.Components.Models.Services;
+﻿using MousyHub.Components.Models.Services;
 using Newtonsoft.Json;
 
-namespace LLMRP.Components.Models
+namespace MousyHub.Components.Models
 {
     public class Message
     {

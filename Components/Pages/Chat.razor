@@ -1,12 +1,15 @@
-﻿@using LLMRP.Components.Models.Misc
-@using LLMRP.Components.Models.Services
+﻿@using MousyHub.Components.Models
+@using MousyHub.Components.Models.Misc
+@using MousyHub.Components.Models.Services
+@using MousyHub.Components.Models.User
 @inject IJSRuntime JSRuntime
 @inject SettingsService Settings
 @inject ProviderService Provider
 @inject ChatState State
+@inject AlertServices Alerts
 @inject TranslatorService Translator;
-@using LLMRP.Components.Models.User
-@using Models;
+
+
 
 
 @if (isLoaded == false)
@@ -31,7 +34,7 @@
                 @foreach (var message in ChatHistory.Messages)
                 {
 
-                    <LLMRP.Components.TinyComponents.ChatMessageComponent ClickAvatar="ToggleAvatar" DeleteEvent=DeleteMessage Message="message" isChatPageLoaded=isLoaded NextFirstMessageEvent="NextFirstMessage"></LLMRP.Components.TinyComponents.ChatMessageComponent>
+                    <ChatMessageComponent ClickAvatar="ToggleAvatar" DeleteEvent=DeleteMessage Message="message" isChatPageLoaded=isLoaded NextFirstMessageEvent="NextFirstMessage"></ChatMessageComponent>
                 }
 
             </div>
@@ -142,8 +145,12 @@
     MudTextFieldExtended<string> mudText;
     private async Task SendMessage()
     {
+        Person CurrentPerson = ChatHistory.GetCurrentSpeakerInQueue();
         Person NextPerson = ChatHistory.QueueMoveOrder();
-
+        if (CurrentPerson.IsUser==false)
+        {
+             Alerts.ErrorAlert("Error building queue. Write to the developer about this error");
+        }
         if (!string.IsNullOrWhiteSpace(CurrentMessage) && isGenerating == false)
         {
             var nativeLangContent = CurrentMessage;
@@ -151,7 +158,7 @@
             await ClearMessage();
             if (Translator.isEnabled)
                 llmContent = await Translator.TranslateForLLM(llmContent);
-            var mes = await ChatHistory.AddMessage(llmContent, ChatHistory.MainUser, Settings.CurrentInstruct, nativeLangContent);
+            var mes = await ChatHistory.AddMessage(llmContent, CurrentPerson, Settings.CurrentInstruct, nativeLangContent);
             StateHasChanged();
             _ = ClickSend.InvokeAsync(NextPerson);
             FastAnswers.Clear();

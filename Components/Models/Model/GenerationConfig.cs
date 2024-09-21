@@ -1,6 +1,6 @@
-﻿using LLMRP.Components.Models.Misc;
+﻿using MousyHub.Components.Models.Misc;
 
-namespace LLMRP.Components.Models.Model
+namespace MousyHub.Components.Models.Model
 {
     public class GenerationConfig
     {

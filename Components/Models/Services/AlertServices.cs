@@ -1,6 +1,6 @@
 ﻿using MudBlazor;
 
-namespace LLMRP.Components.Models.Services
+namespace MousyHub.Components.Models.Services
 {
     public class AlertServices
     {

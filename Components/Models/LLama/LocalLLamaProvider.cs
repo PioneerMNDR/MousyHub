@@ -1,10 +1,10 @@
 ﻿using LLama.Common;
 using LLama.Sampling;
-using LLMRP.Components.Abstractions;
-using LLMRP.Components.Models.Model;
+using MousyHub.Components.Abstractions;
+using MousyHub.Components.Models.Model;
 using Grammar = LLama.Grammars.Grammar;
 
-namespace LLMRP.Components.Models.LLama
+namespace MousyHub.Components.Models.LLama
 {
     public class LocalLLamaProvider : ILanguageModel
     {

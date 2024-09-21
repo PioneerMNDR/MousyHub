@@ -1,13 +1,17 @@
-﻿using LLMRP.Components.Models.Services;
+﻿using MousyHub.Components.Models.Services;
 
-namespace LLMRP.Components.Models
+namespace MousyHub.Components.Models
 {
     public class Person
     {
         public Person() 
         {
+            if (Id == null)
+            {
+                Id = Guid.NewGuid().ToString();
+            }
         }
-        public Person(string name, string description,bool isUser,string key, string? overrideSystemPromt=null)
+        public Person(string name, string description,bool isUser,string key,string id = "",string? overrideSystemPromt=null)
         {
             Name = name;
             Description = description;
@@ -15,6 +19,10 @@ namespace LLMRP.Components.Models
             Avatar = UploaderService.LoadDefaultAvatar();
             OverrideSystemPromt = overrideSystemPromt;
             Key = key;
+            if (id=="")
+            {
+                Id = Guid.NewGuid().ToString();
+            }          
         }
         public Person(CharCard charCard, string key)
         {

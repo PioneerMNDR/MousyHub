@@ -1,7 +1,7 @@
 ﻿using GTranslate;
 
 
-namespace LLMRP.Components.Models.User
+namespace MousyHub.Components.Models.User
 {
     public class TranslatorOptions
     {

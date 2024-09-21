@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
-namespace LLMRP.Components.Models.Services
+namespace MousyHub.Components.Models.Services
 {
     public class DiagnosticsService
     {

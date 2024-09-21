@@ -1,7 +1,7 @@
 ﻿using LLama.Batched;
 using LLama.Native;
 
-namespace LLMRP.Components.Models.LLama
+namespace MousyHub.Components.Models.LLama
 {
     public class ConversationElement
     {

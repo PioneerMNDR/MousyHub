@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LLMRP", "LLMRP.csproj", "{6B1A57D5-FB77-4107-87A8-DBAC2D9DC07D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MousyUpdater", "..\MousyUpdater\MousyUpdater.csproj", "{20211E0E-BEAA-4CB5-A204-CDFFF5F3B894}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MousyHub", "MousyHub.csproj", "{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{6B1A57D5-FB77-4107-87A8-DBAC2D9DC07D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6B1A57D5-FB77-4107-87A8-DBAC2D9DC07D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6B1A57D5-FB77-4107-87A8-DBAC2D9DC07D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6B1A57D5-FB77-4107-87A8-DBAC2D9DC07D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20211E0E-BEAA-4CB5-A204-CDFFF5F3B894}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20211E0E-BEAA-4CB5-A204-CDFFF5F3B894}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20211E0E-BEAA-4CB5-A204-CDFFF5F3B894}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20211E0E-BEAA-4CB5-A204-CDFFF5F3B894}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

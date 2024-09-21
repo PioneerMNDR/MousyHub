@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace LLMRP.Components.Models.Misc
+namespace MousyHub.Components.Models.Misc
 {
     public class Speaker
     {
@@ -24,7 +24,7 @@ namespace LLMRP.Components.Models.Misc
 
         public string Id { get; set; }
         [JsonIgnore]
-        public Person Person { get; set; } = new Person();
+        public Person Person { get; set; }
 
         public bool isAction { get; set; } = false;
 

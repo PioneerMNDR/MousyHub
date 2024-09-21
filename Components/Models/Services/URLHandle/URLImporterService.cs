@@ -1,11 +1,11 @@
 ﻿using System.Net.Http.Headers;
-using static LLMRP.Components.Models.Services.URLHandle.URLParser;
+using static MousyHub.Components.Models.Services.URLHandle.URLParser;
 using Newtonsoft.Json;
 using System.Text;
-using LLMRP.Components.Models.Misc;
+using MousyHub.Components.Models.Misc;
 
 
-namespace LLMRP.Components.Models.Services.URLHandle
+namespace MousyHub.Components.Models.Services.URLHandle
 {
     public partial class URLImporterService
     {

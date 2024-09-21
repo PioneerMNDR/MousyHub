@@ -1,7 +1,7 @@
 ﻿
 using System.Text.Json.Serialization;
 
-namespace LLMRP.Components.Models.KoboldCPP
+namespace MousyHub.Components.Models.KoboldCPP
 {
     public class ModelOutput
     {

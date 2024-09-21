@@ -2,7 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace LLMRP.Components.Models.Services
+namespace MousyHub.Components.Models.Services
 {
     public class TranslatorService
     {

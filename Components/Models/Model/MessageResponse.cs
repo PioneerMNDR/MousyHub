@@ -1,4 +1,4 @@
-﻿namespace LLMRP.Components.Models.Model
+﻿namespace MousyHub.Components.Models.Model
 {
     public class MessageResponse
     {

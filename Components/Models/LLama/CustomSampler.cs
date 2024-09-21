@@ -4,7 +4,7 @@ using LLama.Common;
 using LLama.Native;
 using LLama.Sampling;
 
-namespace LLMRP.Components.Models.LLama
+namespace MousyHub.Components.Models.LLama
 {
     public class CustomSampler()
          : BaseSamplingPipeline

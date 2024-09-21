@@ -1,10 +1,10 @@
 ﻿@page "/messenger"
-@using LLMRP.Components.Models
-@using LLMRP.Components.Models.KoboldCPP
-@using LLMRP.Components.Models.Misc
-@using LLMRP.Components.Models.Model
-@using LLMRP.Components.Models.Services
-@using LLMRP.Components.Models.User
+@using MousyHub.Components.Models
+@using MousyHub.Components.Models.KoboldCPP
+@using MousyHub.Components.Models.Misc
+@using MousyHub.Components.Models.Model
+@using MousyHub.Components.Models.Services
+@using MousyHub.Components.Models.User
 @implements IDisposable
 @inject ProviderService Provider
 @inject ChatState State
@@ -21,7 +21,7 @@
             <MudButton StartIcon="@Icons.Material.Filled.Close" Color="Color.Primary" OnClick="@(()=> isCharEditMode = false)" Variant="Variant.Filled">Close</MudButton>
         </MudItem>
     </MudGrid>
-    <LLMRP.Components.TinyComponents.CardEditor charCard="EditingChar"></LLMRP.Components.TinyComponents.CardEditor>
+    <CardEditor charCard="EditingChar"></CardEditor>
 </MudCollapse>
 
 <MudCollapse @bind-Expanded="@isCharSelectMode" Class="FixedCollapsing ">
@@ -112,12 +112,12 @@
     /// <returns></returns>
     public async Task StartGeneration(Person person, bool Force = false)
     {
+        Main.RefreshWizardPage();
+        StateHasChanged();
         if (person.IsUser)
         {
             return;
-        }
-        Main.RefreshWizardPage();
-        StateHasChanged();
+        }   
         //AddEmptyMessage run before PromtToLLM for include next bot name in message
         Guid currentGuid = State.ChatHistory.AddEmptyMessage(person, Settings.CurrentInstruct);
         var promt = await State.ChatHistory.PromtToLLM(Settings.CurrentInstruct, person);
@@ -233,6 +233,11 @@
 
     async Task Regenerate(Person person)
     {
+        if (person.IsUser)
+        {
+            Alert.WarningAlert("The message from the user cannot be regenerated");
+            return;
+        }
         if (isGenerating == false && State.ChatHistory.Messages.Count > 0)
         {
             isGenerating = true;

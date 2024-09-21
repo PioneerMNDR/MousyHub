@@ -1,17 +1,17 @@
 ﻿@page "/"
-@using LLMRP.Components.Models
-@using LLMRP.Components.Models.KoboldCPP
-@using LLMRP.Components.Models.Misc
-@using LLMRP.Components.Models.Model
-@using LLMRP.Components.Models.Services
-@using LLMRP.Components.Models.User
-@using LLMRP.Components.TinyComponents
+@using MousyHub.Components.Models
+@using MousyHub.Components.Models.KoboldCPP
+@using MousyHub.Components.Models.Misc
+@using MousyHub.Components.Models.Model
+@using MousyHub.Components.Models.Services
+@using MousyHub.Components.Models.User
 @using System.Globalization
-@using Microsoft.Extensions.Localization
+@using MousyHub.Components.Pages.ExtraPages
+
 @rendermode InteractiveServer
 @inject ProviderService Provider
 @inject UploaderService uploader
-
+@inject UpdaterService Updater
 @inject ScreenSize SC;
 @inject SettingsService Settings
 @inject IStringLocalizer<Resource> Loc
@@ -43,7 +43,7 @@
                     {
 
                         <MudDrawer @bind-Open="@DrawerOpen" Anchor="Anchor" Width="@drawerWidth" Variant="drawerVariant" Elevation="1">
-                            <LLMRP.Components.TinyComponents.WizardPage @ref=wizardPage></LLMRP.Components.TinyComponents.WizardPage>
+                            <WizardPage @ref=wizardPage></WizardPage>
                         </MudDrawer>
                     }
 
@@ -62,9 +62,7 @@
                 </MudContainer>
             </MudTabPanel>
             <MudTabPanel  Icon="@Icons.Material.Filled.Category" Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
-
-                    <LLMRP.Components.Pages.ExtraPages.MainExtraPage ></LLMRP.Components.Pages.ExtraPages.MainExtraPage>
-
+                    <MainExtraPage ></MainExtraPage>
             </MudTabPanel>
         </MudTabs>
     }

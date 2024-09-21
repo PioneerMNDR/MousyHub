@@ -1,7 +1,7 @@
 ﻿using LLama.Abstractions;
 using LLama.Native;
 
-namespace LLMRP.Components.Models.LLama
+namespace MousyHub.Components.Models.LLama
 {
     public class LocalLLamaLaunchConfig
     {
@@ -10,10 +10,10 @@ namespace LLMRP.Components.Models.LLama
         public int GpuLayerCount { get; set; } = 0;
 
 
-        public bool UseMemorymap { get; set; } = true;
+        public bool UseMemorymap { get; set; } = false;
 
 
-        public bool UseMemoryLock { get; set; }
+        public bool UseMemoryLock { get; set; } = true;
 
         public string ModelPath { get; set; }
 

@@ -1,11 +1,12 @@
-﻿@using LLMRP.Components.Models
-@using LLMRP.Components.Models.Misc
-@using LLMRP.Components.Models.Services
+﻿@using MousyHub.Components.Models
+@using MousyHub.Components.Models.Misc
+@using MousyHub.Components.Models.Services
 @inject SettingsService Settings
 @inject AdvancedQueryService QueryService
 @inject ProviderService Provider
 @inject UploaderService Uploader
 @inject AlertServices Alerts
+@inject TranslatorService Translator
 @inject IJSRuntime JSRuntime
 @implements IDisposable
 
@@ -214,6 +215,10 @@
     {
         StateHasChanged();
         string FinalPromt = CharToString() + currentStep.PrePromt + "\n{{user}}'s wishes: " + currentStep.UserRequest;
+        if (Settings.User.TranslatorOptions.isEnabled)
+        {
+            FinalPromt = await Translator.TranslateForLLM(FinalPromt);
+        }
         var res = await QueryService.Generate(SystemPromt, FinalPromt, Provider.Wizard.DeterministicConfig, Settings.CurrentInstruct, "Character Build Assistant", PromtAfterOutputSequence: currentStep.StepName + ":");
         currentStep.Response = res.Content.Trim();
         StateHasChanged();

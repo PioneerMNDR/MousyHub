@@ -1,12 +1,12 @@
 ﻿using LLama.Common;
-using LLMRP.Components.Abstractions;
-using LLMRP.Components.Models.KoboldCPP;
-using LLMRP.Components.Models.LLama;
-using LLMRP.Components.Models.Misc;
-using LLMRP.Components.Models.Model;
-using LLMRP.Components.Models.User;
+using MousyHub.Components.Abstractions;
+using MousyHub.Components.Models.KoboldCPP;
+using MousyHub.Components.Models.LLama;
+using MousyHub.Components.Models.Misc;
+using MousyHub.Components.Models.Model;
+using MousyHub.Components.Models.User;
 
-namespace LLMRP.Components.Models.Services
+namespace MousyHub.Components.Models.Services
 {
     public class ProviderService
     {

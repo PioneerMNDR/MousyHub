@@ -1,6 +1,6 @@
-﻿using LLMRP.Components.Models.Model;
+﻿using MousyHub.Components.Models.Model;
 
-namespace LLMRP.Components.Abstractions
+namespace MousyHub.Components.Abstractions
 
 {
     public interface ILanguageModel : IDisposable

@@ -1,8 +1,8 @@
-﻿using LLMRP.Components.Models.Model;
-using LLMRP.Components.Models.Services;
+﻿using MousyHub.Components.Models.Model;
+using MousyHub.Components.Models.Services;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace LLMRP.Components.Models
+namespace MousyHub.Components.Models
 {
     public class ChatState : IDisposable
     {
@@ -42,7 +42,7 @@ namespace LLMRP.Components.Models
             }
             else
             {
-                ChatHistory.ChatOptimization(Settings.CurrentUserProfile, TakePerson(charCard), AllPersons);
+                ChatHistory.ChatLoading(Settings.CurrentUserProfile, TakePerson(charCard), AllPersons);
             }
             await SetContextSize();
         }

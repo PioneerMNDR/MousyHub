@@ -1,20 +1,22 @@
-﻿@using LLMRP.Components.Models
-@using LLMRP.Components.Models.Misc
-@using LLMRP.Components.Models.Model
-@using LLMRP.Components.Models.Services
-@using LLMRP.Components.Models.User
+﻿@using MousyHub.Components.Models
+@using MousyHub.Components.Models.Misc
+@using MousyHub.Components.Models.Model
+@using MousyHub.Components.Models.Services
+@using MousyHub.Components.Models.User
 @using LLama.Common
-@using static LLMRP.Components.Models.Misc.QuickReplySetting
+@using static MousyHub.Components.Models.Misc.QuickReplySetting
 @inject ProviderService Provider
 @inject SettingsService Settings
 @inject UploaderService Uploader
 @inject TranslatorService Translator
 @inject AlertServices Alert
+@inject UpdaterService Updater
 @inject ChatState State
 <MudThemeProvider Theme="@Settings.Theme.MudTheme" IsDarkMode="true" />
 @* <MudThemeManagerButton OnClick="@((e)=>{themeOpen=!themeOpen;})"></MudThemeManagerButton> *@
 @*   <MudThemeManager @bind-Open=themeOpen ColorPickerView="ColorPickerView.Spectrum" IsDarkMode @bind-Theme=ManagerTheme ></MudThemeManager> *@
 <MudGrid>
+    
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
             <MudText Typo="Typo.h4">Wizard</MudText>
@@ -37,20 +39,20 @@
                 </MudItem>
                 <MudItem xs="12" md="12">
                     <MudStack Row AlignItems="AlignItems.Baseline">
-                         <MudText Typo="Typo.h6">Quick reply options</MudText>
-                         <MudText Typo="Typo.caption">assign the mood of quick replies</MudText>
-                     </MudStack>
-                     <MudDivider Class="mb-4"></MudDivider>
-                     @if (Settings != null && Settings.User != null)
+                        <MudText Typo="Typo.h6">Quick reply options</MudText>
+                        <MudText Typo="Typo.caption">assign the mood of quick replies</MudText>
+                    </MudStack>
+                    <MudDivider Class="mb-4"></MudDivider>
+                    @if (Settings != null && Settings.User != null)
                     {
                         @for (int i = 0; i < Settings.User.QuickRepliesSetings.Length; i++)
                         {
                             var n = i;
                             <MudItem xs="12" md="12">
                                 <MudStack Row AlignItems="AlignItems.Baseline">
-                                     <MudText>@(n + 1)</MudText>
-                                     <MudSelect @bind-Value="Settings.User.QuickRepliesSetings[n].Emotion" Style="width:120px" Label="Classification">
-                                         @foreach (ResponseEmotion emotion in Enum.GetValues(typeof(ResponseEmotion)))
+                                    <MudText>@(n + 1)</MudText>
+                                    <MudSelect @bind-Value="Settings.User.QuickRepliesSetings[n].Emotion" Style="width:120px" Label="Classification">
+                                        @foreach (ResponseEmotion emotion in Enum.GetValues(typeof(ResponseEmotion)))
                                         {
                                             <MudSelectItem Value="@emotion">@emotion @Settings.User.QuickRepliesSetings[n].GetEmoji(emotion)</MudSelectItem>
                                         }
@@ -75,17 +77,17 @@
             <MudText Typo="Typo.h4">Profile</MudText>
             <MudDivider Class="mb-4"></MudDivider>
             <MudGrid Justify="Justify.SpaceAround" Class="align-end pe-3">
-                <MudItem >
+                <MudItem>
                     @{
                         var imageSrc = Convert.ToBase64String(Settings.CurrentUserProfile.Avatar);
                     }
                     <MudAvatar Rounded Style="display:flex" Size="Size.Large">
-                        <MudImage Fluid  Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
-                     </MudAvatar>
-                 </MudItem>
-                 <MudItem xs="8" md="8">
-                     <MudSelect Label="Select your person" ToStringFunc="converter4" @bind-Value="Settings.CurrentUserProfile">
-                         @foreach (var item in Settings.ProfileList)
+                        <MudImage Fluid Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
+                    </MudAvatar>
+                </MudItem>
+                <MudItem xs="8" md="8">
+                    <MudSelect Label="Select your person" ToStringFunc="converter4" @bind-Value="Settings.CurrentUserProfile">
+                        @foreach (var item in Settings.ProfileList)
                         {
                             <MudSelectItem Value="item">@item.Name</MudSelectItem>
                         }
@@ -119,9 +121,25 @@
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
             <MudStack Row>
-                <MudText Typo="Typo.h4">Translator</MudText>    
+                <MudText Typo="Typo.h4">Check update</MudText>
+            </MudStack>
+            <MudDivider Class="mb-4"></MudDivider>
+            <MudStack>
+                <MudText>Current version: @AppVersion._version</MudText>
+                <MudText>Last version: @Updater.lastVersion</MudText>
+                @if (Updater.ReadyToUpdate)
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Updater.LaunchUpdater">Update</MudButton>
+                }         
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-3">
+            <MudStack Row>
+                <MudText Typo="Typo.h4">Translator</MudText>
                 <MudSpacer></MudSpacer>
-           <MudSwitch Label="Enabled" Color="Color.Primary" @bind-Value=Settings.User.TranslatorOptions.isEnabled></MudSwitch>
+                <MudSwitch Label="Enabled" Color="Color.Primary" @bind-Value=Settings.User.TranslatorOptions.isEnabled></MudSwitch>
             </MudStack>
 
             <MudDivider Class="mb-4"></MudDivider>
@@ -157,6 +175,7 @@
         </MudSelect>
 
     </MudItem>
+
 </MudGrid>
 
 
@@ -184,7 +203,8 @@
     protected override async Task OnInitializedAsync()
     {
 
-
+        await Updater.CheckUpdate();
+        StateHasChanged();
     }
 
 

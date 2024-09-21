@@ -1,9 +1,9 @@
-﻿using LLMRP.Components.Models.Misc;
-using LLMRP.Components.Models.Model;
-using LLMRP.Components.Models.User;
+﻿using MousyHub.Components.Models.Misc;
+using MousyHub.Components.Models.Model;
+using MousyHub.Components.Models.User;
 using Microsoft.JSInterop;
 using Newtonsoft.Json;
-namespace LLMRP.Components.Models.Services
+namespace MousyHub.Components.Models.Services
 {
     public class UploaderService
     {

@@ -117,16 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Messenger" xml:space="preserve">
-    <value>Мессенджер</value>
-  </data>
-  <data name="New" xml:space="preserve">
-    <value>Новое</value>
-  </data>
   <data name="Provider" xml:space="preserve">
     <value>Провайдер</value>
   </data>
+  <data name="Messenger" xml:space="preserve">
+    <value>Чат</value>
+  </data>
   <data name="Settings" xml:space="preserve">
     <value>Настройки</value>
+  </data>
+  <data name="New" xml:space="preserve">
+    <value>Новое</value>
   </data>
 </root>

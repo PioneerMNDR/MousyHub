@@ -1,8 +1,8 @@
-﻿using LLMRP.Components.Models.Misc;
-using LLMRP.Components.Models.Model;
+﻿using MousyHub.Components.Models.Misc;
+using MousyHub.Components.Models.Model;
 using Newtonsoft.Json;
 
-namespace LLMRP.Components.Models
+namespace MousyHub.Components.Models
 {
     public class ChatHistory
     {
@@ -11,46 +11,43 @@ namespace LLMRP.Components.Models
         public ChatHistory(Person UserPerson, Person CharacterPerson, List<Person> AllPerson)
         {
             Messages = new List<Message>();
-            ChatOptimization(UserPerson, CharacterPerson, AllPerson);
+            ChatLoading(UserPerson, CharacterPerson, AllPerson);
 
 
 
         }
-        public void ChatOptimization(Person UserPerson, Person CharacterPerson, List<Person> AllPerson)
+        public void ChatLoading(Person UserPerson, Person CharacterPerson, List<Person> AllPerson)
         {
-            foreach (var item in Messages)
-            {
-                if (item.IdOwner == UserPerson.Id)
-                {
-                    item.Owner = UserPerson;
-                }
-                if (item.IdOwner == CharacterPerson.Id)
-                {
-                    item.Owner = CharacterPerson;
-                }
-            }
-            foreach (var item in AlterativeFirstMessages)
-            {
-                if (item.IdOwner == CharacterPerson.Id)
-                {
-                    item.Owner = CharacterPerson;
-                }
-            }
 
-            //I redefine the persons loaded from json into relevant persons
-            for (int i = 0; i < SpeakerQueue.Count; i++)
+            foreach (Person person in AllPerson)
             {
-                for (int j = 0; j < AllPerson.Count; j++)
+                foreach (var message in Messages)
                 {
-                    if (SpeakerQueue[i].Id == AllPerson[j].Id)
+                    if (message.IdOwner == person.Id)
                     {
-                        SpeakerQueue[i].Person = AllPerson[j];
+                        message.Owner = person;
                     }
                 }
-
+                foreach (var alt in AlterativeFirstMessages)
+                {
+                    if (alt.IdOwner == person.Id)
+                    {
+                        alt.Owner = person;
+                    }
+                }
+                foreach (var speaker in SpeakerQueue)
+                {
+                    if (speaker.Id==person.Id)
+                    {
+                        speaker.Person = person;
+                    }               
+                }
             }
-            DefaultQueue();
 
+            //If person is null. Delete this
+            SpeakerQueue.Where(x => x.Person==null).ToList().ForEach(x =>DeleteInQueue(x.Person));            
+
+            DefaultQueue();
             MainCharacter = CharacterPerson;
             MainUser = UserPerson;
             ChatName = CharacterPerson.CharacterCard.system_name;
@@ -253,7 +250,18 @@ namespace LLMRP.Components.Models
             return nextItem.Person;
 
         }
+        public Person GetCurrentSpeakerInQueue()
+        {
 
+            var firstItemIndex = SpeakerQueue.FindIndex(item => item.isAction == true);
+            if (firstItemIndex == -1)
+            {
+                return MainUser;
+            }
+            var firstitem = SpeakerQueue[firstItemIndex];
+            return firstitem.Person;
+
+        }
         private void DefaultQueue()
         {
             var user = SpeakerQueue.FirstOrDefault(x => x.Person.IsUser);

@@ -4,10 +4,10 @@ using LLama.Batched;
 using LLama.Common;
 using LLama.Native;
 using LLama.Sampling;
-using LLMRP.Components.Models.Model;
+using MousyHub.Components.Models.Model;
 using Spectre.Console;
 
-namespace LLMRP.Components.Models.LLama
+namespace MousyHub.Components.Models.LLama
 {
     public class LocalLlamaCore : IDisposable
     {

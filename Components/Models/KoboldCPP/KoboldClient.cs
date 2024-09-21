@@ -1,9 +1,9 @@
-﻿using LLMRP.Components.Models.Model;
+﻿using MousyHub.Components.Models.Model;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace LLMRP.Components.Models.KoboldCPP
+namespace MousyHub.Components.Models.KoboldCPP
 {
     public class KoboldClient : IDisposable
     {

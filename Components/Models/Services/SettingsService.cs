@@ -1,9 +1,9 @@
-﻿using LLMRP.Components.Models.Model;
-using LLMRP.Components.Models.User;
-using Theme = LLMRP.Components.Models.Misc.Theme;
+﻿using MousyHub.Components.Models.Model;
+using MousyHub.Components.Models.User;
+using Theme = MousyHub.Components.Models.Misc.Theme;
 
 
-namespace LLMRP.Components.Models.Services
+namespace MousyHub.Components.Models.Services
 {
     public class SettingsService
     {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace LLMRP.Components.Models.KoboldCPP
+namespace MousyHub.Components.Models.KoboldCPP
 {
     public class KoboldGenParams
     {

@@ -1,4 +1,4 @@
-﻿namespace LLMRP.Components.Models.Services.URLHandle
+﻿namespace MousyHub.Components.Models.Services.URLHandle
 {
     public static class URLParser
     {

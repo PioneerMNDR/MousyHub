@@ -1,8 +1,8 @@
-﻿using LLMRP.Components.Abstractions;
-using LLMRP.Components.Models.Model;
+﻿using MousyHub.Components.Abstractions;
+using MousyHub.Components.Models.Model;
 using Newtonsoft.Json;
 
-namespace LLMRP.Components.Models.KoboldCPP
+namespace MousyHub.Components.Models.KoboldCPP
 {
     public class KoboldProvider : ILanguageModel
     {
