@@ -118,6 +118,48 @@ namespace MousyHub.Components.Models.Misc
         }
 
 
+        public static string FindFileRecursive(string rootDirectory, string fileName, int maxDepth = -1, int currentDepth = 0)
+        {
+            if (maxDepth != -1 && currentDepth > maxDepth)
+            {
+                return string.Empty;  // Превышен лимит глубины рекурсии
+            }
+
+            try
+            {
+                // Проверяем, существует ли файл в текущей директории
+                string filePath = Path.Combine(rootDirectory, fileName);
+                if (File.Exists(filePath))
+                {
+                    return filePath;
+                }
+
+                // Перебираем подкаталоги, если не достигли максимальной глубины
+                foreach (string subDirectory in Directory.GetDirectories(rootDirectory))
+                {
+                    string foundPath = FindFileRecursive(subDirectory, fileName, maxDepth, currentDepth + 1);
+                    if (!string.IsNullOrEmpty(foundPath))
+                    {
+                        return foundPath;
+                    }
+                }
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return string.Empty;  // Пропустить папки, к которым нет доступа
+            }
+            catch (PathTooLongException)
+            {
+                return string.Empty;  // Пропустить слишком длинные пути
+            }
+            catch (Exception)
+            {
+                return string.Empty;  
+            }
+            return string.Empty;  // Файл не найден
+        }
+
+
         public static object CloneObject<T>(T source)
         {
             Type objtype = typeof(T);

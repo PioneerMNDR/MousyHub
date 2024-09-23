@@ -15,10 +15,11 @@
 @if (isLoaded == false)
 {
     <MudAnimate Selector=".anim1" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" Paused=isLoaded ValueSecondary=1000 Duration="0.6" Infinite=false>
-
     </MudAnimate>
 
 }
+<MudAnimate Selector=".micanim" AnimationType="AnimationType.Scale" AnimationTiming=AnimationTiming.Linear Value="1" ValueSecondary=0.7 AnimationDirection="AnimationDirection.Alternate" Duration="0.5" Infinite=true>
+</MudAnimate>
 <MudPopover Open="isOpenAvatar" OverflowBehavior="OverflowBehavior.FlipNever" Fixed AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.CenterRight">
 
      <MudImage ObjectFit="ObjectFit.Fill" Height="450" @onclick="@(()=>ToggleAvatar(AvatarUrl))" Src="@($"data:image/png;base64,{AvatarUrl}")"></MudImage>
@@ -83,10 +84,18 @@
                         {
                             <MudIconButton OnClick="@(async()=>await AbortCallback.InvokeAsync())" Color=Color.Error Icon="@Icons.Material.Filled.Stop"></MudIconButton>
                         }
-
                         else
                         {
                             <MudIconButton OnClick="SendMessage" Color=Color.Info Icon="@Icons.Material.Filled.Send"></MudIconButton>
+                            if (Provider.STT.isRecord == false && Settings.User.VoskOptions.isEnabled && Provider.STT.isVoskExist)
+                            {
+                                <MudIconButton OnClick="Provider.STT.Record" Color=Color.Info Icon="@Icons.Material.Filled.Mic"></MudIconButton>
+                            }                          
+                            if (Provider.STT.isRecord)
+                            {
+                                <MudIconButton Class="micanim" OnClick="TTS" Variant="Variant.Filled" Color=Color.Error Icon="@Icons.Material.Filled.MicOff"></MudIconButton>
+                            }
+                          
                         }
                     </div>
                 </AdornmentEnd>
@@ -149,7 +158,7 @@
         Person NextPerson = ChatHistory.QueueMoveOrder();
         if (CurrentPerson.IsUser==false)
         {
-             Alerts.ErrorAlert("Error building queue. Write to the developer about this error");
+            Alerts.ErrorAlert("Error building queue. Write to the developer about this error");
         }
         if (!string.IsNullOrWhiteSpace(CurrentMessage) && isGenerating == false)
         {
@@ -229,7 +238,13 @@
         CurrentMessage = answer;
         StateHasChanged();
     }
+    async Task TTS()
+    {
+      string result =  await Provider.STT.StopRecording();
+        CurrentMessage = result;
+        StateHasChanged();
 
+    }
     public void FillTextField(string textToField)
     {
         CurrentMessage += textToField;

@@ -14,6 +14,8 @@ namespace MousyHub.Components.Models.Services
 
         public List<string> LocalModelsList { get; set; }
 
+        public List<string> VoskModelList { get; set; }
+
         public List<Person> ProfileList { get; set; }
 
         public AlertServices alertServices;
@@ -33,19 +35,22 @@ namespace MousyHub.Components.Models.Services
             ThemeList = uploaderService.LoadThemes();
             User = uploaderService.LoadSettings();
             LocalModelsList = uploaderService.LoadModelsPath();
+            VoskModelList = uploaderService.LoadVoskModelPath();
+            if (VoskModelList.Contains(User.VoskOptions.ModelPath) == false)
+                User.VoskOptions.ModelPath = "";
             if (LocalModelsList.Contains(User.SelfInferenceConfig.ModelPath) == false)
                 User.SelfInferenceConfig.ModelPath = "";
             ProfileList = uploaderService.LoadProfileList();
             LoadDefault();
-            Console.WriteLine("~This SettingsService is main service. Other connections is off ~");
+
             uploaderService.settingsService = this;
             this.alertServices = alertServices;
-            Console.WriteLine("~Completing loading from memory");
         }
 
 
         private void LoadDefault()
         {
+            //if current parameters is null
             //Main
             CurrentInstruct = LoadInstruct(DefaultName: "ChatML");
             CurrentGenerationConfig = LoadGenConfig(DefaultName: "simple-proxy-for-tavern", User.GenConfigName);

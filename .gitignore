@@ -360,7 +360,20 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+
+
+
+# Игнорировать все файлы .json
 *.json
+
+# Исключить файлы .json в папке default
+!default/*.json
+
+# Исключить файлы .json в любых поддиректориях внутри default
+!default/**/**/*.json
+
+
+*.wav
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 

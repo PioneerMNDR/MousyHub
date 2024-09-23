@@ -1,5 +1,6 @@
 ﻿using Amazon.S3.Model;
 using Microsoft.Extensions.Hosting;
+using MousyHub.Components.Models.Misc;
 using NRedisStack.Search;
 using Octokit;
 using System.Diagnostics;
@@ -51,7 +52,7 @@ namespace MousyHub.Components.Models.Services
                 rootDirectory = Directory.GetParent(rootDirectory).FullName;
             }
 
-            return FindFileRecursive(rootDirectory, fileName);
+            return Util.FindFileRecursive(rootDirectory, fileName);
         }
 
         public void LaunchUpdater()
@@ -90,39 +91,7 @@ namespace MousyHub.Components.Models.Services
                 Console.WriteLine("Updater не найден.");
             }
         }
-        private  string FindFileRecursive(string rootDirectory, string fileName)
-        {
-            try
-            {
-                // Проверяем, существует ли файл в текущей директории
-                string filePath = Path.Combine(rootDirectory, fileName);
-                if (File.Exists(filePath))
-                {
-                    return filePath;
-                }
-
-                // Рекурсивно ищем файл в поддиректориях
-                foreach (string subDirectory in Directory.GetDirectories(rootDirectory))
-                {
-                    string foundPath = FindFileRecursive(subDirectory, fileName);
-                    if (!string.IsNullOrEmpty(foundPath))
-                    {
-                        return foundPath;
-                    }
-                }
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // Обработка ошибки доступа к директории
-            }
-            catch (PathTooLongException)
-            {
-                // Обработка ошибки слишком длинного пути
-            }
-
-            // Если файл не найден, возвращаем пустую строку
-            return string.Empty;
-        }
+       
 
         public async Task CheckUpdate()
         {

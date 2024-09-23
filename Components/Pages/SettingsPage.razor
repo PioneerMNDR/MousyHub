@@ -15,8 +15,7 @@
 <MudThemeProvider Theme="@Settings.Theme.MudTheme" IsDarkMode="true" />
 @* <MudThemeManagerButton OnClick="@((e)=>{themeOpen=!themeOpen;})"></MudThemeManagerButton> *@
 @*   <MudThemeManager @bind-Open=themeOpen ColorPickerView="ColorPickerView.Spectrum" IsDarkMode @bind-Theme=ManagerTheme ></MudThemeManager> *@
-<MudGrid>
-    
+<MudGrid >    
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
             <MudText Typo="Typo.h4">Wizard</MudText>
@@ -166,6 +165,56 @@
             </MudGrid>
         </MudPaper>
     </MudItem>
+    <MudItem xs="6" md="6">
+        <MudPaper Class="pa-3">
+            <MudStack Row AlignItems="AlignItems.Center">
+                <MudTooltip>
+                    <ChildContent>
+                        <MudText Typo="Typo.h5">Vosk (Voice To Text)</MudText>
+                    </ChildContent>
+                    <TooltipContent>
+                        <MudText Typo="Typo.h6">How use Vosk?</MudText>
+                        <MudText>1) Download model (less than 100mb)</MudText>
+                        <MudText>2) Place the model folder in the folder: wwwroot/VoskModel/*you folder model*</MudText>
+                        <MudText>3) Refresh page</MudText>
+                    </TooltipContent>
+                </MudTooltip>
+             
+                <MudElement HtmlTag="a"
+                    Style="color:Highlight"
+                            href="https://alphacephei.com/vosk/models"
+                            target="blank"
+                            rel="noopener noreferrer">
+                   Vosk models
+                </MudElement>
+                <MudSpacer></MudSpacer>
+                <MudSwitch Label="Enabled" Color="Color.Primary" @bind-Value=Settings.User.VoskOptions.isEnabled></MudSwitch>
+            </MudStack>
+            <MudDivider Class="mb-4"></MudDivider>
+            <MudGrid>
+                <MudItem xs="12" md="12">
+                    <MudSelect Label="Select model" @bind-Value="Settings.User.VoskOptions.ModelPath" ToStringFunc="converter">
+                        @foreach (var item in Settings.VoskModelList)
+                        {
+                            <MudSelectItem Value="item">@Path.GetFileName(item)</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6" md="6">
+                    @if (!string.IsNullOrEmpty(Settings.User.VoskOptions.ModelPath) && Settings.User.VoskOptions.isEnabled)
+                    {
+                        <MudButton Variant="Variant.Outlined" OnClick="@(()=>Provider.STT.RunVoskModel(Settings.User.VoskOptions.ModelPath))">Run Vosk</MudButton>
+                    }      
+                </MudItem>
+                <MudItem xs="6" md="6">
+                    @if (Provider.STT.isVoskExist)
+                    {
+                       <MudText Color="Color.Success">Vosk is run</MudText>
+                    }
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudItem>
     <MudItem xs="12" md="6">
         <MudSelect Label="Select theme" Value=Settings.Theme ValueChanged="@((Theme th)=>{Settings.Theme=th;})">
             @foreach (var item in Settings.ThemeList)
@@ -186,6 +235,7 @@
 
     Func<Person, string> converter4 = p => p?.Name;
     Func<string, string> converter5 = p => p;
+    Func<string, string> converter = p => Path.GetFileName(p);
     bool themeOpen = false;
     string themeName = "";
     // private ThemeManagerTheme ManagerTheme = new ThemeManagerTheme();

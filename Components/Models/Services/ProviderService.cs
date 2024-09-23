@@ -3,6 +3,7 @@ using MousyHub.Components.Abstractions;
 using MousyHub.Components.Models.KoboldCPP;
 using MousyHub.Components.Models.LLama;
 using MousyHub.Components.Models.Misc;
+using MousyHub.Components.Models.Misc.Audio;
 using MousyHub.Components.Models.Model;
 using MousyHub.Components.Models.User;
 
@@ -28,6 +29,7 @@ namespace MousyHub.Components.Models.Services
         }
         public ILanguageModel? LLModel;
         public Wizard Wizard { get; set; } = new Wizard();
+        public STTHandler STT { get; set; } = new STTHandler();
         public string BaseUrl = "http://localhost:5001";
         public bool Status = false;
         private bool isLocalRun = false;

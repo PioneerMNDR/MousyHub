@@ -138,11 +138,27 @@ namespace MousyHub.Components.Models.Services
             List<string> list = new List<string>();
             if (!Directory.Exists(directory))
             {
+                Directory.CreateDirectory(directory);
                 return list;
             }
             foreach (string file in Directory.GetFiles(directory, "*.gguf"))
             {
                 list.Add(file);
+            }
+            return list;
+        }
+        public List<string> LoadVoskModelPath()
+        {
+            string directory = Environment.CurrentDirectory + "/wwwroot/VoskModel/";
+            List<string> list = new List<string>();
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+                return list;
+            }
+            foreach (string dir in Directory.GetDirectories(directory))
+            {
+                list.Add(dir);
             }
             return list;
         }
