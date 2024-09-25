@@ -15,7 +15,7 @@ namespace MousyHub.Components.Models.LLama
         LLamaWeights? weights = null;
         BatchedExecutor? executor = null;
         ModelParams? Params = null;
-        private CustomSampler _sampler = null;
+        private ISamplingPipeline _sampler ;
         StatelessExecutor? _executor = null;
 
         public async Task<bool> Run(ModelParams modelParams)
@@ -94,7 +94,6 @@ namespace MousyHub.Components.Models.LLama
                 }
                 for (int i = 0; i < Element._tokens.Count; i++)
                 {
-
                     //decoder.Add(NewTokens[i]);
                     //Console.WriteLine("токен2: " + decoder.Read());
                     if (Element._tokens[i] != NewTokens[i])
@@ -164,8 +163,18 @@ namespace MousyHub.Components.Models.LLama
                     await executor.Infer(cancellationToken);
                 var decoder = new StreamingTokenDecoder(executor.Context);
                 AntipromptProcessor antiprocessor = new AntipromptProcessor(param.AntiPrompts);
-                _sampler = (CustomSampler)param.SamplingPipeline;
-                int repeat_last_n = Math.Max(0, _sampler.RepeatLastTokensCount < 0 ? weights.ContextSize : _sampler.RepeatLastTokensCount);
+                int repeat_last_n = weights.ContextSize;
+                _sampler = param.SamplingPipeline;
+                switch (_sampler)
+                {
+                    case MirostatSamplingPipeline:              
+                        break;
+                    case Mirostat2SamplingPipeline:
+                        break;
+                    case CustomSampler customSamplerPipeline:
+                         repeat_last_n = Math.Max(0, customSamplerPipeline.RepeatLastTokensCount < 0 ? weights.ContextSize : customSamplerPipeline.RepeatLastTokensCount);
+                        break;
+                } 
                 List<LLamaToken> lastTokens = new List<LLamaToken>(repeat_last_n);
                 for (int j = 0; j < repeat_last_n; j++)
                 {
@@ -365,15 +374,20 @@ namespace MousyHub.Components.Models.LLama
                 var emptyTokens = new LLamaToken[OldTokens.Count - NewTokens.Count];
                 NewTokens.AddRange(emptyTokens);
             }
+            bool notBroken = true;
             for (int i = 0; i < OldTokens.Count; i++)
             {
                 if (OldTokens[i] != NewTokens[i])
                 {
-
+                    notBroken=false;
                     var newTokensForPromt = TokenGuard(NewTokens.Skip(i).ToList());
-                    Console.WriteLine("The GetOnlyNewTokens method returned new tokens -" + newTokensForPromt.Length);
+                    Console.WriteLine("The GetOnlyNewTokens method returned new tokens -" + newTokensForPromt.Length);          
                     return newTokensForPromt;
                 }
+            }
+            if (notBroken)
+            {
+                return Array.Empty<LLamaToken>();
             }
             return NewTokens.ToArray();
 

@@ -25,34 +25,55 @@ namespace MousyHub.Components.Models.LLama
         public InferenceParams ConvertFromGenerationConfig(GenerationConfig config, int maxTokens = 100, string stop_seq = "")
         {
             Grammar grammar = null;
+            ISamplingPipeline pipeline = null;
             if (config.grammar != null && config.grammar != "")
             {
                 grammar = Grammar.Parse(config.grammar, "root");
             }
-            CustomSampler SamplerPipeline = new CustomSampler
+
+            if (config.mirostat==1)
             {
-                TopK = config.top_k,
-                TailFreeZ = (float)config.tfs,
-                TopP = (float)config.top_p, 
-                MinP = (float)config.min_p,
-                TypicalP = (float)config.typical,
-                Temperature = (float)config.temp,
-                RepeatPenalty = (float)config.rep_pen,
-                AlphaFrequency = 0, // Assuming FrequencyPenalty is not used in GenerationConfig
-                AlphaPresence = 0, // Assuming PresencePenalty is not used in GenerationConfig              
-                //Mirostat = (MirostatType)config.mirostat,
-                //MirostatTau = (float)config.mirostat_tau,
-                //MirostatEta = (float)config.mirostat_eta,
-                PenalizeNewline = true, // Default value 
-                RepeatLastTokensCount = config.rep_pen_range
-            };
-            if (grammar != null)
-                SamplerPipeline.Grammar = grammar.CreateInstance();
+                pipeline = new MirostatSamplingPipeline
+                {
+                    Eta = (float)config.mirostat_eta,
+                    Tau = (float)config.mirostat_tau,
+                    Grammar = grammar?.CreateInstance()
+                };
+            }
+            if (config.mirostat == 2)
+            {
+                pipeline = new Mirostat2SamplingPipeline
+                {
+                    Eta = (float)config.mirostat_eta,
+                    Tau = (float)config.mirostat_tau,
+                    Grammar = grammar?.CreateInstance()
+                };
+            }
+            else
+            {
+                pipeline = new CustomSampler
+                {
+                    TopK = config.top_k,
+                    TailFreeZ = (float)config.tfs,
+                    TopP = (float)config.top_p,
+                    MinP = (float)config.min_p,
+                    TypicalP = (float)config.typical,
+                    Temperature = (float)config.temp,
+                    RepeatPenalty = (float)config.rep_pen,
+                    AlphaFrequency = 0, // Assuming FrequencyPenalty is not used in GenerationConfig
+                    AlphaPresence = 0, // Assuming PresencePenalty is not used in GenerationConfig              
+                    PenalizeNewline = true, // Default value 
+                    RepeatLastTokensCount = config.rep_pen_range,
+                    Grammar = grammar?.CreateInstance()
+                };
+
+            }
+   
 
             var inferenceParams = new InferenceParams
             {
                 MaxTokens = maxTokens,
-                SamplingPipeline = SamplerPipeline,     
+                SamplingPipeline = pipeline,     
         
             };
      
