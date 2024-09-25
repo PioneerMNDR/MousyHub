@@ -1,15 +1,16 @@
 {
+  "MousyHubRecommended": false,
   "ConfigName": "Universal-Creative",
   "temp": 1.5,
   "rep_pen": 1.0,
-  "rep_pen_range": 600,
+  "rep_pen_range": 0,
   "top_p": 1.0,
   "min_p": 0.1,
   "top_a": 0.0,
   "top_k": 0,
   "typical": 1.0,
   "tfs": 1.0,
-  "rep_pen_slope": 0.0,
+  "rep_pen_slope": 1.0,
   "sampler_order": [
     5,
     6,
@@ -20,7 +21,7 @@
     4
   ],
   "stop_sequence": null,
-  "mirostat": 0.0,
+  "mirostat": 0,
   "mirostat_tau": 5.0,
   "mirostat_eta": 0.1,
   "dynatemp": false,
@@ -33,5 +34,5 @@
   "dry_penalty_last_n": 0,
   "dry_sequence_breakers_string": "\"\\n\", \":\", \"\\\"\", \"*\"",
   "use_default_badwordsids": false,
-  "grammar": ""
+  "grammar": null
 }

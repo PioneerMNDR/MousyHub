@@ -11,7 +11,20 @@
 @if (Settings.InstructList != null && Settings.CurrentInstruct != null)
 {
     <MudContainer Gutters>
-        <MudText Typo="Typo.h4">Instruct parameters</MudText>
+        <MudStack Row AlignItems="AlignItems.Baseline">
+            <MudText Typo="Typo.h4">Instruct parameters</MudText>
+            <MudTooltip >
+                <ChildContent>
+                    <MudIcon  Icon="@Icons.Material.Rounded.Info"></MudIcon>
+                </ChildContent>
+                <TooltipContent>
+                    <MudText Typo="Typo.h6">What is this?</MudText>
+                    <MudText Typo="Typo.body2">To let the model know when to stop, we mark up the training data with something called a "Prompting Template". It is usually specified on the model's page on HF</MudText>
+                </TooltipContent>
+            </MudTooltip>
+
+        </MudStack>
+
         <MudGrid Justify="Justify.SpaceAround" Class="align-end">
             <MudItem md="10" xs="8">
                 <MudSelect OnAdornmentClick="@(()=>isWaitNameInput=true)" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Rounded.Edit" Label="Presets" ToStringFunc="converter" @bind-Value="Settings.CurrentInstruct">

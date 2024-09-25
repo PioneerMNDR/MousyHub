@@ -24,6 +24,9 @@ namespace MousyHub.Components.Models.KoboldCPP
         public int TopK { get; set; }
         [JsonProperty("top_a")]
         public float TopA { get; set; }
+
+        [JsonProperty("min_p")]
+        public float MinP { get; set; }
         [JsonProperty("typical")]
         public float Typical { get; set; }
         [JsonProperty("tfs")]
@@ -33,7 +36,7 @@ namespace MousyHub.Components.Models.KoboldCPP
         [JsonProperty("rep_pen_range")]
         public int RepPenRange { get; set; }
 
-        [JsonProperty("sample_order")]
+        [JsonProperty("sampler_order")]
         public List<int> SamplerOrder { get; set; }
         [JsonProperty("quiet")]
         public bool Quiet { get; set; }
@@ -54,6 +57,13 @@ namespace MousyHub.Components.Models.KoboldCPP
         public float dry_base { get; set; } = 1.75f;
         [JsonProperty("dry_penalty_last_n")]
         public int dry_penalty_last_n { get; set; } = 0;
+
+        [JsonProperty("mirostat")]
+        public int mirostat { get; set; } = 0;
+        [JsonProperty("mirostat_tau")]
+        public float mirostat_tau { get; set; } = 0;
+        [JsonProperty("mirostat_eta")]
+        public float mirostat_eta { get; set; } = 0;
 
         public string[] dry_sequence_breakers { get; set; } = { "\n", ":", "\"", "*" };
 

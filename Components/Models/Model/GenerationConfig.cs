@@ -4,6 +4,7 @@ namespace MousyHub.Components.Models.Model
 {
     public class GenerationConfig
     {
+        public bool MousyHubRecommended { get; set; } = false;
         public string ConfigName { get; set; }
         public double temp { get; set; } = 0.8f;
         public double rep_pen { get; set; } = 1.1f;
@@ -17,7 +18,7 @@ namespace MousyHub.Components.Models.Model
         public double rep_pen_slope { get; set; }
         public int[] sampler_order { get; set; }
         public string[] stop_sequence { get; set; }
-        public double mirostat { get; set; }
+        public int mirostat { get; set; }
         public double mirostat_tau { get; set; } = 5f;
         public double mirostat_eta { get; set; } = 0.1f;
 
