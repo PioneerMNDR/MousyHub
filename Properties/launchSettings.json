@@ -15,9 +15,10 @@
         "launchBrowser": true,
         "applicationUrl": "http://localhost:5262",
         "environmentVariables": {
-          "ASPNETCORE_ENVIRONMENT": "Development"
+          "ASPNETCORE_ENVIRONMENT": "Release"
         }
       },
+
       "IIS Express": {
         "commandName": "IISExpress",
         "launchBrowser": true,
