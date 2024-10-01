@@ -59,7 +59,7 @@
 
             <MudTextFieldExtended OnKeyUp="EnterEvent" OnKeyDown="DeleteNewlineOnEnterEvent"  @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
                  <AdornmentStart>
-                     <MudMenu Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu" ActivationEvent="MouseEvent.MouseOver" Class="menuAnim">
+                     <MudMenu Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu" Class="menuAnim">
                          <MudMenuItem Icon="@Icons.Material.Filled.Quickreply" OnClick="QuickReplyGenerate" title="Generate quick reply on the last message">Quick reply</MudMenuItem>
                          <MudMenuItem Icon="@Icons.Material.Filled.Sync" OnClick="()=>ClickRegenerate.InvokeAsync(State.ChatHistory.GetLastMessage().Owner)">Regenerate</MudMenuItem>
                          <MudMenuItem Icon="@Icons.Material.Filled.AddComment" OnClick="()=>ClickContinueGenerate.InvokeAsync(State.ChatHistory.GetLastMessage())">Continue</MudMenuItem>
