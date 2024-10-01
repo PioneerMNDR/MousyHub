@@ -126,10 +126,14 @@
             <MudStack>
                 <MudText>Current version: @AppVersion._version</MudText>
                 <MudText>Last version: @Updater.lastVersion</MudText>
-                @if (Updater.ReadyToUpdate)
+                @if (Updater.ReadyToUpdate && Updater.isUpdating==false)
                 {
                     <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Updater.LaunchUpdater">Update</MudButton>
-                }         
+                }
+                else if (Updater.isUpdating)
+                {
+                    <MudProgressCircular Indeterminate Color="Color.Success"></MudProgressCircular>
+                }
             </MudStack>
         </MudPaper>
     </MudItem>

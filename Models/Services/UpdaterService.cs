@@ -18,7 +18,7 @@ namespace MousyHub.Models.Services
         public string lastVersion { get; private set; } = "?";
         private string appPath { get; set; }
         public bool ReadyToUpdate { get; set; } = false;
-
+        public bool isUpdating { get; set; } = false;
         public UpdaterService(IHostEnvironment hostEnvironment, IHostApplicationLifetime hostApplicationLifetime, IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
@@ -57,6 +57,7 @@ namespace MousyHub.Models.Services
 
         public void LaunchUpdater()
         {
+            isUpdating = true;
             string updaterFileName = "MousyUpdater.exe";
             string updaterPath = FindFile(updaterFileName);
 
@@ -83,11 +84,13 @@ namespace MousyHub.Models.Services
                 }
                 catch (Exception ex)
                 {
+                    isUpdating = false;
                     Console.WriteLine($"Ошибка при запуске Updater: {ex.Message}");
                 }
             }
             else
             {
+                isUpdating= false;
                 Console.WriteLine("Updater не найден.");
             }
         }
@@ -100,7 +103,7 @@ namespace MousyHub.Models.Services
                 var client = new GitHubClient(new ProductHeaderValue("MousyHub"));
                 var releases = await client.Repository.Release.GetAll(owner, repoName);
                 lastVersion = releases.Where(x => float.Parse(x.TagName, CultureInfo.InvariantCulture.NumberFormat) >= float.Parse(AppVersion._version, CultureInfo.InvariantCulture.NumberFormat)).FirstOrDefault().TagName;
-                if (float.Parse(lastVersion, CultureInfo.InvariantCulture.NumberFormat) < float.Parse(AppVersion._version, CultureInfo.InvariantCulture.NumberFormat))
+                if (float.Parse(lastVersion, CultureInfo.InvariantCulture.NumberFormat) > float.Parse(AppVersion._version, CultureInfo.InvariantCulture.NumberFormat))
                 {
                     ReadyToUpdate = true;
                 }
