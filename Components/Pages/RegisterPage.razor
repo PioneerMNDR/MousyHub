@@ -1,5 +1,6 @@
-﻿@using MousyHub.Components.Models
-@using MousyHub.Components.Models.Services
+﻿@using MousyHub.Models
+@using MousyHub.Models.Services
+@using MousyHub.Models.User
 
 @inject SettingsService Settings
 
@@ -24,6 +25,15 @@
                     <MudItem md="12" xs="12">
                         <MudTextField @bind-Value=newPerson.Description  Variant=Variant.Filled Lines="3" AutoGrow Label="Description"></MudTextField>
                     </MudItem>
+                       <MudItem md="12" xs="12">
+                        <MudSelect Label="Select your language" @bind-Value="Settings.User.TranslatorOptions.SelectLanguage">
+                            @foreach (var item in TranslatorOptions.LanguageCodes)
+                            {
+                                <MudSelectItem Value="item">@item.Key</MudSelectItem>
+                            }
+                        </MudSelect>
+                       </MudItem>
+         
                 </MudGrid>
             </MudCardContent>
         </MudCard>

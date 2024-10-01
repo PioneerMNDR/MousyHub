@@ -1,6 +1,8 @@
-﻿@using MousyHub.Components.Models.Services.URLHandle
+﻿@using MousyHub.Models.Services
+@using MousyHub.Models.Services.URLHandle
 @inject URLImporterService Importer
-
+@inject SettingsService Settings
+@inject AlertServices Alert
 <MudDialog>
     <TitleContent>
         Add new card from URL
@@ -40,7 +42,11 @@
         if (Url!=string.Empty)
         {
             isLoading = true;
-            await Importer.ImportURL(Url);
+            if (Settings.User.GenerateShortDesOnImport)
+            {
+                Alert.InfoAlert("Import with short description generate...");
+            }      
+            await Importer.ImportURL(Url, Settings.User.GenerateShortDesOnImport);
             isLoading = false;
         }
         MudDialog.Cancel();

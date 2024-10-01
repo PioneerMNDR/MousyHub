@@ -1,21 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net8.0-windows10.0.20348.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
     <RestorePackagesPath>bin\$(Configuration)\.nuget\packages</RestorePackagesPath>
+    <ApplicationIcon>mousyIcon.ico</ApplicationIcon>
   </PropertyGroup>
 
 
-  <ItemGroup>
-    <Content Remove="wwwroot\JSScripts.js" />
-  </ItemGroup>
 
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="wwwroot\JSScripts.js" />
-  </ItemGroup>
   
   <!-- Workaround LlamaSharp issue #382. -->
   <ItemGroup>
@@ -37,12 +32,16 @@
     <Copy SourceFiles="@(LlamaSharpBackendCuda12)" DestinationFolder="$(PublishDir)\runtimes\%(RecursiveDir)" />
     <Copy SourceFiles="@(LlamaSharpBackendVulkan)" DestinationFolder="$(PublishDir)\runtimes\%(RecursiveDir)" />
   </Target>
+  <ItemGroup>
+    <Content Include="mousyIcon.ico" />
+  </ItemGroup>
  
   <!-- /Workaround -->
 
 
   <ItemGroup>
     <PackageReference Include="AutoGen.LMStudio" Version="0.2.0" />
+    <PackageReference Include="Blazor.SpeechRecognition" Version="8.0.0" />
     <PackageReference Include="CodeBeam.MudBlazor.Extensions" Version="7.0.1" />
     <PackageReference Include="Figgle" Version="0.5.1" />
     <PackageReference Include="GTranslate" Version="2.2.7" />

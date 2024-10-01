@@ -4,13 +4,17 @@
 
 
 
-<MudTabs KeepPanelsAlive MinimumTabWidth="10vw" Position="@(Main.isMobile ? Position.Top : Position.Right)" Rounded  PanelClass="@(!Main.isMobile ? "mainPanels" : string.Empty)">
+<MudTabs  MinimumTabWidth="10vw" Position="@(Main.isMobile ? Position.Top : Position.Right)" Rounded  PanelClass="@(!Main.isMobile ? "mainPanels" : string.Empty)">
      <MudTabPanel  Text="@(!Main.isMobile ? Loc["CardBuilder"] : string.Empty)" Icon="@Icons.Material.Filled.ContactPage">
          <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
             <CharacterBuilderPage></CharacterBuilderPage>
         </MudContainer>
     </MudTabPanel>
-    
+    <MudTabPanel Text="TestPlayground">
+        <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
+         <TestPlayground></TestPlayground>
+        </MudContainer>
+    </MudTabPanel>
 </MudTabs>
 
 @code {

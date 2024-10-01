@@ -1,6 +1,6 @@
-﻿@using MousyHub.Components.Models
-@using MousyHub.Components.Models.Misc
-@using MousyHub.Components.Models.Services
+﻿@using MousyHub.Models
+@using MousyHub.Models.Misc
+@using MousyHub.Models.Services
 @using MousyHub.Components.Pages
 @using MudBlazor.Utilities
 @inject ChatState State
@@ -17,7 +17,7 @@
         <SystemMonitor Mode="SystemMonitor.MonitorMode.RAM"></SystemMonitor>
     </MudStack>
 
-
+    <MudImage Class="animMouse" Src="Content/mouseWizard.png"  Height="200" ObjectFit="ObjectFit.Contain"></MudImage>
 
 
 
@@ -159,7 +159,6 @@
     string nextWord = "Chat now";
     string OOCPreview = "";
     string maxContextsize = "no data";
-
     async Task TranslatePlayerWishes()
     {
         State.ChatHistory.PlayerWishes = await Transalor.TranslateForLLM(State.ChatHistory.PlayerWishes);

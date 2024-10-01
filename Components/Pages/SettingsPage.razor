@@ -1,10 +1,10 @@
-﻿@using MousyHub.Components.Models
-@using MousyHub.Components.Models.Misc
-@using MousyHub.Components.Models.Model
-@using MousyHub.Components.Models.Services
-@using MousyHub.Components.Models.User
+﻿@using MousyHub.Models
+@using MousyHub.Models.Misc
+@using MousyHub.Models.Model
+@using MousyHub.Models.Services
+@using MousyHub.Models.User
 @using LLama.Common
-@using static MousyHub.Components.Models.Misc.QuickReplySetting
+@using static MousyHub.Models.Misc.QuickReplySetting
 @inject ProviderService Provider
 @inject SettingsService Settings
 @inject UploaderService Uploader
@@ -15,8 +15,8 @@
 <MudThemeProvider Theme="@Settings.Theme.MudTheme" IsDarkMode="true" />
 @* <MudThemeManagerButton OnClick="@((e)=>{themeOpen=!themeOpen;})"></MudThemeManagerButton> *@
 @*   <MudThemeManager @bind-Open=themeOpen ColorPickerView="ColorPickerView.Spectrum" IsDarkMode @bind-Theme=ManagerTheme ></MudThemeManager> *@
-<MudGrid >    
-    <MudItem xs="12" md="6">
+<MudGrid  >    
+    <MudItem xs="12" md="12">
         <MudPaper Class="pa-3">
             <MudText Typo="Typo.h4">Wizard</MudText>
             <MudDivider Class="mb-4"></MudDivider>
@@ -50,7 +50,7 @@
                             <MudItem xs="12" md="12">
                                 <MudStack Row AlignItems="AlignItems.Baseline">
                                     <MudText>@(n + 1)</MudText>
-                                    <MudSelect @bind-Value="Settings.User.QuickRepliesSetings[n].Emotion" Style="width:120px" Label="Classification">
+                                    <MudSelect @bind-Value="Settings.User.QuickRepliesSetings[n].Emotion" Class="my-2" Style="width:120px" Label="Classification">
                                         @foreach (ResponseEmotion emotion in Enum.GetValues(typeof(ResponseEmotion)))
                                         {
                                             <MudSelectItem Value="@emotion">@emotion @Settings.User.QuickRepliesSetings[n].GetEmoji(emotion)</MudSelectItem>
@@ -136,6 +136,25 @@
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
             <MudStack Row>
+                <MudText Typo="Typo.h4">Personal settings</MudText>
+            </MudStack>
+            <MudDivider Class="mb-4"></MudDivider>
+            <MudStack>
+                <MudSelect Label="Select theme" Value=Settings.Theme ValueChanged="@((Theme th)=>{Settings.Theme=th;})">
+                    @foreach (var item in Settings.ThemeList)
+                    {
+                        <MudSelectItem Value="@item">@item.Name</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudSwitch @bind-Value=Settings.User.HideNSFWPicture Color="Color.Primary" Label="Hide NSFW picture"></MudSwitch>
+                <MudSwitch @bind-Value=Settings.User.GenerateShortDesOnImport Color="Color.Primary" Label="Generate short description on card import"></MudSwitch>
+                <MudSwitch @bind-Value=Settings.User.SquareAvatars Color="Color.Primary" Label="Square avatars"></MudSwitch>
+            </MudStack>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-3">
+            <MudStack Row>
                 <MudText Typo="Typo.h4">Translator</MudText>
                 <MudSpacer></MudSpacer>
                 <MudSwitch Label="Enabled" Color="Color.Primary" @bind-Value=Settings.User.TranslatorOptions.isEnabled></MudSwitch>
@@ -165,65 +184,7 @@
             </MudGrid>
         </MudPaper>
     </MudItem>
-    <MudItem xs="6" md="6">
-        <MudPaper Class="pa-3">
-            <MudStack Row AlignItems="AlignItems.Center">
-                <MudTooltip>
-                    <ChildContent>
-                        <MudText Typo="Typo.h5">Vosk (Voice To Text)</MudText>
-                    </ChildContent>
-                    <TooltipContent>
-                        <MudText Typo="Typo.h6">How use Vosk?</MudText>
-                        <MudText>1) Download model (less than 100mb)</MudText>
-                        <MudText>2) Place the model folder in the folder: wwwroot/VoskModel/*you folder model*</MudText>
-                        <MudText>3) Refresh page</MudText>
-                    </TooltipContent>
-                </MudTooltip>
-             
-                <MudElement HtmlTag="a"
-                    Style="color:Highlight"
-                            href="https://alphacephei.com/vosk/models"
-                            target="blank"
-                            rel="noopener noreferrer">
-                   Vosk models
-                </MudElement>
-                <MudSpacer></MudSpacer>
-                <MudSwitch Label="Enabled" Color="Color.Primary" @bind-Value=Settings.User.VoskOptions.isEnabled></MudSwitch>
-            </MudStack>
-            <MudDivider Class="mb-4"></MudDivider>
-            <MudGrid>
-                <MudItem xs="12" md="12">
-                    <MudSelect Label="Select model" @bind-Value="Settings.User.VoskOptions.ModelPath" ToStringFunc="converter">
-                        @foreach (var item in Settings.VoskModelList)
-                        {
-                            <MudSelectItem Value="item">@Path.GetFileName(item)</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
-                <MudItem xs="6" md="6">
-                    @if (!string.IsNullOrEmpty(Settings.User.VoskOptions.ModelPath) && Settings.User.VoskOptions.isEnabled)
-                    {
-                        <MudButton Variant="Variant.Outlined" OnClick="@(()=>Provider.STT.RunVoskModel(Settings.User.VoskOptions.ModelPath))">Run Vosk</MudButton>
-                    }      
-                </MudItem>
-                <MudItem xs="6" md="6">
-                    @if (Provider.STT.isVoskExist)
-                    {
-                       <MudText Color="Color.Success">Vosk is run</MudText>
-                    }
-                </MudItem>
-            </MudGrid>
-        </MudPaper>
-    </MudItem>
-    <MudItem xs="12" md="6">
-        <MudSelect Label="Select theme" Value=Settings.Theme ValueChanged="@((Theme th)=>{Settings.Theme=th;})">
-            @foreach (var item in Settings.ThemeList)
-            {
-                <MudSelectItem Value="@item">@item.Name</MudSelectItem>
-            }
-        </MudSelect>
 
-    </MudItem>
 
 </MudGrid>
 

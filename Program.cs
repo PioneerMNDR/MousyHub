@@ -1,13 +1,15 @@
 using Figgle;
 using MousyHub;
-using MousyHub.Components.Models;
-using MousyHub.Components.Models.Misc;
-using MousyHub.Components.Models.Services;
-using MousyHub.Components.Models.Services.URLHandle;
 using MousyHub.Components;
 using MudBlazor;
 using MudBlazor.Services;
+using MousyHub.Models;
+using MousyHub.Models.Misc;
+using MousyHub.Models.Services;
+using MousyHub.Models.Services.URLHandle;
 using MudExtensions.Services;
+
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,10 +25,13 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.VisibleStateDuration = 1000;
 
 });
+
+builder.Services.AddSpeechRecognitionServices();
+// or this to add only the MudBlazor.Extensions but please ensure that this is added after mud servicdes are added. That means after `AddMudServices`
+builder.Services.AddMudExtensions();
 // Получить конфигурацию
 var configuration = builder.Configuration;
 builder.Services.AddMudMarkdownServices();
-builder.Services.AddMudExtensions();
 builder.Services.AddLocalization();
 builder.Services.AddScoped<ChatState>();
 builder.Services.AddScoped<SettingsService>();
@@ -34,6 +39,7 @@ builder.Services.AddScoped<ScreenSize>();
 builder.Services.AddScoped<AlertServices>();
 builder.Services.AddScoped<TranslatorService>();
 builder.Services.AddScoped<URLImporterService>();
+builder.Services.AddScoped<STTService>();
 builder.Services.AddSingleton<ProviderService>();
 builder.Services.AddSingleton<UpdaterService>();
 builder.Services.AddSingleton<DiagnosticsService>();
@@ -51,7 +57,9 @@ app.UseRequestLocalization(localizationOptions);
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    Util.OpenBrowser("http://localhost:5262");
 }
+
 
 app.UseStaticFiles();
 app.UseAntiforgery();

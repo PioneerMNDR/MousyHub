@@ -1,7 +1,7 @@
-﻿@using MousyHub.Components.Models
-@using MousyHub.Components.Models.Model
-@using MousyHub.Components.Models.Services
-@using MousyHub.Components.Models.User
+﻿@using MousyHub.Models
+@using MousyHub.Models.Model
+@using MousyHub.Models.Services
+@using MousyHub.Models.User
 @using MousyHub.Components.Pages
 @inject ProviderService Service
 @inject SettingsService Settings
@@ -80,7 +80,7 @@
 
             <MudItem Class="d-flex flex-column" md="6" xs=6>
                 <MudText>Min-p: <b>@Settings.CurrentGenerationConfig.min_p</b>  <small>(0.1 recommended)</small>  </MudText>
-                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.min_p Step="(double)0.1" Min="0" Max="1" Immediate></MudSlider>
+                <MudSlider Size="Size.Large" Variant="Variant.Filled" @bind-Value=@Settings.CurrentGenerationConfig.min_p Step="(double)0.05" Min="0" Max="1" Immediate></MudSlider>
             </MudItem>
             <MudItem md="12" xs=12>
                 <MudExpansionPanels MultiExpansion Elevation="4">

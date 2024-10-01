@@ -190,7 +190,9 @@
     }
 }
 
-
+.blurImage {
+    filter: blur(10px) sepia(100%) contrast(60%);
+}
 
 
 .CharContent {

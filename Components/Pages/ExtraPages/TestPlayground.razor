@@ -1,47 +1,6 @@
-﻿@foreach (var item in mes)
-{
-    <MudMarkdown Value="@item"></MudMarkdown>
-}
+﻿
 
 
-<MudTextFieldExtended OnKeyDown="DeleteNewlineOnEnterEvent" OnKeyUp="EnterEvent" KeyUpPreventDefault=keydownp @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
-
- </MudTextFieldExtended>
-
-
-
- @code {
-    string CurrentMessage { get; set; }
-    MudTextFieldExtended<string> mudText;
-    List<string> mes = new List<string>();
-    bool keydownp = false;
-    async Task EnterEvent(KeyboardEventArgs e)
-    {
-    
-        if (e.Key == "Enter" && e.ShiftKey == false && !string.IsNullOrWhiteSpace(CurrentMessage))
-        {
-           
-            Console.WriteLine("ENTEREVENT");
-            CurrentMessage = "";           
-            await mudText.Clear();
-            StateHasChanged();
-
-        }
-    }
-
-    async Task DeleteNewlineOnEnterEvent(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter" && e.ShiftKey == false && !string.IsNullOrWhiteSpace(CurrentMessage))
-        {
-            keydownp = false;
-            Console.WriteLine("DeleteNewlineOnEnterEvent");
-            mes.Add(CurrentMessage);
-            await mudText.Clear();
-            await mudText.SetText("");
-            StateHasChanged();
-         
-
-        }
-    }
-
+@code {
+   
 }

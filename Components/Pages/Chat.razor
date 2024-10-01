@@ -1,14 +1,14 @@
-﻿@using MousyHub.Components.Models
-@using MousyHub.Components.Models.Misc
-@using MousyHub.Components.Models.Services
-@using MousyHub.Components.Models.User
+﻿@using MousyHub.Models
+@using MousyHub.Models.Misc
+@using MousyHub.Models.Services
+@using MousyHub.Models.User
 @inject IJSRuntime JSRuntime
 @inject SettingsService Settings
 @inject ProviderService Provider
 @inject ChatState State
 @inject AlertServices Alerts
-@inject TranslatorService Translator;
-
+@inject TranslatorService Translator
+@inject STTService STTService
 
 
 
@@ -20,8 +20,10 @@
 }
 <MudAnimate Selector=".micanim" AnimationType="AnimationType.Scale" AnimationTiming=AnimationTiming.Linear Value="1" ValueSecondary=0.7 AnimationDirection="AnimationDirection.Alternate" Duration="0.5" Infinite=true>
 </MudAnimate>
-<MudPopover Open="isOpenAvatar" OverflowBehavior="OverflowBehavior.FlipNever" Fixed AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.CenterRight">
+<MudAnimate Selector=".menuAnim" AnimationType="AnimationType.Scale" AnimationFillMode="AnimationFillMode.Forwards" Hover AnimationTiming=AnimationTiming.Linear Value="1.2" ValueSecondary=1 AnimationDirection="AnimationDirection.Alternate" Duration="0.2" Infinite=false>
+</MudAnimate>
 
+<MudPopover Open="isOpenAvatar" OverflowBehavior="OverflowBehavior.FlipNever" Fixed AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.CenterRight">
      <MudImage ObjectFit="ObjectFit.Fill" Height="450" @onclick="@(()=>ToggleAvatar(AvatarUrl))" Src="@($"data:image/png;base64,{AvatarUrl}")"></MudImage>
  </MudPopover>
 
@@ -57,7 +59,7 @@
 
             <MudTextFieldExtended OnKeyUp="EnterEvent" OnKeyDown="DeleteNewlineOnEnterEvent"  @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
                  <AdornmentStart>
-                     <MudMenu Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu">
+                     <MudMenu Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu" ActivationEvent="MouseEvent.MouseOver" Class="menuAnim">
                          <MudMenuItem Icon="@Icons.Material.Filled.Quickreply" OnClick="QuickReplyGenerate" title="Generate quick reply on the last message">Quick reply</MudMenuItem>
                          <MudMenuItem Icon="@Icons.Material.Filled.Sync" OnClick="()=>ClickRegenerate.InvokeAsync(State.ChatHistory.GetLastMessage().Owner)">Regenerate</MudMenuItem>
                          <MudMenuItem Icon="@Icons.Material.Filled.AddComment" OnClick="()=>ClickContinueGenerate.InvokeAsync(State.ChatHistory.GetLastMessage())">Continue</MudMenuItem>
@@ -87,13 +89,13 @@
                         else
                         {
                             <MudIconButton OnClick="SendMessage" Color=Color.Info Icon="@Icons.Material.Filled.Send"></MudIconButton>
-                            if (Provider.STT.isRecord == false && Settings.User.VoskOptions.isEnabled && Provider.STT.isVoskExist)
+                            if (STTService.isRecord == false)
                             {
-                                <MudIconButton OnClick="Provider.STT.Record" Color=Color.Info Icon="@Icons.Material.Filled.Mic"></MudIconButton>
-                            }                          
-                            if (Provider.STT.isRecord)
+                                <MudIconButton OnClick="StartRec" Color=Color.Info Icon="@Icons.Material.Filled.Mic"></MudIconButton>
+                            }
+                            if (STTService.isRecord)
                             {
-                                <MudIconButton Class="micanim" OnClick="TTS" Variant="Variant.Filled" Color=Color.Error Icon="@Icons.Material.Filled.MicOff"></MudIconButton>
+                                <MudIconButton Class="micanim" OnClick="StopRec" Variant="Variant.Filled" Color=Color.Error Icon="@Icons.Material.Filled.MicOff"></MudIconButton>
                             }
                           
                         }
@@ -238,12 +240,16 @@
         CurrentMessage = answer;
         StateHasChanged();
     }
-    async Task TTS()
+    async Task StartRec()
     {
-      string result =  await Provider.STT.StopRecording();
+        await STTService.StartRecognition();
+        StateHasChanged();
+    }
+    async Task StopRec()
+    {
+        string result = await STTService.StopRecognition();
         CurrentMessage = result;
         StateHasChanged();
-
     }
     public void FillTextField(string textToField)
     {
