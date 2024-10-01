@@ -57,7 +57,7 @@ app.UseRequestLocalization(localizationOptions);
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    Util.OpenBrowser("http://localhost:5262");
+    Util.OpenBrowser("http://localhost:5000");
 }
 
 
