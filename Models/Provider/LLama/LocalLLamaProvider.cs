@@ -2,7 +2,8 @@
 using LLama.Sampling;
 using MousyHub.Models.Abstractions;
 using MousyHub.Models.Model;
-using Grammar = LLama.Grammars.Grammar;
+using MousyHub.Models.Provider.LLama.Sampler;
+
 
 namespace MousyHub.Models.Provider.LLama
 {
@@ -28,43 +29,41 @@ namespace MousyHub.Models.Provider.LLama
             ISamplingPipeline pipeline = null;
             if (config.grammar != null && config.grammar != "")
             {
-                grammar = Grammar.Parse(config.grammar, "root");
+                grammar = new Grammar(config.grammar, "root");
             }
 
             if (config.mirostat == 1)
             {
-                pipeline = new MirostatSamplingPipeline
+                pipeline = new Mirostat1Sampler
                 {
                     Eta = (float)config.mirostat_eta,
                     Tau = (float)config.mirostat_tau,
-                    Grammar = grammar?.CreateInstance()
+                   
                 };
             }
             if (config.mirostat == 2)
             {
-                pipeline = new Mirostat2SamplingPipeline
+                pipeline = new Mirostat2Sampler
                 {
                     Eta = (float)config.mirostat_eta,
                     Tau = (float)config.mirostat_tau,
-                    Grammar = grammar?.CreateInstance()
                 };
             }
             else
             {
-                pipeline = new CustomSampler
+                pipeline = new BaseCustomSampler
                 {
                     TopK = config.top_k,
-                    TailFreeZ = (float)config.tfs,
                     TopP = (float)config.top_p,
                     MinP = (float)config.min_p,
                     TypicalP = (float)config.typical,
                     Temperature = (float)config.temp,
                     RepeatPenalty = (float)config.rep_pen,
-                    AlphaFrequency = 0, // Assuming FrequencyPenalty is not used in GenerationConfig
-                    AlphaPresence = 0, // Assuming PresencePenalty is not used in GenerationConfig              
+                    FrequencyPenalty = 0,
+                    PresencePenalty = 0,
                     PenalizeNewline = true, // Default value 
-                    RepeatLastTokensCount = config.rep_pen_range,
-                    Grammar = grammar?.CreateInstance()
+                    RepeatPenaltyCount = config.rep_pen_range,
+                    Grammar = grammar
                 };
 
             }

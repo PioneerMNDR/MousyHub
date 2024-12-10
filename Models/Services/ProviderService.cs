@@ -132,8 +132,8 @@ namespace MousyHub.Models.Services
                 UseMemoryLock = Settings.User.SelfInferenceConfig.UseMemoryLock,
                 UseMemorymap = Settings.User.SelfInferenceConfig.UseMemorymap,
                 GpuLayerCount = Settings.User.SelfInferenceConfig.GpuLayerCount,
-                Threads = Settings.User.SelfInferenceConfig.Threads,
-                BatchThreads = Settings.User.SelfInferenceConfig.BatchThreads,
+                Threads = (int?)Settings.User.SelfInferenceConfig.Threads,
+                BatchThreads = (int?)Settings.User.SelfInferenceConfig.BatchThreads,
                 BatchSize = Settings.User.SelfInferenceConfig.BatchSize
             };
 

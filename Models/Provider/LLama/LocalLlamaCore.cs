@@ -5,6 +5,7 @@ using LLama.Common;
 using LLama.Native;
 using LLama.Sampling;
 using MousyHub.Models.Model;
+using MousyHub.Models.Provider.LLama.Sampler;
 using Spectre.Console;
 
 namespace MousyHub.Models.Provider.LLama
@@ -167,34 +168,38 @@ namespace MousyHub.Models.Provider.LLama
                 _sampler = param.SamplingPipeline;
                 switch (_sampler)
                 {
-                    case MirostatSamplingPipeline:
+                    case Mirostat1Sampler:
                         break;
-                    case Mirostat2SamplingPipeline:
+                    case Mirostat2Sampler:
                         break;
-                    case CustomSampler customSamplerPipeline:
-                        repeat_last_n = Math.Max(0, customSamplerPipeline.RepeatLastTokensCount < 0 ? weights.ContextSize : customSamplerPipeline.RepeatLastTokensCount);
+                    case BaseCustomSampler customSamplerPipeline:
+                        //0.19.0
+                        //repeat_last_n = Math.Max(0, customSamplerPipeline.RepeatPenaltyCount < 0 ? weights.ContextSize : customSamplerPipeline.RepeatLastTokensCount);
                         break;
                 }
-                List<LLamaToken> lastTokens = new List<LLamaToken>(repeat_last_n);
-                for (int j = 0; j < repeat_last_n; j++)
-                {
-                    lastTokens.Add(0);
-                }
-                lastTokens.AddRange(NewTokens);
+                //0.19.0
+                //List<LLamaToken> lastTokens = new List<LLamaToken>(repeat_last_n);
+                //for (int j = 0; j < repeat_last_n; j++)
+                //{
+                //    lastTokens.Add(0);
+                //}
+                //lastTokens.AddRange(NewTokens);
 
                 if (Element.Conversation.RequiresInference)
                     await executor.Infer(cancellationToken);
 
                 for (int i = 0; i < param.MaxTokens; i++)
                 {
-                    int count = Math.Min((int)executor.Context.ContextSize, repeat_last_n);
-                    LLamaToken[] array = lastTokens.TakeLast(count).ToArray();
+                    //0.19.0
+                    //int count = Math.Min((int)executor.Context.ContextSize, repeat_last_n);
+                    //LLamaToken[] array = lastTokens.TakeLast(count).ToArray();
+
                     if (Element.Conversation.RequiresInference)
                         await executor.Infer(cancellationToken);
                     LLamaToken newToken = new LLamaToken();
                     if (Element.Conversation.RequiresSampling)
                     {
-                        newToken = _sampler.Sample(Element.Conversation.Executor.Context.NativeHandle, Element.Conversation.Sample(), array);
+                        newToken = _sampler.Sample(Element.Conversation.Executor.Context.NativeHandle, Element.Conversation.GetSampleIndex());
                     }
                     else
                     {
@@ -215,7 +220,10 @@ namespace MousyHub.Models.Provider.LLama
                         break;
                     }
                     Element._tokens.Add(newToken);
-                    lastTokens.Add(newToken);
+
+                    //0.19.0
+                    //lastTokens.Add(newToken);
+
                     await onTokenRecieved(new MessageResponse(tokenValue, true, ""));
                     //Add new tokens to history(kv)
                     Element.Conversation.Prompt(newToken);
@@ -228,9 +236,9 @@ namespace MousyHub.Models.Provider.LLama
                 var ctxSizeConv = GetNowContextSize();
                 Console.WriteLine("-----Timings-----");
                 Console.ForegroundColor = ConsoleColor.Green;
-                AnsiConsole.MarkupLine($"All Time: {timings.Sampling.Seconds + timings
-                    .Eval.Seconds}s ");
-                AnsiConsole.MarkupLine($"Token/s: {(Element._tokens.Count - tokenCountBefore) / timings.Eval.TotalSeconds}t/s ");
+                //AnsiConsole.MarkupLine($"All Time: {timings.Loading
+                //    }s ");
+                //AnsiConsole.MarkupLine($"Token/s: {(Element._tokens.Count - tokenCountBefore) / timings.Eval.TotalSeconds}t/s ");
                 AnsiConsole.MarkupLine($"Context limit: {ctxSizeConv}/{executor.Context.ContextSize} tokens ");
                 //AnsiConsole.MarkupLine($"Context limit KvCache: {contextSize}/{executor.Context.ContextSize} tokens ");
                 AnsiConsole.MarkupLine($"Context branch count: {conversationElements.Count} ");
