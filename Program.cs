@@ -42,6 +42,7 @@ builder.Services.AddScoped<URLImporterService>();
 builder.Services.AddScoped<STTService>();
 builder.Services.AddSingleton<ProviderService>();
 builder.Services.AddSingleton<UpdaterService>();
+builder.Services.AddSingleton<HFDownloaderService>();
 builder.Services.AddSingleton<DiagnosticsService>();
 builder.Services.AddSingleton<UploaderService>();
 builder.Services.AddSingleton<AdvancedQueryService>();
