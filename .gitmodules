@@ -1,0 +1,3 @@
+[submodule "HuggingfaceHub"]
+	path = HuggingfaceHub
+	url = https://github.com/AsakusaRinne/HuggingfaceHub.git
