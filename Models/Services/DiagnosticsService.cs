@@ -1,14 +1,19 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Win32;
+using System.Diagnostics;
 using System.Management;
 using System.Runtime.InteropServices;
+using System.Security;
 namespace MousyHub.Models.Services
 {
     public class DiagnosticsService
     {
         public string Available_RAM { get; private set; } = "No data";
         public string CPU_Usage { get; private set; } = "No data";
+
+        public int LogicalProcessorCount { get; private set; }
         public bool isRun { get; private set; } = false;
 
+        public List<VideoAdapterInfo> GPUs = new List<VideoAdapterInfo>();
         public DiagnosticsService()
         {
             _ = RunAutoUpdate();
@@ -27,6 +32,9 @@ namespace MousyHub.Models.Services
             }
             try
             {
+                                 
+                GPUs = GetVideoAdapterInfo();
+                GetLogicalProcessorCount();
                 isRun = true;
                 while (true)
                 {
@@ -51,6 +59,70 @@ namespace MousyHub.Models.Services
             }
         }
 
+
+        public static List<VideoAdapterInfo> GetVideoAdapterInfo()
+        {
+            List<VideoAdapterInfo> adapterInfoList = new List<VideoAdapterInfo>();
+            string registryKeyPath = @"SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}";
+
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryKeyPath))
+            {
+                if (key != null)
+                {
+                    foreach (string subkeyName in key.GetSubKeyNames())
+                    {
+                        try
+                        {
+                            using (RegistryKey subkey = key.OpenSubKey(subkeyName))
+                            {
+                                // Проверяем, что подключ является подключем видеоадаптера по наличию ключа "DriverDesc"
+                                if (subkey != null && subkey.GetValue("DriverDesc") != null)
+                                {
+                                    string adapterString = subkey.GetValue("HardwareInformation.AdapterString") as string;
+                                    object memorySizeValue = subkey.GetValue("HardwareInformation.qwMemorySize");
+
+                                    if (!string.IsNullOrEmpty(adapterString) && memorySizeValue != null)
+                                    {
+                                        long memorySize;
+                                        if (long.TryParse(memorySizeValue.ToString(), out memorySize))
+                                        {
+                                            adapterInfoList.Add(new VideoAdapterInfo
+                                            {
+                                                Model = adapterString,
+                                                VRAM_GB = Math.Round((double)memorySize / (1024 * 1024 * 1024))
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (SecurityException ex)
+                        {
+
+                            // Возвращаем собранные данные, даже если не удалось получить доступ ко всем подключам
+                            return adapterInfoList;
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Ошибка при обработке подключа {subkeyName}: {ex.Message}");
+                            // Логируем ошибку, но продолжаем обработку других подключей
+                        }
+                    }
+                }
+            }
+
+            return adapterInfoList;
+        }
+
+        public class VideoAdapterInfo
+        {
+            public string Model { get; set; }
+            public double VRAM_GB { get; set; }
+        }
+        void GetLogicalProcessorCount()
+        {
+            LogicalProcessorCount =  Environment.ProcessorCount;
+        }
         ulong GetTotalPhysicalMemory()
         {
             ulong totalMemory = 0;

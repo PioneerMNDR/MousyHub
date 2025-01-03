@@ -14,7 +14,7 @@ namespace MousyHub.Models.Services
 
         public Dictionary<APIType, string> ConnectionsTypes = new Dictionary<APIType, string>
         {
-            { APIType.Self_Inference,"Self-launch" },
+            { APIType.Native,"Native" },
             { APIType.KoboldCPP,"KoboldCPP" },
             { APIType.Chat_Completions,"Chat Completions API (soon...)" },
 
@@ -24,7 +24,7 @@ namespace MousyHub.Models.Services
         {
             Chat_Completions,
             KoboldCPP,
-            Self_Inference
+            Native
         }
         public ILanguageModel? LLModel;
         public Wizard Wizard { get; set; } = new Wizard();
@@ -56,7 +56,7 @@ namespace MousyHub.Models.Services
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
                     return await LLModel.Model();
-                case APIType.Self_Inference:
+                case APIType.Native:
                     bool IsSuccessL = await ConnectLocal(Settings);
                     if (!IsSuccessL)
                         return "";
@@ -134,7 +134,9 @@ namespace MousyHub.Models.Services
                 GpuLayerCount = Settings.User.SelfInferenceConfig.GpuLayerCount,
                 Threads = (int?)Settings.User.SelfInferenceConfig.Threads,
                 BatchThreads = (int?)Settings.User.SelfInferenceConfig.BatchThreads,
-                BatchSize = Settings.User.SelfInferenceConfig.BatchSize
+                BatchSize = Settings.User.SelfInferenceConfig.BatchSize,
+                FlashAttention = Settings.User.SelfInferenceConfig.UseFlashAttention,
+                
             };
 
             var Core = new LocalLlamaCore();

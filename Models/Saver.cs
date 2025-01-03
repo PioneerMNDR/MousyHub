@@ -1,4 +1,5 @@
 ﻿using MousyHub.Models.Misc;
+using MousyHub.Models.Misc.Tutorial;
 using MousyHub.Models.Model;
 using MousyHub.Models.User;
 using Newtonsoft.Json;
@@ -34,6 +35,10 @@ namespace MousyHub.Models
                 else if (typeof(T) == typeof(Theme))
                 {
                     directory = Path.Combine(directory, "MudThemes");
+                }
+                if (typeof(T) == typeof(List<TutorialStep>))
+                {
+                    directory = Path.Combine(directory, "default");
                 }
 
                 // Create the directory if it doesn't exist
@@ -108,6 +113,7 @@ namespace MousyHub.Models
                 {
                     directory = Path.Combine(directory, "config", "Profiles");
                 }
+      
                 // Create the directory if it doesn't exist
                 Directory.CreateDirectory(directory);
                 // Получить список существующих файлов

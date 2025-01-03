@@ -45,4 +45,30 @@ window.downloadFile = (dataUrl, fileName) => {
     link.click();
 };
 
+function addClassToElement(identifier, className) {
+    var element = document.getElementById(identifier) || document.querySelector('.' + identifier);
+    if (element) {
+        element.classList.add(className);
+        console.log('added');
+    } else {
+        console.warn('Element with ID or class "' + identifier + '" not found.');
+    }
+}
+
+function removeClassFromElement(identifier, className) {
+    var element = document.getElementById(identifier) || document.querySelector('.' + identifier);
+    if (element) {
+        element.classList.remove(className);
+    } else {
+        console.warn('Element with ID or class "' + identifier + '" not found.');
+    }
+}
+
+window.addGlobalKeyListener = (dotNetHelper) => {
+    document.addEventListener("keydown", (event) => {
+        if (event.code === "Space") { 
+            dotNetHelper.invokeMethodAsync("SpaceKeyPressed");
+        }
+    });
+};
 

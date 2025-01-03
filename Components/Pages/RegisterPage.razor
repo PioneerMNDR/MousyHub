@@ -3,43 +3,61 @@
 @using MousyHub.Models.User
 
 @inject SettingsService Settings
-
+@inject IStringLocalizer<Resource> Loc
 <MudThemeProvider Theme="@Settings.Theme.MudTheme" IsDarkMode="true" />
 
 
 <MudAnimate Selector=".animationText" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" ValueSecondary="-1000" Duration="0.6" Infinite=false/>
 <MudAnimate Selector=".a1" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" ValueSecondary="-1000" Duration="0.8" Infinite=false />
 <MudAnimate Selector=".a2" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" ValueSecondary="1000" Duration="0.6" Infinite=false />
-<MudAnimate Selector=".a3" Paused=pause AnimationType="AnimationType.Blur" AnimationTiming=AnimationTiming.Ease Value="1000" ValueSecondary="0" Duration="2" Infinite=false />
+<MudAnimate Selector=".a3" Paused=pause AnimationType="AnimationType.Blur" AnimationTiming=AnimationTiming.Ease Value="1000" ValueSecondary="0" Duration="1" Infinite=false />
+<MudAnimate Selector=".a4" AnimationType="AnimationType.Blur" AnimationTiming=AnimationTiming.Ease Value="0" ValueSecondary="1000" Duration="2" Infinite=false />
 <MudContainer  Class="a3" >
-
-    <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center" Style="height:100vh" >
-        <MudText Class="animationText"  Typo="Typo.h3">Welcome to the MousyHub</MudText>
+    @if (isTutorialQuestion)
+    {
+        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center" Style="height:100vh" Class="a4">
+            <MudText Typo="Typo.h3">@Loc["Register_Tutor"]</MudText>
+            <MudGrid Justify="Justify.SpaceBetween" >
+                <MudItem md="6">
+                    <MudButton Variant="Variant.Filled" Style="height:100%" FullWidth Color="Color.Primary" OnClick="@(()=>{CreatePersonAndGo();Main.isTutorialMode=true;})">@Loc["Register_Tutor_Yes"]</MudButton>
+                </MudItem>
+                <MudItem md="6">
+                    <MudButton Variant="Variant.Filled" Style="height:100%" FullWidth Color="Color.Secondary" OnClick="CreatePersonAndGo">@Loc["Register_Tutor_No"]</MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudStack>
+    }
+    else
+    {
+    <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center" Style="height:100vh">
+        <MudText Class="animationText" Typo="Typo.h3">Welcome to the MousyHub</MudText>
         <MudText Typo="Typo.input" Class="a1" Color="Color.Secondary" GutterBottom>Create your first person</MudText>
         <MudCard Class="regCard">
             <MudCardContent>
-                <MudGrid> 
+                <MudGrid>
                     <MudItem md="12" xs="12">
-                        <MudTextField @bind-Value=newPerson.Name Error="error" ErrorText="Enter name"  Variant=Variant.Filled Label="Name"></MudTextField>
+                        <MudTextField @bind-Value=newPerson.Name Error="error"  ErrorText="Enter name" Variant=Variant.Filled Label="Name (English)"></MudTextField>
                     </MudItem>
                     <MudItem md="12" xs="12">
-                        <MudTextField @bind-Value=newPerson.Description  Variant=Variant.Filled Lines="3" AutoGrow Label="Description"></MudTextField>
+                            <MudTextField @bind-Value=newPerson.Description Variant=Variant.Filled Lines="3" AutoGrow Label="Description (English)"></MudTextField>
                     </MudItem>
-                       <MudItem md="12" xs="12">
+                    <MudItem md="12" xs="12">
                         <MudSelect Label="Select your language" @bind-Value="Settings.User.TranslatorOptions.SelectLanguage">
                             @foreach (var item in TranslatorOptions.LanguageCodes)
                             {
                                 <MudSelectItem Value="item">@item.Key</MudSelectItem>
                             }
                         </MudSelect>
-                       </MudItem>
-         
+                    </MudItem>
+
                 </MudGrid>
             </MudCardContent>
         </MudCard>
-         <MudButton Class="mt-4 a2" Variant="Variant.Filled" OnClick=CreatePerson Style="box-shadow:0 30px 40px -10px rgba(0,0,0,0.5),0 10px 10px -5px rgba(0,0,0,0.2)" Color="Color.Secondary">Create!</MudButton>
+        <MudButton Class="mt-4 a2" Variant="Variant.Filled" OnClick=Check Style="box-shadow:0 30px 40px -10px rgba(0,0,0,0.5),0 10px 10px -5px rgba(0,0,0,0.2)" Color="Color.Secondary">Create!</MudButton>
     </MudStack>
+    }
 
+ 
 
 </MudContainer>
 
@@ -48,25 +66,41 @@
 
 
 
- @code {
+@code {
     Person newPerson { get; set; } = new Person("", "", true, "main");
     bool error = false;
     bool pause = true;
+    bool isTutorialQuestion = false;
     [CascadingParameter]
     public Main Main { get; set; }
-    private async Task CreatePerson()
+
+
+    private async Task CreatePersonAndGo()
     {
-        if (newPerson.Name==string.Empty)
+        Settings.CurrentUserProfile = newPerson;
+        Settings.ProfileList.Add(newPerson);
+        StateHasChanged();   
+        await Task.Delay(1000);
+        Main.ReRenderState(new object(),EventArgs.Empty);
+    }
+
+    private async Task Check()
+    {
+        if (newPerson.Name == string.Empty)
         {
             error = true;
             return;
         }
-        Settings.CurrentUserProfile = newPerson;
-        Settings.ProfileList.Add(newPerson);
-        StateHasChanged();
         pause = false;
-        await Task.Delay(1000);
-        Main.ReRenderState(new object(),EventArgs.Empty);
+        if (Settings.User.isTutorialGone==true)
+        {
+            await CreatePersonAndGo();
+        }
+        else
+        {
+            isTutorialQuestion = true;
+        }   
+        StateHasChanged();
     }
 
 }

@@ -78,7 +78,7 @@
             <MudGrid Justify="Justify.SpaceAround" Class="align-end pe-3">
                 <MudItem>
                     @{
-                        var imageSrc = Convert.ToBase64String(Settings.CurrentUserProfile.Avatar);
+                            var imageSrc = Convert.ToBase64String(Settings.CurrentUserProfile?.Avatar ?? new byte[0]);
                     }
                     <MudAvatar Rounded Style="display:flex" Size="Size.Large">
                         <MudImage Fluid Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
@@ -151,6 +151,7 @@
                     }
                 </MudSelect>
                 <MudSwitch @bind-Value=Settings.User.HideNSFWPicture Color="Color.Primary" Label="Hide NSFW picture"></MudSwitch>
+                <MudSwitch @bind-Value=Settings.User.HideDownloadPage Color="Color.Primary" Label="Hide Download Page"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.GenerateShortDesOnImport Color="Color.Primary" Label="Generate short description on card import"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.SquareAvatars Color="Color.Primary" Label="Square avatars"></MudSwitch>
             </MudStack>

@@ -100,6 +100,10 @@ namespace MousyHub.Models.Services
         {
             try
             {
+                if (IsApplicationDevelopmentVersion())
+                {
+                    return;
+                }
                 var client = new GitHubClient(new ProductHeaderValue("MousyHub"));
                 var releases = await client.Repository.Release.GetAll(owner, repoName);
                 lastVersion = releases.Where(x => float.Parse(x.TagName, CultureInfo.InvariantCulture.NumberFormat) >= float.Parse(AppVersion._version, CultureInfo.InvariantCulture.NumberFormat)).FirstOrDefault().TagName;

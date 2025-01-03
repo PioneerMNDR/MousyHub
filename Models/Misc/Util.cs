@@ -183,6 +183,23 @@ namespace MousyHub.Models.Misc
 
 
         }
+
+        public static string[] SliderMarksForGPULayers()
+        {
+            string[] myArray = new string[101];
+
+            for (int i = 0; i < myArray.Length; i++)
+            {
+                myArray[i] = "";
+            }
+            myArray[33] = "7b";
+            myArray[43] = "12b";
+            myArray[63] = "30b";
+            myArray[83] = "70b";
+            myArray[98] = "Max";
+            return myArray;
+        }
+
     }
 }
 

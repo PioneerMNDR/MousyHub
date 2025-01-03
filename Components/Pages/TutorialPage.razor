@@ -1,0 +1,254 @@
+﻿@using MousyHub.Models
+@using MousyHub.Models.Misc.Tutorial
+@using MousyHub.Models.Services
+@using System.Text
+@inject IJSRuntime JS
+@inject SettingsService Settings
+@inject UploaderService Uploader
+@inject IStringLocalizer<Resource> Loc
+<MudThemeProvider Theme="@Settings.Theme.MudTheme" IsDarkMode="true" />
+
+<style>
+    .floating-block {
+        position: fixed; 
+        bottom: 0; 
+        left: 0; 
+        width: 100%; 
+        padding: 5px; 
+        background: linear-gradient(to right, rgba(119, 107, 231, 0.1),rgba(255, 255, 255, 0.01), rgba(255, 255, 255, 0));
+        z-index: 1000; 
+    }
+</style>
+@if (isDebug)
+{
+    <MudStack Class="pa-4 ma-4" Justify="Justify.Center" AlignItems="AlignItems.Center">
+        <MudPaper Style="width: 800px">
+            <MudStepper NonLinear @bind-ActiveIndex="_index" ShowResetButton>
+                <ChildContent>
+                    @foreach (var step in _steps)
+                    {
+                        <MudStep Title="@step.Index.ToString()">
+                            <MudTextField Variant="Variant.Outlined" Label="Text" @bind-Value=@step.Text Lines="3" AutoGrow Class="ma-2"></MudTextField>
+                            <MudNumericField Variant="Variant.Outlined" Label="Speed_slowdown" @bind-Value=@step.TextSlowdown Class="ma-2"></MudNumericField>
+                            <MudTextField Variant="Variant.Outlined" Label="PngName" @bind-Value=@step.PNG_Name Class="ma-2"></MudTextField>
+                            <MudStack Row Class="ma-2">
+                                <MudButton OnClick="@(()=>step.Actions.Add(new TutorialAction()))" Color="Color.Primary">AddAction</MudButton>
+                                <MudButton OnClick="@(()=>step.Actions.Remove(step.Actions[^1]))" Color="Color.Warning">RemoveAction</MudButton>
+                            </MudStack>
+                            <MudGrid Spacing="0" Class="pa-2" Style="max-height:270px; overflow:scroll;">
+                                @foreach (var action in step.Actions)
+                                {
+                                    <MudPaper>
+                                        <MudSelect @bind-Value="action.Type" Label="Select action type" HelperText="Enum" Variant="Variant.Outlined" Class="ma-2" OpenIcon="@Icons.Material.Filled.EmojiSymbols" AdornmentColor="Color.Secondary">
+                                            @foreach (TutorialAction.ActionType item in Enum.GetValues(typeof(TutorialAction.ActionType)))
+                                            {
+                                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                        <MudTextField Variant="Variant.Outlined" Label="ElementId" @bind-Value=@action.ElementId Class="ma-2"></MudTextField>
+                                        <MudTextField Variant="Variant.Outlined" Label="Value1" @bind-Value=@action.Value1 Class="ma-2"></MudTextField>
+                                    </MudPaper>
+
+                                }
+                            </MudGrid>
+                        </MudStep>
+
+                    }
+                </ChildContent>
+                <CompletedContent>
+                    Well done!!!
+                </CompletedContent>
+            </MudStepper>
+        </MudPaper>
+        <MudStack Row>
+            <MudButton OnClick="Add" Variant="Variant.Filled" Color="Color.Primary">Add</MudButton>
+            <MudButton OnClick="Remove" Color="Color.Error">Remove</MudButton>
+
+
+            <MudButton Variant=Variant.Filled Color="Color.Success" OnClick="@(()=>Saver.SaveToJson(_steps,"TutorialJSON"))">Save to JSON</MudButton>
+        </MudStack>
+
+
+    </MudStack>
+}
+else
+{
+    <div class="floating-block glass">
+        <MudStack Row Justify="Justify.SpaceAround" AlignItems="AlignItems.Center">
+            <div id="mouse-png" style="position:absolute; left:0; top:-150px">
+                <MudImage  Src="@imageSource" style="width:15vw" ObjectFit="ObjectFit.Contain"></MudImage>
+            </div>
+            <div style="width:15vw"></div>
+            <div style="width:70vw;min-height:100px;max-height:150px;padding:10px">
+                <MudText Style="font-family:Shantell Sans,serif; font-size: clamp(10px, 5vw, 22px); ">@_displayText.ToString()</MudText>
+            </div>
+            <MudTooltip Placement="Placement.Top" Text="Next message. Press [Space].">
+                <MudFab Color="Color.Primary" OnClick="NextStep" Size="Size.Large" StartIcon="@Icons.Material.Filled.NavigateNext" />
+            </MudTooltip>
+
+        </MudStack>
+    </div>
+    <MudAnimate @ref=_animate Selector="#mouse-png" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="-10" ValueSecondary="0" AnimationDirection="AnimationDirection.Alternate" IterationCount="2" Duration="0.2" Infinite=false />
+}
+
+
+
+
+
+
+
+@code {
+    List<TutorialStep> _steps = new();
+    TutorialStep CurrentStep { get; set; }
+    int _index;
+    string imageSource = "Content/TutorialMouse1.png";
+
+    private StringBuilder _displayText = new StringBuilder();
+    private int _delayMilliseconds = 30;
+    CancellationTokenSource _cts = new CancellationTokenSource();
+    [CascadingParameter]
+    public Main Main { get; set; }
+    [Parameter]
+    public bool isDebug { get; set; }
+    MudAnimate? _animate = new();
+    protected override async Task OnInitializedAsync()
+    {
+        _steps = Uploader.LoadTutorial();
+        @if (!isDebug)
+        {
+            // await JS.InvokeVoidAsync("addGlobalKeyListener", DotNetObjectReference.Create(this));
+            await Task.Delay(1000);
+            await StartTutorial();
+        }
+
+
+    }
+    public async Task StartTutorial()
+    {
+        await NextStep();
+    }
+    public async Task EndTutorial()
+    {
+        Settings.User.isTutorialGone = true;
+        Main.isTutorialMode = false;
+        StateHasChanged();
+        Main.ReRenderState(null, EventArgs.Empty);
+    }
+
+    private async Task TypeTextAsync(TutorialStep step, CancellationToken cancellationToken, int symbolPerIteration = 1)
+    {
+        _displayText.Clear(); // Очищаем текст перед началом
+        string FullText = Loc[step.Key];
+        int totalLength = FullText.Length; // Длина текста
+
+        int currentIndex = 0; // Индекс текущего символа
+
+        while (currentIndex < totalLength)
+        {
+            // Вычисляем количество символов, которые можем добавить за итерацию
+            int charsToAdd = Math.Min(symbolPerIteration, totalLength - currentIndex);
+
+            // Добавляем символы к отображаемому тексту
+            for (int i = 0; i < charsToAdd; i++)
+            {
+                _displayText.Append(FullText[currentIndex]);
+                currentIndex++;
+            }
+
+            await Task.Delay(_delayMilliseconds * step.TextSlowdown); // Задержка перед добавлением следующего символа
+            StateHasChanged();
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                break; // Выходим из цикла, если отмена запрошена
+            }
+        }
+    }
+    private void Add()
+    {
+        _steps.Add(new TutorialStep(_steps.Count + 1));
+        StateHasChanged();
+    }
+    [JSInvokable]
+    public async Task SpaceKeyPressed()
+    {
+
+        await NextStep();
+
+    }
+
+    private void Remove()
+    {
+        _steps.Remove(_steps[^1]);
+    }
+
+    private async Task NextStep()
+    {
+        //Restart
+        if (CurrentStep == null)
+        {
+            CurrentStep = _steps[0];
+            _ = ActionHandler(CurrentStep);
+            imageSource = "Content/" + CurrentStep.PNG_Name;
+            await TypeTextAsync(CurrentStep, _cts.Token);
+            return;
+        }
+
+        // Check if there are steps and if the current step is not the last one
+        if (_steps.Count > 0)
+        {
+            int currentIndex = _steps.IndexOf(CurrentStep);
+
+            // Move to the next step if we are not at the last step
+            if (currentIndex < _steps.Count - 1)
+            {
+                _cts.Cancel();
+                _cts = new CancellationTokenSource();
+                CurrentStep = _steps[currentIndex + 1];
+                imageSource = "Content/" + CurrentStep.PNG_Name;
+                _ = ActionHandler(CurrentStep);
+                await _animate.Refresh();
+                await TypeTextAsync(CurrentStep, _cts.Token);
+            }
+            else
+            {
+                CurrentStep = null;
+
+                await EndTutorial();
+       
+
+            }
+        }
+    }
+
+    private async Task ActionHandler(TutorialStep step)
+    {
+        if (step.Actions.Count > 0)
+        {
+            foreach (var action in step.Actions)
+            {
+                switch (action.Type)
+                {
+                    case TutorialAction.ActionType.AddOverlay:
+                        await JS.InvokeVoidAsync("addClassToElement", action.ElementId, "overlay");
+                        break;
+                    case TutorialAction.ActionType.RemoveOverlay:
+                        await JS.InvokeVoidAsync("removeClassFromElement", action.ElementId, "overlay");
+                        break;
+                    case TutorialAction.ActionType.AddPulse:
+                        await JS.InvokeVoidAsync("addClassToElement", action.ElementId, "subtle-pulsating");
+                        break;
+                    case TutorialAction.ActionType.RemovePulse:
+                        await JS.InvokeVoidAsync("removeClassFromElement", action.ElementId, "subtle-pulsating");
+                        break;
+                    case TutorialAction.ActionType.ActivateTab:
+                        Main.ActivateTab(Convert.ToInt32(action.Value1));
+                        break;
+                }
+            }
+        }
+    }
+
+
+
+}

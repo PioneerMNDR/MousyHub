@@ -4,12 +4,24 @@ using MousyHub.Models;
 using MousyHub.Models.Misc;
 using MousyHub.Models.Model;
 using MousyHub.Models.User;
+using MousyHub.Models.Misc.Tutorial;
 namespace MousyHub.Models.Services
 {
     public class UploaderService
     {
 
         public SettingsService settingsService;
+        private readonly IConfiguration Configuration;
+        public readonly string ModelsPath;
+        public readonly string FullModelsPath;
+
+        public UploaderService(IConfiguration configuration)
+        {
+            Configuration = configuration;
+            ModelsPath = configuration["ModelsPath"] ?? "/wwwroot/LocalModels/";
+            FullModelsPath = Environment.CurrentDirectory + ModelsPath;
+        }
+
         public bool isBusy { get; private set; }
         public event EventHandler SaveInfoEvent;
         public event EventHandler ReloadCardEvent;
@@ -133,9 +145,33 @@ namespace MousyHub.Models.Services
             return null;
         }
 
+        public List<RecommendedModel> LoadRecommendedModels()
+        {
+            List<RecommendedModel> list = new List<RecommendedModel>();
+            string path = Environment.CurrentDirectory + "/wwwroot/default/RecommendedModelsList.json";
+            if (File.Exists(path))
+            {
+                string json = File.ReadAllText(path);
+                list = JsonConvert.DeserializeObject<RecommendedModel[]>(json).ToList();
+            }
+            return list;
+
+        }
+        public List<TutorialStep> LoadTutorial()
+        {
+            List<TutorialStep> list = new List<TutorialStep>();
+            string path = Environment.CurrentDirectory + "/wwwroot/default/TutorialJSON.json";
+            if (File.Exists(path))
+            {
+                string json = File.ReadAllText(path);
+                list = JsonConvert.DeserializeObject<TutorialStep[]>(json).ToList();
+            }
+            return list;
+        }
+
         public List<string> LoadModelsPath()
         {
-            string directory = Environment.CurrentDirectory + "/wwwroot/LocalModels/";
+            string directory = FullModelsPath;
             List<string> list = new List<string>();
             if (!Directory.Exists(directory))
             {
@@ -148,7 +184,7 @@ namespace MousyHub.Models.Services
             }
             return list;
         }
-       
+
         public void SavePresets()
         {
             if (settingsService != null && SaveInfoEvent != null)

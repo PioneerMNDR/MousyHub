@@ -1,0 +1,83 @@
+﻿@using MousyHub.Models.Misc
+@using MousyHub.Models.Services;
+@using MousyHub.Models.Services.URLHandle
+@using static MousyHub.Models.Services.DiagnosticsService
+@inject HFDownloaderService HFService
+@inject UploaderService UploaderService
+@inject DiagnosticsService Diagnostic
+
+@implements IDisposable
+
+<MudContainer id="download-page" Class="py-3">
+    @if (BestGPU != null)
+    {
+        <MudStack Justify="Justify.Center" Row>
+            <MudCard>
+                <MudCardContent>
+                    <MudText Typo="Typo.h5">Best GPU</MudText>
+                    <MudText>@BestGPU.Model @BestGPU.VRAM_GB Gb</MudText>
+                </MudCardContent>
+            </MudCard>
+            @if (HFService.isBusy)
+            {
+                <MudCard>
+                    <MudCardContent>
+                        <MudText>Download progress @HFService.downloadProgress.Progress %</MudText>
+                        <MudProgressLinear Color="Color.Primary" Value="@HFService.downloadProgress.Progress"></MudProgressLinear>
+                        <MudText>File: @HFService.downloadProgress.FileName</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+        </MudStack>
+    }
+
+
+    <MudGrid Justify="Justify.Center">
+
+        @foreach (var item in RecommendedModels)
+        {
+            <MudItem md="6">
+                <MudCard Style="height:230px;" Class="ma-2" Outlined="true">
+                    <MudCardContent>  
+                            <MudText Typo="Typo.h5"  GutterBottom>@item.Name</MudText>
+                            <MudText Style="overflow-y:auto;max-height:60px;"  Typo="Typo.body2">@item.Description</MudText>
+                   
+                        <MudStack Row AlignItems="AlignItems.Baseline" Class="mt-3">
+                            <MudText Typo="Typo.h6">Recommended VRAM:</MudText>
+                            <MudText Typo="Typo.h6" Color="@((BestGPU!=null && BestGPU.VRAM_GB<item.RecommendedVRAM) ? Color.Warning : Color.Success)">@item.RecommendedVRAM Gb</MudText>
+                        </MudStack>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadModel(item.RepoName,item.FileNameInRepo))">Download</MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+</MudContainer>
+
+
+@code {
+    List<RecommendedModel> RecommendedModels = new List<RecommendedModel>();
+    VideoAdapterInfo? BestGPU;
+    protected override async Task OnInitializedAsync()
+    {
+        RecommendedModels = UploaderService.LoadRecommendedModels();
+        BestGPU = Diagnostic.GPUs.OrderByDescending(a => a.VRAM_GB).FirstOrDefault();
+        HFService.DownloadTickEvent += ReRenderProgressBar;
+    }
+
+    private void ReRenderProgressBar(object? o,EventArgs e)
+    {
+        StateHasChanged();
+    }
+    public void Dispose()
+    {
+        HFService.DownloadTickEvent -= ReRenderProgressBar;
+    }
+
+
+
+
+
+}

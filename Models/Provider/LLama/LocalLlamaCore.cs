@@ -23,12 +23,8 @@ namespace MousyHub.Models.Provider.LLama
         {
             try
             {
-
-                await Task.Run(() =>
-                 {
-                     weights = LLamaWeights.LoadFromFile(modelParams);
-                 });
-
+                
+                weights = await LLamaWeights.LoadFromFileAsync(modelParams);
                 executor = new BatchedExecutor(weights, modelParams);
                 Params = modelParams;
                 return true;

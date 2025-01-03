@@ -22,50 +22,63 @@
 
 
 <CascadingValue Value="MainClass">
+    @if (isTutorialMode)
+    {
+        <TutorialPage></TutorialPage>
+    }
     @if (Settings.CurrentUserProfile == null)
     {
         <RegisterPage></RegisterPage>
-    }
+    }   
     else
     {
-        <MudTabs Class="mainTab background-main" KeepPanelsAlive MinimumTabWidth="5vw" Centered Position="PositionTabs" PanelClass="mainPanels">
-             <MudTabPanel Text="@(!isMobile ? Loc["Provider"] : string.Empty)" Icon="@Icons.Material.Filled.Usb" BadgeDot BadgeColor="colorBagde" Style="width:30vw" OnClick="@(()=>isChatPageClick(false))">
-                 <ChildContent>
-                     <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab ">
-                         <ProviderPage></ProviderPage>
-                     </MudContainer>
-                 </ChildContent>
-             </MudTabPanel>
-             <MudTabPanel Text="@(!isMobile ? Loc["Messenger"] : string.Empty)" Icon="@Icons.Material.Filled.Message" Style="width:30vw" OnClick="@(()=>isChatPageClick(true))">
-                 <MudDrawerContainer>
-                     @if (isFocusOnChatPage)
-                    {
-
-                        <MudDrawer @bind-Open="@DrawerOpen" Anchor="Anchor" Width="@drawerWidth" Variant="drawerVariant" Elevation="1">
-                            <WizardPage @ref=wizardPage></WizardPage>
-                        </MudDrawer>
-                    }
-
-                    <div>
-                        <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
-                            <Messenger @ref=messengerPage></Messenger>
-                        </MudContainer>
-                    </div>
-
-                </MudDrawerContainer>
-            </MudTabPanel>
-
-            <MudTabPanel Text="@(!isMobile ? Loc["Settings"] : string.Empty)" Icon="@Icons.Material.Filled.Settings" Style="width:25vw" OnClick="@(()=>isChatPageClick(false))">
-                <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
-                    <SettingsPage></SettingsPage>
+    <MudTabs  @ref=Tabs Class="mainTab background-main" KeepPanelsAlive MinimumTabWidth="5vw" Centered Position="PositionTabs" PanelClass="mainPanels">
+        @if (Settings.User.HideDownloadPage==false)
+        {
+                <MudTabPanel Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Download" Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
+                    <ModelDownloader></ModelDownloader>
+                </MudTabPanel>
+        }
+        <MudTabPanel Disabled="isTutorialMode" Text="@(!isMobile ? Loc["Provider"] : string.Empty)" Icon="@Icons.Material.Filled.Usb" BadgeDot BadgeColor="colorBagde" Style="width:30vw" OnClick="@(()=>isChatPageClick(false))" Class="provider-page-button">
+            <ChildContent>
+                <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab ">
+                    <ProviderPage></ProviderPage>
                 </MudContainer>
-            </MudTabPanel>
-            <MudTabPanel  Icon="@Icons.Material.Filled.Category" Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
-                    <MainExtraPage ></MainExtraPage>
-            </MudTabPanel>
-        </MudTabs>
-    }
+            </ChildContent>
+        </MudTabPanel>
+        <MudTabPanel Text="@(!isMobile ? Loc["Messenger"] : string.Empty)" Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Message" Style="width:30vw"  OnClick="@(()=>isChatPageClick(true))" id="messenger-page-button">
+            <MudDrawerContainer>
+                @if (isFocusOnChatPage)
+                {
 
+                    <MudDrawer @bind-Open="@DrawerOpen" Anchor="Anchor" Width="@drawerWidth" Variant="drawerVariant" Elevation="1">
+                        <WizardPage @ref=wizardPage></WizardPage>
+                    </MudDrawer>
+                }
+
+                <div>
+                    <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
+                        <Messenger @ref=messengerPage></Messenger>
+                    </MudContainer>
+                </div>
+
+            </MudDrawerContainer>
+        </MudTabPanel>
+
+        <MudTabPanel Text="@(!isMobile ? Loc["Settings"] : string.Empty)" Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Settings" Style="width:25vw" OnClick="@(()=>isChatPageClick(false))" id="settings-page-button">
+            <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
+                <SettingsPage></SettingsPage>
+            </MudContainer>
+        </MudTabPanel>
+       @* vvvv TUTORIAL PAGE vvvv *@
+@*         <MudTabPanel Icon="@Icons.Material.Filled.LocalLibrary"  Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
+            <TutorialPage isDebug></TutorialPage>
+        </MudTabPanel> *@
+        <MudTabPanel Icon="@Icons.Material.Filled.Category" Disabled="isTutorialMode" Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
+            <MainExtraPage></MainExtraPage>
+        </MudTabPanel>
+    </MudTabs>
+    }
 </CascadingValue>
 
 
@@ -85,7 +98,7 @@
 @code {
     Position PositionTabs = Position.Top;
     public Main MainClass { get; set; }
-
+    MudTabs Tabs;
     //drawerOptions
     bool DrawerOpen = false;
     Anchor Anchor = Anchor.End;
@@ -94,10 +107,10 @@
 
     public bool isMobile { get; private set; } = false;
     public bool isFocusOnChatPage = false;
+    public bool isTutorialMode { get; set; } = false;
 
     public WizardPage wizardPage { get; set; }
     public Messenger messengerPage { get; set; }
-
     string BodyStyle = "radial-gradient(ellipse 100% 30% at bottom, color-mix(in oklab,var(--mud-palette-error) 20%,var(--mud-palette-background)) 0%,var(--mud-palette-background) 80%);";
 
 
@@ -107,8 +120,6 @@
         MainClass = this;
         StateHasChanged();
         var sc = await SC.GetScreenSize();
-        await GetData();
-
         if (sc.Width <= 600)
         {
             isMobile = true;
@@ -116,16 +127,18 @@
             drawerWidth = "70vw";
             drawerVariant = DrawerVariant.Responsive;
         }
-
+     
         Provider.ConnectionEvent += new ProviderService.TaskBoolDelegate(ConnectChanged);
         await Provider.CheckMainAPIStatus();
     }
 
-    public async Task GetData()
-    {
 
+    public void ActivateTab(int index)
+    {
+        Tabs.ActivatePanel(index,ignoreDisabledState:true);
     }
 
+  
     public void ToggleDrawer()
     {
         DrawerOpen = !DrawerOpen;

@@ -129,4 +129,145 @@
   <data name="New" xml:space="preserve">
     <value>New</value>
   </data>
+  <data name="Tutorial" xml:space="preserve">
+    <value>Tutorial</value>
+  </data>
+  <data name="TutorialStep_1" xml:space="preserve">
+    <value>Hi! I'm Mousy. Welcome to MousyHub. I won't keep you long with the tutorial. I'll teach you the basics of using LLMs.</value>
+  </data>
+  <data name="TutorialStep_2" xml:space="preserve">
+    <value>To start chatting with characters, we need to connect a 'brain' to our application. This is what we call a large language model.</value>
+  </data>
+  <data name="TutorialStep_3" xml:space="preserve">
+    <value>There are a couple of ways to do this: run it locally or use a cloud solution. Cloud solutions usually cost money and don't require powerful hardware on your end. If you've heard of Claude, ChatGPT, and Gemini - those are examples. There are also services that host open-source models that we can use for free.</value>
+  </data>
+  <data name="TutorialStep_4" xml:space="preserve">
+    <value>Our main focus will be on local models and how to use them.</value>
+  </data>
+  <data name="TutorialStep_5" xml:space="preserve">
+    <value>The advantages of local models are clear: they're free to use, not subject to censorship (fine-tuning), and all conversations with them are stored only on your computer.</value>
+  </data>
+  <data name="TutorialStep_6" xml:space="preserve">
+    <value>There are some challenges though...</value>
+  </data>
+  <data name="TutorialStep_7" xml:space="preserve">
+    <value>You need some basic knowledge about which model to download, how to run it correctly, and most importantly, understand what might be going wrong if it doesn't work.</value>
+  </data>
+  <data name="TutorialStep_8" xml:space="preserve">
+    <value>So, our local model is a single .gguf file, which is about 8GB in size.</value>
+  </data>
+  <data name="TutorialStep_9" xml:space="preserve">
+    <value>Yes, that's quite a lot, considering it's essentially a super-compressed copy of a portion of the internet. And, I forgot to mention, this is one of the smallest and most reasonable models for chatting. More on that later...</value>
+  </data>
+  <data name="TutorialStep_10" xml:space="preserve">
+    <value>Models come in different sizes: 3B, 8B, 12B, 70B. The larger the number, the smarter the model, and the more memory your PC needs.</value>
+  </data>
+  <data name="TutorialStep_11" xml:space="preserve">
+    <value>Therefore, you need to know which size of LLM is suitable for your PC.</value>
+  </data>
+  <data name="TutorialStep_12" xml:space="preserve">
+    <value>Here's a quick guide: 8B - 8 GB VRAM, 12B - 12GB VRAM. These are good ratios for generation speed. But if you have more video memory, even better!</value>
+  </data>
+  <data name="TutorialStep_13" xml:space="preserve">
+    <value>So, here's a list of great models for role-playing:</value>
+  </data>
+  <data name="TutorialStep_14" xml:space="preserve">
+    <value>If the recommended memory number is green, you can confidently download the model - it will run smoothly on your PC. You can download it later if you want, but let's move on...</value>
+  </data>
+  <data name="TutorialStep_15" xml:space="preserve">
+    <value>Below, you can see two identical models, but their requirements are different. This is because there's a method of 'compressing' models called quantization.</value>
+  </data>
+  <data name="TutorialStep_16" xml:space="preserve">
+    <value>Quantization is a great optimization method that makes models faster, smaller in size, and also... slightly less accurate.</value>
+  </data>
+  <data name="TutorialStep_17" xml:space="preserve">
+    <value>Here are the different levels of quantization: Q8 - the most accurate, and Q2 - the least accurate. Some Q2 models are so inaccurate that they're almost unusable. Therefore, Q4 is the lowest reasonable level.</value>
+  </data>
+  <data name="TutorialStep_18" xml:space="preserve">
+    <value>Hopefully, this isn't too complicated? Here's a simple example: a 12B model quantized to Q4 can fit entirely into 8GB of VRAM. You can use online GGUF calculators to estimate the required size.</value>
+  </data>
+  <data name="TutorialStep_19" xml:space="preserve">
+    <value>Now, let's get to the good stuff... Preparing to run the model.</value>
+  </data>
+  <data name="TutorialStep_20" xml:space="preserve">
+    <value>And no, don't worry. If you don't have a model yet, or it's still downloading, we won't run it right now. I'll just explain the most important aspects for running it.</value>
+  </data>
+  <data name="TutorialStep_21" xml:space="preserve">
+    <value>Welcome to the provider page - the most technically confusing page.</value>
+  </data>
+  <data name="TutorialStep_22" xml:space="preserve">
+    <value>There are several parameters for running the model, mainly related to how it uses your PC's memory.</value>
+  </data>
+  <data name="TutorialStep_23" xml:space="preserve">
+    <value>The first and most important parameter is the number of model layers in the GPU... Imagine we can split our LLM into parts and load one part into video memory and the other into RAM.</value>
+  </data>
+  <data name="TutorialStep_24" xml:space="preserve">
+    <value>And yes, I slightly lied at the beginning. The model can also run on RAM. In our case, it's no different from VRAM, except for one crucial parameter...</value>
+  </data>
+  <data name="TutorialStep_25" xml:space="preserve">
+    <value>RAM speed is about 5 times slower than video memory speed. That's why VRAM is needed, so the model doesn't respond at a snail's pace.</value>
+  </data>
+  <data name="TutorialStep_26" xml:space="preserve">
+    <value>If you set the GPU layer to zero, all model layers will be loaded into RAM, and you'll experience very, very slow response times. Also, if the model requires, for example, 8GB of memory, it will take up the same amount in RAM as in VRAM... it doesn't matter here.</value>
+  </data>
+  <data name="TutorialStep_27" xml:space="preserve">
+    <value>Therefore, choose the maximum number of layers for the model to fully utilize your video card's memory. Below are labels that show the maximum number of layers for the model.</value>
+  </data>
+  <data name="TutorialStep_28" xml:space="preserve">
+    <value>The next super important parameter is the model's context length... It determines the size of your model's memory in tokens.</value>
+  </data>
+  <data name="TutorialStep_29" xml:space="preserve">
+    <value>For example, if the context is 2048, your conversation with the character will literally consist of a couple of messages, and then an error will appear that your model's memory is full.</value>
+  </data>
+  <data name="TutorialStep_30" xml:space="preserve">
+    <value>For MousyHub, a context of 8k is recommended. The application has built-in memory optimizers. One of them is a dialogue summarizer, which will summarize and shorten part of your dialogue, highlighting only the most important parts.</value>
+  </data>
+  <data name="TutorialStep_31" xml:space="preserve">
+    <value>I also forgot to mention that the context also consumes your PC's memory. This number is different for each model. But for an 8B model, an 8192 context will take up 1.5GB in RAM. It's not much, but it's worth considering when launching.</value>
+  </data>
+  <data name="TutorialStep_32" xml:space="preserve">
+    <value>Here's another panel with additional settings for advanced users. From all of this, I can highlight Flash Attention, which can increase the response speed.</value>
+  </data>
+  <data name="TutorialStep_33" xml:space="preserve">
+    <value>Next is the provider selection. 'Native' is selected by default. Another option for running local models is KoboldCPP. It has much better settings and options than 'Native', but you have to run this program separately alongside MousyHub, which complicates things a bit.</value>
+  </data>
+  <data name="TutorialStep_34" xml:space="preserve">
+    <value>Hopefully, this isn't too complicated? Let's move on. There's just a little bit left.</value>
+  </data>
+  <data name="TutorialStep_35" xml:space="preserve">
+    <value>Here's another very complex panel. These are the samplers. They determine the character's response style. Will it be more creative and unconventional, or more correct and predictable?</value>
+  </data>
+  <data name="TutorialStep_36" xml:space="preserve">
+    <value>I recommend paying attention to the important parameter - Max new tokens. It determines how many tokens (characters, words) the model will write at once. You'll immediately notice when the character doesn't finish their thought - that means you need to increase this number.</value>
+  </data>
+  <data name="TutorialStep_37" xml:space="preserve">
+    <value>I recommend choosing only from the ready-made presets, because they are well-configured and tested.</value>
+  </data>
+  <data name="TutorialStep_38" xml:space="preserve">
+    <value>And the last window on this page is the chat template. This is an important attribute, essential for the model, without which it will respond very poorly.</value>
+  </data>
+  <data name="TutorialStep_39" xml:space="preserve">
+    <value>When a model is trained, its responses are taught to write in a specific markup, for example, &lt;model&gt;response here&lt;model&gt;. And the questions it answers are seen in the markup &lt;user&gt;question here&lt;user&gt;. This makes it easier for the model to navigate the chat.</value>
+  </data>
+  <data name="TutorialStep_40" xml:space="preserve">
+    <value>Here too, I recommend choosing only ready-made presets and not changing anything. Which chat format to use depends on the model's architecture. They are always listed on the model's page on HuggingFace.co. For example, for L3-8B-Stheno-v3.4, the Llama 3 Instruct format is used.</value>
+  </data>
+  <data name="TutorialStep_41" xml:space="preserve">
+    <value>That concludes the tutorial... Let me repeat what's needed to start a conversation with characters:</value>
+  </data>
+  <data name="TutorialStep_42" xml:space="preserve">
+    <value>Model: A .gguf file; 7B, 12B, 32B - the number of model parameters, the more, the smarter the model and the more memory your PC needs; Q8, Q6, Q4, Q2 - the degree of quantization (compression), the lower this degree, the less memory the model consumes and the less accurate it becomes. I recommend Q4 as a minimum.</value>
+  </data>
+  <data name="TutorialStep_43" xml:space="preserve">
+    <value>Well, okay, that was a bit heavy, but you made it to the end. I hope MousyHub brings something new and interesting into your life. Goodbye, friend!</value>
+  </data>
+  <data name="Register_Tutor_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Register_Tutor_No" xml:space="preserve">
+    <value>No, I know how to connect a model to an application, what quantization is, how much memory is needed for LLM, what are samplers and chat templates</value>
+  </data>
+  <data name="Register_Tutor" xml:space="preserve">
+    <value>Would you like to go through the tutorial?</value>
+  </data>
 </root>
