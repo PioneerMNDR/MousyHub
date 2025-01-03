@@ -23,7 +23,6 @@ namespace MousyHub.Models
             this.InstructContent = InstructContent;
             Owner = owner;
             dateTime = DateTime.Now; 
-
             dateTimeString = dateTime.ToString("dd MMMM, yyyy HH:mm");
             IdOwner = owner.Id;
         }
