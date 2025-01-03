@@ -1,0 +1,20 @@
+[
+  {
+    "Position": 0,
+    "Index": 1,
+    "Key": "TutorialStep_1",
+    "Text": "Привет! Добро пожаловать в MousyHub. Не буду тебя задерживать. У меня и своих дел много... Я научу тебя основам пользования LLM.",
+    "PNG_Name": null,
+    "TextSpeed": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 2,
+    "Key": "TutorialStep_2",
+    "Text": null,
+    "PNG_Name": null,
+    "TextSpeed": 1,
+    "Actions": []
+  }
+]

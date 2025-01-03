@@ -1,0 +1,35 @@
+[
+  {
+    "Name": "Mistral-Nemo-12B-ArliAI-RPMax-v1.1",
+    "Description": "RPMax is a series of models that are trained on a diverse set of curated creative writing and RP datasets with a focus on variety and deduplication. This model is designed to be highly creative and non-repetitive by making sure no two entries in the dataset have repeated characters or situations, which makes sure the model does not latch on to a certain personality and be capable of understanding and acting appropriately to any characters or situations.",
+    "RepoName": "bartowski/Mistral-Nemo-12B-ArliAI-RPMax-v1.1-GGUF",
+    "FileNameInRepo": "Mistral-Nemo-12B-ArliAI-RPMax-v1.1-Q6_K.gguf",
+    "MaxVRAM": 16,
+    "RecommendedVRAM": 12
+  },
+  {
+    "Name": "MN-12B-Starcannon-v2",
+    "Description": "Magnum-esque, but still is very creative, and writing style is pretty nice, even if some slop words appear time to time. Might be a good fit for people wanting more variety than Magnum has, and more verbose prose than Celeste v1.9 has.",
+    "RepoName": "mradermacher/MN-12B-Starcannon-v2-GGUF",
+    "FileNameInRepo": "MN-12B-Starcannon-v2.Q6_K.gguf",
+    "MaxVRAM": 16,
+    "RecommendedVRAM": 12
+  },
+  {
+    "Name": "Llama-3.1-8B-Stheno-v3.4",
+    "Description": "The best model in its weight class, perfect for any RP interactions",
+    "RepoName": "bartowski/Llama-3.1-8B-Stheno-v3.4-GGUF",
+    "FileNameInRepo": "Llama-3.1-8B-Stheno-v3.4-Q6_K.gguf",
+    "MaxVRAM": 12,
+    "RecommendedVRAM": 8
+  },
+  {
+    "Name": "Llama-3.1-8B-Stheno-v3.4 (4bit)",
+    "Description": "The best model in its weight class, perfect for any RP interactions. It will work even if you don't have video memory. The generation speed will be moderately good.",
+    "RepoName": "bartowski/Llama-3.1-8B-Stheno-v3.4-GGUF",
+    "FileNameInRepo": "Llama-3.1-8B-Stheno-v3.4-Q4_K_M.gguf",
+    "MaxVRAM": 8,
+    "RecommendedVRAM": 6
+  }
+
+]
