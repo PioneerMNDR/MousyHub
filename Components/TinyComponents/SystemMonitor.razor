@@ -6,10 +6,37 @@
     @switch (Mode)
     {
         case MonitorMode.RAM:
-            <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Dns">@Service.Available_RAM</MudAlert>
+            @if (ProgressBar)
+            {
+                <div style="width:100%">
+                    <MudText Typo="Typo.caption">RAM:</MudText>
+                    <MudProgressLinear Size="Size.Large" Indeterminate="false" Max="Service.MaxRAM_GB" Value="Service.AvailableRAM_GB" Color="Color.Info">
+                        <MudText Typo="Typo.caption" Color="Color.Surface">
+                            <small>   @Service.AvailableRAM_GB / @Service.MaxRAM_GB Gb</small>
+                          
+                        </MudText>
+                    </MudProgressLinear>
+                </div>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Dns">@Service.Available_RAM_Text</MudAlert>
+            }
+
             break;
         case MonitorMode.CPU:
-            <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Memory">@Service.CPU_Usage</MudAlert>
+            @if (ProgressBar)
+            {
+                <div>
+                    <MudText Typo="Typo.caption">CPU:</MudText>
+                    <MudProgressLinear Size="Size.Large" Indeterminate="false" Max="100" Value="Service.CPU_Usage_Percent" Color="Color.Info"></MudProgressLinear>
+                </div>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Memory">@Service.CPU_Usage_Text</MudAlert>
+            }
+
             break;
     }
 }
@@ -27,6 +54,8 @@
     }
     [Parameter]
     public MonitorMode Mode { get; set; }
+    [Parameter]
+    public bool ProgressBar { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

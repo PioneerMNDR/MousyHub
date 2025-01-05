@@ -51,6 +51,9 @@
         --char-card-w: 45%;
     }
 }
+.w-100{
+    width:100%;
+}
 
 .btn-primary {
     text-transform: uppercase;

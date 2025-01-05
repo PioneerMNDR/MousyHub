@@ -10,14 +10,40 @@
 
 @if (State.ChatHistory != null)
 {
+    <MudStack Row>
+        <MudImage Class="animMouse" Src="Content/mouseWizard.png" Height="200" ObjectFit="ObjectFit.Contain"></MudImage>
+        <MudStack Justify="Justify.Center"  Wrap="Wrap.Wrap"  Class="ma-3 w-100">
+            <div>
+                <MudText Align="Align.Center">System information</MudText>
+                <MudDivider DividerType="DividerType.Middle"></MudDivider>
+            </div>
+        
+            @if (double.TryParse(Provider.MaxContextSize, out var maxValue) && State.ChatHistory.ChatContextSize.HasValue)
+            {
+                <div style="width:100%;">
+                    <MudText Typo="Typo.caption">Context size:</MudText>
+                    <MudProgressLinear Size="Size.Large" Indeterminate="false"
+                                       Max="@maxValue"
+                                       Value="@(Convert.ToDouble(State.ChatHistory.ChatContextSize.Value))">
+                        <MudText Typo="Typo.caption" Color="Color.Surface">
+                            <small>   @State.ChatHistory.ChatContextSize.Value / @maxValue </small>
 
+                        </MudText>
+                    </MudProgressLinear>
+                </div>
 
-    <MudStack Row Justify="Justify.Center" Wrap="Wrap.Wrap" Class="ma-3">
-        <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined">Context: @State.ChatHistory.ChatContextSize/@Provider.MaxContextSize</MudAlert>
-        <SystemMonitor Mode="SystemMonitor.MonitorMode.RAM"></SystemMonitor>
+            }
+            else
+            {
+                <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined">Context: @State.ChatHistory.ChatContextSize/@Provider.MaxContextSize</MudAlert>
+            }
+            <SystemMonitor Mode="SystemMonitor.MonitorMode.RAM" ProgressBar></SystemMonitor>
+        </MudStack>
     </MudStack>
 
-    <MudImage Class="animMouse" Src="Content/mouseWizard.png"  Height="200" ObjectFit="ObjectFit.Contain"></MudImage>
+
+
+
 
 
 

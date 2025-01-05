@@ -9,6 +9,7 @@
     <ApplicationIcon>mousyIcon.ico</ApplicationIcon>
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 
 

@@ -7,8 +7,12 @@ namespace MousyHub.Models.Services
 {
     public class DiagnosticsService
     {
-        public string Available_RAM { get; private set; } = "No data";
-        public string CPU_Usage { get; private set; } = "No data";
+        public string Available_RAM_Text { get; private set; } = "No data";
+        public string CPU_Usage_Text { get; private set; } = "No data";
+
+        public double MaxRAM_GB { get; private set;}
+        public double AvailableRAM_GB { get; private set; }
+        public double CPU_Usage_Percent { get; private set; }
 
         public int LogicalProcessorCount { get; private set; }
         public bool isRun { get; private set; } = false;
@@ -47,8 +51,11 @@ namespace MousyHub.Models.Services
                     float cpuUsage = cpuCounter.NextValue();
                     await Task.Delay(200);
                     cpuUsage = cpuCounter.NextValue();
-                    Available_RAM = $"RAM: {usedMemory:F1}/{availableMemory + usedMemory:F1} GB";
-                    CPU_Usage = $"CPU: {cpuUsage:F1}%";
+                    Available_RAM_Text = $"RAM: {usedMemory:F1}/{availableMemory + usedMemory:F1} GB";
+                    CPU_Usage_Text = $"CPU: {cpuUsage:F1}%";
+                    MaxRAM_GB = Math.Round((availableMemory + usedMemory),0);
+                    AvailableRAM_GB = Math.Round(usedMemory, 0);
+                    CPU_Usage_Percent = Math.Round(cpuUsage, 0);
                 }
             }
             catch (Exception ex)
