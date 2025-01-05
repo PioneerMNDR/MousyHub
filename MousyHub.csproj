@@ -8,6 +8,7 @@
     <RestorePackagesPath>bin\$(Configuration)\.nuget\packages</RestorePackagesPath>
     <ApplicationIcon>mousyIcon.ico</ApplicationIcon>
     <ServerGarbageCollection>false</ServerGarbageCollection>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
 

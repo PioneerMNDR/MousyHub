@@ -32,10 +32,10 @@
 
 
     <MudStack Row Justify="Justify.SpaceAround" Class="mb-3">
-         <MudButton Variant="Variant.Outlined" OnClick="CloseChat" StartIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">Back to select</MudButton>
-         <MudButton Variant="Variant.Outlined" OnClick="RestartChat" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small">New chat</MudButton>
-         <MudButton Variant="Variant.Outlined" OnClick="@(Main.ToggleDrawer)" StartIcon="@Icons.Material.Filled.OpenInFull" Size="Size.Small">Wizard</MudButton>
-     </MudStack>
+        <MudButton Variant="Variant.Outlined" OnClick="CloseChat" StartIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">Back to select</MudButton>
+        <MudButton Variant="Variant.Outlined" OnClick="RestartChat" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small">New chat</MudButton>
+        <MudButton Variant="Variant.Outlined" OnClick="@(Main.ToggleDrawer)" StartIcon="@Icons.Material.Filled.OpenInFull" Size="Size.Small">Wizard</MudButton>
+    </MudStack>
 
     <Chat @ref=ChatPage ChatHistory="State.ChatHistory" @bind-isVisibleUnpauseButton=isPaused AbortCallback="StopGeneration" isBusy="isBusy" isGenerating=isGenerating ClickSend="@((Person per)=>StartGeneration(per,false))" ClickRegenerate="Regenerate" ClickContinueGenerate="ContinueGeneration"></Chat>
 
@@ -116,7 +116,7 @@
         if (person.IsUser)
         {
             return;
-        }   
+        }
         //AddEmptyMessage run before PromtToLLM for include next bot name in message
         Guid currentGuid = State.ChatHistory.AddEmptyMessage(person, Settings.CurrentInstruct);
         var promt = await State.ChatHistory.PromtToLLM(Settings.CurrentInstruct, person);
@@ -201,7 +201,15 @@
         });
         if (message != null)
         {
-            await message.TranslateMessage(Translator);
+            try
+            {
+                await message.TranslateMessage(Translator);
+            }
+            catch (Exception ex)
+            {
+                Alert.ErrorAlert("A translator error occurred, try changing your translation provider");
+            }
+
         }
 
         await State.SetContextSize();
