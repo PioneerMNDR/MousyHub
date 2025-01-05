@@ -12,6 +12,7 @@ namespace MousyHub.Models
         public DateTime date { get; set; }
         public byte[] avatarPNG { get; set; }
         public bool isNew { get; set; }
+        public int Rating { get; set; }
         public string system_name
         {
             get

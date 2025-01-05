@@ -230,16 +230,16 @@ else
                 switch (action.Type)
                 {
                     case TutorialAction.ActionType.AddOverlay:
-                        await JS.InvokeVoidAsync("addClassToElement", action.ElementId, "overlay");
+                        await JS.InvokeVoidAsync("addClassToElement", "#"+ action.ElementId, "overlay");
                         break;
                     case TutorialAction.ActionType.RemoveOverlay:
-                        await JS.InvokeVoidAsync("removeClassFromElement", action.ElementId, "overlay");
+                        await JS.InvokeVoidAsync("removeClassFromElement", "#" + action.ElementId, "overlay");
                         break;
                     case TutorialAction.ActionType.AddPulse:
-                        await JS.InvokeVoidAsync("addClassToElement", action.ElementId, "subtle-pulsating");
+                        await JS.InvokeVoidAsync("addClassToElement", "#" + action.ElementId, "subtle-pulsating");
                         break;
                     case TutorialAction.ActionType.RemovePulse:
-                        await JS.InvokeVoidAsync("removeClassFromElement", action.ElementId, "subtle-pulsating");
+                        await JS.InvokeVoidAsync("removeClassFromElement", "#" + action.ElementId, "subtle-pulsating");
                         break;
                     case TutorialAction.ActionType.ActivateTab:
                         Main.ActivateTab(Convert.ToInt32(action.Value1));
