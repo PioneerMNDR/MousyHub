@@ -10,8 +10,12 @@
 
 @if (State.ChatHistory != null)
 {
-    <MudStack Row>
-        <MudImage Class="animMouse" Src="Content/mouseWizard.png" Height="200" ObjectFit="ObjectFit.Contain"></MudImage>
+    <MudStack Row Wrap="Wrap.Wrap">
+        @if (_Main.isMobile==false)
+    {
+            <MudImage Class="animMouse" Src="Content/mouseWizard.png" Height="200" ObjectFit="ObjectFit.Contain"></MudImage>
+    }
+
         <MudStack Justify="Justify.Center"  Wrap="Wrap.Wrap"  Class="ma-3 w-100">
             <div>
                 <MudText Align="Align.Center">System information</MudText>
