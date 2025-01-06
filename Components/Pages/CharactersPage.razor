@@ -59,7 +59,7 @@
                        
                         <MudCardContent Class="CharContent pb-0 pt-1">
                          
-                            <MudText Style="height:60%;overflow:auto" Typo="Typo.body2">@Util.TruncateString(Cards[s].data.creator_notes, 50)</MudText>
+                            <MudText Style="height:70%;overflow:auto" Typo="Typo.body2">@Util.TruncateString(Cards[s].data.creator_notes, 50)</MudText>
                             <MudDivider></MudDivider>
                             <div class="d-flex" style="overflow:auto">
                                 @foreach (var item in @Cards[s].data.tags.Take(4))
@@ -171,9 +171,9 @@ else
         @if (new_rating!=0)
         {
             await JSRuntime.InvokeVoidAsync("addClassToElement", elementSelector, "img-glow");
-            await Task.Delay(600);
             StateHasChanged();
-             await JSRuntime.InvokeVoidAsync("removeClassFromElement", elementSelector, "img-glow");
+            await Task.Delay(600);
+            await JSRuntime.InvokeVoidAsync("removeClassFromElement", elementSelector, "img-glow");
         }                 
         StateHasChanged();
     }
