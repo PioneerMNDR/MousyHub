@@ -1,0 +1,14 @@
+# Root rule: the entire response must be in the format { [Answer1], [Answer2], [Answer3] }
+root ::= "{" arr "}"
+
+# Array of answers
+arr ::= answer ("," answer)*
+
+# Individual answer (a string enclosed in square brackets)
+answer ::= "[" string "]"
+
+# String rule: allows any characters except for control characters and unescaped quotes
+string ::= (
+    [^,\]\x7F\x00-\x1F] |  # Any character except control characters, comma, and closing bracket
+    "\\" (["\\bfnrt] | "u" [0-9a-fA-F]{4})  # Escaped characters
+  )*

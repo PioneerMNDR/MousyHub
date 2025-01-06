@@ -185,6 +185,16 @@ namespace MousyHub.Models.Services
             return list;
         }
 
+        public string LoadGrammar(string FileNameWithExtension)
+        {
+            string path = Environment.CurrentDirectory + "/wwwroot/default/Grammar/" + FileNameWithExtension;
+            if (File.Exists(path))
+            { 
+                string grammar = File.ReadAllText(path).Trim();
+                return grammar;
+            }
+            return "";
+        }
         public void SavePresets()
         {
             if (settingsService != null && SaveInfoEvent != null)
