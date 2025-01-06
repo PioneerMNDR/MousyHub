@@ -36,9 +36,11 @@ namespace MousyHub.Models.Services
         public delegate Task TaskBoolDelegate(bool status);
         public event TaskBoolDelegate ConnectionEvent;
         public event Action ConnectionChangeEvent;
-        public ProviderService()
+        private UploaderService UploaderService;
+        public ProviderService(UploaderService uploaderService)
         {
             SelectType = ConnectionsTypes.First();
+            UploaderService = uploaderService;
         }
 
         public async Task<string> NewConnect(SettingsService Settings)
@@ -164,7 +166,7 @@ namespace MousyHub.Models.Services
         {
             if (Status)
             {
-                Wizard.Run(LLModel, instruct, userState);
+                Wizard.UpdateInstructions(LLModel, instruct, userState,UploaderService);
                 WizardStatus = true;
                 return "";
             }

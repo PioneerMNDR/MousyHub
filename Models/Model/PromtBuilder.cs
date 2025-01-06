@@ -67,6 +67,8 @@ namespace MousyHub.Models.Model
             return e;
         }
 
+
+        /// <returns>Returns a phrase for a chat like: 'CharName: '</returns>
         public static string BotMessageFormatting(Instruct instruct, string personName)
         {
             var n2 = separator + personName + ": ";

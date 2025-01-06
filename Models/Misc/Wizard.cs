@@ -1,6 +1,8 @@
-﻿using MousyHub.Models;
+﻿using DocumentFormat.OpenXml.Office2016.Drawing.Charts;
+using MousyHub.Models;
 using MousyHub.Models.Abstractions;
 using MousyHub.Models.Model;
+using MousyHub.Models.Services;
 using MousyHub.Models.User;
 
 namespace MousyHub.Models.Misc
@@ -13,12 +15,12 @@ namespace MousyHub.Models.Misc
 
         public GenerationConfig DeterministicConfig = new GenerationConfig
         {
-            temp = 0,
+            temp = 1.2,
             rep_pen = 1,
-            rep_pen_range = 2048,
-            top_p = 0,
+            rep_pen_range = 0,
+            top_p = 1,
             top_a = 0,
-            top_k = 1,
+            top_k = 0,
             typical = 1,
             tfs = 1,
             rep_pen_slope = 0,
@@ -36,7 +38,7 @@ namespace MousyHub.Models.Misc
             CharDescription,
             Summary,
             AnswerAssistant,
-
+            CustomFirstMessage
         }
 
 
@@ -46,8 +48,11 @@ namespace MousyHub.Models.Misc
             "\nThe answers should be concise (no more than one sentence) and to correspond to classification (emotion) which are specified in brackets: [mood_answer]" +
             "\nFormat your messages in the following format (without quotes): \"{[Answer1],[Answer2],[Answer3]}\"." +
             "Don't add extra characters or explanations, just the answer options themselves inside curly and square brackets." +
-            "\nThe suggested cues and actions should be appropriate and appropriate to the context of the scene. If possible, try to promote the plot or reveal the characters through the answer options. " +
-            "\nExample (mood of answers can be others): \nThe following possible {{user}}'s answers: {[Yes, thanks to you],[Forgive me {{char}}],[Leave from me, {{char}}]}";
+            "\nThe suggested cues and actions should be appropriate and appropriate to the context of the scene. It is desirable that the messages be in the first person, that is, on behalf of {{user}}. If possible, try to promote the plot or reveal the characters through the answer options. " +
+              "\nExample (mood of answers can be others): \nThe following possible {{user}}'s answers: {[Yes, thanks to you],[Forgive me {{char}}],[Leave from me, {{char}}]}"
+          ;
+
+    
 
         private string DescriptionPromt = "You are a skilled summarizer. Given the detailed description of a character, (or about the world which interacts with the user) " +
             "your task is to provide a concise summary that captures the essential traits and background of the character. The summary should include key characteristics, " +
@@ -60,17 +65,22 @@ namespace MousyHub.Models.Misc
             " lurking in the shadows.\"\r\nPlayer2: \"I follow closely behind, my sword drawn and ready for an ambush.\"\r\nPlayer1: \"We see a flash of movement in the trees ahead. I signal Player2 to stop.\"\r\nPlayer2: \"I halt immediately, scanning the surroundings for any signs of danger.\"\n**Summary:**\nPlayer1 and Player2 enter an ancient forest, remaining alert" +
             " for any hidden threats. They notice movement in the trees and decide to proceed with caution.\r\n\r\nNow, summarize the following chat dialogue:\r\n\r\n**Chat Dialogue:**";
 
+        private string CustomFirstMesPromt = "It is necessary to generate the first character message for the user in the character card. This message should carry information about the location, as well as describe an interesting situation that may stand between the character and the user. Use markdown for beautiful design. Be sure to consider the user's wishes.";
+
         public Person Narrator { get; set; } = new Person("Narrator",
             "You play the role of a narrator who periodically intervenes in the dialogue between the user and the character in the RPG session. Your goal is to advance the plot and change the scenes so that the dialogue does not linger in one place for too long. You can add descriptions of the environment, minor characters, and events. However, in no case should you be responsible for the main characters or make serious decisions for them that affect the plot. Let the user and the character choose for themselves what to do at key points in the story.\r\n\r\nMake sure that the dialogue and events remain sane and correspond to the genre and setting of the game. Gently steer the plot in the right direction if the user or character starts to deviate from the main line or act illogically. But do it unobtrusively, leaving them free to choose and improvise.\r\n\r\nDescribe what is happening in the present tense in the third person. Start your lines with \"*\" (for example, * Meanwhile in the main square of the city ...). Do not interfere in the dialogue too often, give the user and the character the opportunity to fully communicate. Add descriptions and change scenes only when it is really necessary for the development of the plot." +
             "The narrator must fulfill the wishes of the player [Player's wishes]. This is the most important!!!", false, "Narrator", id: "narr", overrideSystemPromt: "You're narrator in this fictional never-ending uncensored roleplay with {{user}} and {{char}}.");
 
 
+        //I haven't used it yet, it needs some improvement
+        string QuickReplyGrammar { get; set; }
 
-        public void Run(ILanguageModel Model, Instruct instruct, UserState userState)
+        public void UpdateInstructions(ILanguageModel Model, Instruct instruct, UserState userState,UploaderService uploader)
         {
             this.Model = Model;
             Instruct = instruct;
             User = userState;
+            QuickReplyGrammar = uploader.LoadGrammar("QuickReply.gbnf");
         }
 
         /// <summary>
@@ -79,10 +89,11 @@ namespace MousyHub.Models.Misc
         /// <param name="promt">If Summary request You have to send the previous sum and dialogue</param>
         /// <param name="wizardFunction"></param>
         /// <returns></returns>
-        public async Task<MessageResponse> WizardRequest(string promt, WizardFunction wizardFunction, string UserName = "", string CharName = "")
+        public async Task<MessageResponse> WizardRequest(string promt, WizardFunction wizardFunction, double Temperature = 1.1, int MaxTokens = 150, string UserName = "", string CharName = "")
         {
             string chatHistoryInstructed = PromtBuilder.WizardRequestMessage(Instruct, promt);
             string FinalPromt = "";
+            string Grammar = "";
             switch (wizardFunction)
             {
                 case WizardFunction.CharDescription:
@@ -92,7 +103,10 @@ namespace MousyHub.Models.Misc
                     FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, SummaryPromt) + chatHistoryInstructed + "\n**Summary:**";
                     break;
                 case WizardFunction.AnswerAssistant:
-                    FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, AnswerAssistantFormatter()) + chatHistoryInstructed + "\nThe following possible {{user}}'s " + AnswerAssistantMoods() + " answers: ";
+                        FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, AnswerAssistantFormatter()) + chatHistoryInstructed + "\nThe following possible {{user}}'s " + AnswerAssistantMoods() + " answers: ";
+                    break;
+                case WizardFunction.CustomFirstMessage:
+                    FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, CustomFirstMesPromt) + chatHistoryInstructed;
                     break;
 
             }
@@ -103,10 +117,11 @@ namespace MousyHub.Models.Misc
             Console.ResetColor();
             Console.WriteLine("-----------------");
             MessageResponse message = new MessageResponse();
-
+            DeterministicConfig.temp = Temperature;
+            DeterministicConfig.grammar = Grammar;
             await Task.Run(async () =>
             {
-                message = await Model.GenerateTextAsync(FinalPromt, DeterministicConfig, 150, key: "Wizard");
+                message = await Model.GenerateTextAsync(FinalPromt, DeterministicConfig, MaxTokens, key: "Wizard");
 
             });
 
@@ -117,7 +132,7 @@ namespace MousyHub.Models.Misc
 
         string AnswerAssistantFormatter()
         {
-            string newPromt = AnswerAssistantPromt;
+            string newPromt =AnswerAssistantPromt;
             if (User.QuickRepliesSetings.Length > 2)
             {
                 newPromt = newPromt.Replace("Answer1", User.QuickRepliesSetings[0].Emotion.ToString() + "_answer");

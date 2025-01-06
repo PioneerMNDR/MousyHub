@@ -6,22 +6,22 @@
 @inject ChatState State
 @inject SettingsService Settings
 @inject ProviderService Provider
-@inject TranslatorService Transalor
-
+@inject TranslatorService Translator
+@inject AlertServices Alert
 @if (State.ChatHistory != null)
 {
     <MudStack Row>
-        @if (_Main.isMobile==false)
-    {
+        @if (_Main.isMobile == false)
+        {
             <MudImage Class="animMouse" Src="Content/mouseWizard.png" Height="200" ObjectFit="ObjectFit.Contain"></MudImage>
-    }
+        }
 
-        <MudStack Justify="Justify.Center"  Wrap="Wrap.Wrap"  Class="ma-3 w-100">
+        <MudStack Justify="Justify.Center" Wrap="Wrap.Wrap" Class="ma-3 w-100">
             <div>
                 <MudText Align="Align.Center">System information</MudText>
                 <MudDivider DividerType="DividerType.Middle"></MudDivider>
             </div>
-        
+
             @if (double.TryParse(Provider.MaxContextSize, out var maxValue) && State.ChatHistory.ChatContextSize.HasValue)
             {
                 <div style="width:100%;">
@@ -68,6 +68,28 @@
                 <MudButton Color="Color.Secondary" Disabled="@(_Main.messengerPage.isBusy || _Main.messengerPage.isGenerating || !Provider.Status)" OnClick="AddOOCToNextMessage" Variant="Variant.Filled">add to next message</MudButton>
             </MudStack>
         </MudExpansionPanel>
+        <MudExpansionPanel Text="🎨 Story Customizer ">
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h6">🎬 Override scenario</MudText>
+                <MudTextField @bind-Value="newScenario" Label="Scenario" Variant="Variant.Outlined" Clearable AutoGrow Lines="2" HelperText="Write a new scenario for the dialogue" HelperTextOnFocus=true></MudTextField>
+                <MudStack Row>
+                    <MudButton Color="Color.Primary" Disabled="@(_Main.messengerPage.isBusy || _Main.messengerPage.isGenerating || !Provider.Status)" OnClick="RewriteScenario" Variant="Variant.Filled">Apply</MudButton>
+                    <MudTooltip Text="@State.ChatHistory.InitialScenario">
+                        <MudButton StartIcon="@Icons.Material.Filled.Undo" OnClick="RevertScenario" Disabled="string.IsNullOrEmpty(State.ChatHistory.InitialScenario)" Variant="Variant.Outlined">Revert to initial scenario</MudButton>
+                    </MudTooltip>
+                </MudStack>
+            </MudStack>
+            <MudDivider Class="my-2"></MudDivider>
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.h6">💬 Generate new first message</MudText>
+                <MudTextField @bind-Value="NewMessageUserWishes" Label="Player's wishes" Variant="Variant.Outlined" Clearable AutoGrow Lines="2" HelperText="Write what you want to see in the new first message" HelperTextOnFocus=true></MudTextField>
+                <MudStack Row  >
+                    <MudButton Color="Color.Primary"  Disabled="@(_Main.messengerPage.isBusy || _Main.messengerPage.isGenerating || !Provider.Status)" OnClick="NewFirstMessage" Variant="Variant.Filled">Generate new</MudButton>
+                    <MudSwitch Label="Use current first message as a sample" @bind-Value=useCurrentFirstMessageAsSample Color="Color.Primary"></MudSwitch>
+                </MudStack>
+            </MudStack>
+
+        </MudExpansionPanel>
     </MudExpansionPanels>
 
     <MudText Typo="Typo.h5" Align="Align.Center">Action Queue</MudText>
@@ -86,7 +108,7 @@
                     </MudPaper>
                 </MudItem>
                 <MudItem md="6" xs="12">
-                    <MudPaper >
+                    <MudPaper>
                         <MudList T="string" Class="d-flex flex-column mud-height-full" Style="min-height:270px">
                             <MudListSubheader Class="noselect">In action</MudListSubheader>
                             <MudDropZone T="Speaker" CanDropClass="mud-alert-text-success" ApplyDropClassesOnDragStarted="true" Identifier="true" AllowReorder Class="flex-grow-1"></MudDropZone>
@@ -94,7 +116,7 @@
                     </MudPaper>
                 </MudItem>
             </MudGrid>
-    
+
 
         </ChildContent>
         <ItemRenderer>
@@ -131,7 +153,7 @@
                 }
                 <MudListItem Ripple="false" T="string" Class="noselect">
                     <ChildContent>
-                        <MudGrid  Justify="Justify.Center"  Spacing="0">
+                        <MudGrid Justify="Justify.Center" Spacing="0">
                             <MudItem md="3" xs="3">
                                 <MudAvatar Class="@borderClass">
                                     @{
@@ -156,8 +178,8 @@
                                 </MudTooltip>
                             </MudItem>
 
-                      
-                   
+
+
                         </MudGrid>
                     </ChildContent>
 
@@ -189,12 +211,14 @@
     string nextWord = "Chat now";
     string OOCPreview = "";
     string maxContextsize = "no data";
+    string NewMessageUserWishes = "";
+    bool useCurrentFirstMessageAsSample = false;
+    string newScenario = "";
     async Task TranslatePlayerWishes()
     {
-        State.ChatHistory.PlayerWishes = await Transalor.TranslateForLLM(State.ChatHistory.PlayerWishes);
+        State.ChatHistory.PlayerWishes = await Translator.TranslateForLLM(State.ChatHistory.PlayerWishes);
         StateHasChanged();
     }
-
 
     public void ReRender()
     {
@@ -211,6 +235,39 @@
         await _Main.messengerPage.StartGeneration(Provider.Wizard.Narrator, true);
 
     }
+    async Task RewriteScenario()
+    {
+        State.ChatHistory.InitialScenario = State.ChatHistory.Scenario;
+        State.ChatHistory.Scenario = await Translator.TranslateForLLM(newScenario);
+        Alert.SuccessAlert("New scenario applied");
+        StateHasChanged();
+    }
+    void RevertScenario()
+    {
+        State.ChatHistory.Scenario = State.ChatHistory.InitialScenario;
+        State.ChatHistory.InitialScenario = "";
+        Alert.SuccessAlert("Revert scenario to initial");
+        StateHasChanged();
+    }
+
+    async Task NewFirstMessage()
+    {
+        string TranslatedWish = await Translator.TranslateForLLM(NewMessageUserWishes);
+        string currentFirstMessage = "";
+        if (useCurrentFirstMessageAsSample)
+        {
+            var message = State.ChatHistory.GetCurrentFirstMessage();
+            currentFirstMessage = $"\nSample first message from the card creator: [{message.Content}]";
+        }
+
+        string PreparePromt = $"{State.ChatHistory?.CharDesription}{currentFirstMessage}\nUser's wishes: {TranslatedWish}\n";
+        var Response = await Provider.Wizard.WizardRequest(PreparePromt, Wizard.WizardFunction.CustomFirstMessage, 1.4, 300);
+        State.ChatHistory.AddNewAltFirstMessage(Settings.CurrentInstruct, Response.Content);
+        await State.ChatHistory.NextFirstMessage(true, Translator);
+        _Main.messengerPage.ReRenderState();
+    }
+
+    
 
     async Task AddOOCToNextMessage()
     {
@@ -234,7 +291,7 @@
     }
     async Task<string> OOCFormatter()
     {
-        OOCPreview = await Transalor.TranslateForLLM(OOCPreview);
+        OOCPreview = await Translator.TranslateForLLM(OOCPreview);
         return $"`[OOC:{OOCPreview}]`";
     }
 

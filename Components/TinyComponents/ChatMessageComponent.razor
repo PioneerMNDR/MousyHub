@@ -35,7 +35,10 @@
                          <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(()=>{DeleteEvent.InvokeAsync(Message);})"></MudIconButton>
                          @if (Chat.ChatHistory.Messages.First() == Message && Chat.ChatHistory.Alt_greetings != null && Chat.ChatHistory.Alt_greetings.Length > 0)
                         {
-                            <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.NextPlan" OnClick="@(()=>NextFirstMessageEvent.InvokeAsync())" title="Alternative message"></MudIconButton>
+                            <MudTooltip Text="@TextForAltMessagesTip()">
+                                <MudIconButton Size="Size.Small"   Icon="@Icons.Material.Filled.ArrowForwardIos" OnClick="@(()=>NextFirstMessageEvent.InvokeAsync())" ></MudIconButton>
+                            </MudTooltip>
+                           
                         }
 
                     </MudStack>
@@ -113,6 +116,12 @@
         }
         message.Content = newContent;
         isEdited = true;
+    }
+
+    string TextForAltMessagesTip()
+    {
+        string t = $"Alternative messages\n{Chat.ChatHistory.IndexAltMessage()}/{Chat.ChatHistory.AlterativeFirstMessages.Count - 1}";
+        return t;
     }
     private async Task SaveMessage()
     {

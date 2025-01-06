@@ -42,7 +42,7 @@ namespace MousyHub.Models
             }
             else
             {
-                ChatHistory.ChatLoading(Settings.CurrentUserProfile, TakePerson(charCard), AllPersons);
+                ChatHistory.ChatLoading(Settings.CurrentUserProfile, TakePerson(charCard), AllPersons);       
             }
             await SetContextSize();
         }
@@ -130,7 +130,7 @@ namespace MousyHub.Models
                 preparePromt += "\n" + item.Owner.Name + ": " + item.Content;
             }
             preparePromt += "[END OF DIALOGUE]";
-            var res = await Provider.Wizard.WizardRequest(preparePromt, Misc.Wizard.WizardFunction.AnswerAssistant, ChatHistory.MainUser.Name, ChatHistory.GetLastMessage(true).Owner.Name);
+            var res = await Provider.Wizard.WizardRequest(preparePromt, Misc.Wizard.WizardFunction.AnswerAssistant,UserName: ChatHistory.MainUser.Name,CharName: ChatHistory.GetLastMessage(true).Owner.Name);
             if (res.IsSuccess)
             {
                 Console.WriteLine(res.Content);
@@ -143,6 +143,7 @@ namespace MousyHub.Models
                 return "";
             }
         }
+        
         public void AddPerson(Person person)
         {
             if (AllPersons.Contains(person) == false)

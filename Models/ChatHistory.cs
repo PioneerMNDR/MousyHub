@@ -1,5 +1,7 @@
-﻿using MousyHub.Models.Misc;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using MousyHub.Models.Misc;
 using MousyHub.Models.Model;
+using MousyHub.Models.Services;
 using Newtonsoft.Json;
 
 namespace MousyHub.Models
@@ -63,15 +65,14 @@ namespace MousyHub.Models
             }
             AddToQueue(MainUser, true);
             AddToQueue(MainCharacter, true);
-
-
-
         }
 
 
         public string ChatName { get; set; }
         public string? Mes_Example { get; set; }
         public string? Scenario { get; set; }
+        //Buffer for the initial Scenario if the original is rewritten
+        public string? InitialScenario { get; set; }
         public string? FirstMessage { get; set; }
         public string? CharDesription { get; set; }
         public string? CharShortDesription { get; set; }
@@ -315,6 +316,7 @@ namespace MousyHub.Models
         {
             AlterativeFirstMessages.Clear();
             var InstructContent = PromtBuilder.BotMessageFormatting(instruct, person.Name);
+            AlterativeFirstMessages.Add(Messages[0]);
             foreach (var item in Alt_greetings)
             {
                 string content = item;
@@ -323,21 +325,61 @@ namespace MousyHub.Models
                 var newMes = new Message(content, InstructContent, person);
                 AlterativeFirstMessages.Add(newMes);
             }
-            var newMesAsMainFirst = new Message(FirstMessage, InstructContent, person);
-            AlterativeFirstMessages.Add(newMesAsMainFirst);
+       
+
+        }
+        public void AddNewAltFirstMessage(Instruct instruct, string RawContent)
+        {
+            var InstructContent = PromtBuilder.BotMessageFormatting(instruct, MainCharacter.Name);
+            var ProcContent = PromtBuilder.TagPlaceholder(RawContent, MainUser.Name, MainCharacter.Name);
+            var newMes = new Message(ProcContent, InstructContent, MainCharacter);
+            AlterativeFirstMessages.Add(newMes);
         }
 
-        public void NextFirstMessage()
+        public async Task NextFirstMessage(bool NextIsLastAddedMessage=false,TranslatorService? translator = null)
         {
             if (AlterativeFirstMessages.Count > 1)
             {
-                int oldIndex = AlterativeFirstMessages.IndexOf(Messages[0]);
-                int newIndex = (oldIndex + 1) % AlterativeFirstMessages.Count;
-                Messages[0] = AlterativeFirstMessages[newIndex];
+                if (NextIsLastAddedMessage)
+                {
+                    // Получаем индекс последнего элемента в списке AlterativeFirstMessages
+                    int lastIndex = AlterativeFirstMessages.Count - 1;
+                    Messages[0] = AlterativeFirstMessages[lastIndex];
+                }
+                else
+                {
+                    int oldIndex = AlterativeFirstMessages.IndexOf(Messages[0]);
+                    int newIndex = (oldIndex + 1) % AlterativeFirstMessages.Count;
+                    Messages[0] = AlterativeFirstMessages[newIndex];
+                }              
             }
-
+            if (translator != null && string.IsNullOrEmpty(Messages[0].UserNativeLanguageContent))
+            {
+                await Messages[0].TranslateMessage(translator);
+            }
         }
 
+        public int IndexAltMessage()
+        {
+            if (AlterativeFirstMessages.Count>0)
+            {
+                if (AlterativeFirstMessages.IndexOf(Messages[0])==-1)
+                {
+                    return 0;
+                }
+                return AlterativeFirstMessages.IndexOf(Messages[0]);
+            }
+            return 0;
+        }
+
+        public Message GetCurrentFirstMessage()
+        {
+            if (Messages.Count>0)
+            {
+                return Messages[0];
+            }
+            return new Message();
+        }
         public Message GetLastMessage(bool avoidNarrator = false)
         {
             Message Message = new Message();

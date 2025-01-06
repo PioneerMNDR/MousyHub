@@ -194,11 +194,7 @@
     }
     async Task NextFirstMessage()
     {
-        ChatHistory.NextFirstMessage();
-        if (string.IsNullOrEmpty(ChatHistory.Messages.First().UserNativeLanguageContent))
-        {
-            await ChatHistory.Messages.First().TranslateMessage(Translator);
-        }
+        await ChatHistory.NextFirstMessage(false,Translator);
         StateHasChanged();
     }
 
