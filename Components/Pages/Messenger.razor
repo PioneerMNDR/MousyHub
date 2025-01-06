@@ -37,7 +37,7 @@
         <MudButton Variant="Variant.Outlined" OnClick="@(Main.ToggleDrawer)" StartIcon="@Icons.Material.Filled.OpenInFull" Size="Size.Small">Wizard</MudButton>
     </MudStack>
 
-    <Chat @ref=ChatPage ChatHistory="State.ChatHistory" @bind-isVisibleUnpauseButton=isPaused AbortCallback="StopGeneration" isBusy="isBusy" isGenerating=isGenerating ClickSend="@((Person per)=>StartGeneration(per,false))" ClickRegenerate="Regenerate" ClickContinueGenerate="ContinueGeneration"></Chat>
+    <Chat @ref=ChatPage ChatHistory="State.ChatHistory" @bind-isVisibleUnpauseButton=isPaused AbortCallback="StopGeneration" isBusy="isBusy" isGenerating=isGenerating ClickSend="@((Person per)=>StartGeneration(per,false))" ClickRegenerate="Regenerate" SkipUserTurn="SkipUserTurn" ClickContinueGenerate="ContinueGeneration"></Chat>
 
 
 }
@@ -158,16 +158,7 @@
         }
         StateHasChanged();
     }
-    async Task ContinueGeneration(Message lastMessage)
-    {
 
-        Main.RefreshWizardPage();
-        StateHasChanged();
-        var promt = await State.ChatHistory.PromtToLLM(Settings.CurrentInstruct, lastMessage.Owner);
-        Guid currentGuid = lastMessage.GuidMessage;
-        await Generation(currentGuid, lastMessage.Owner, promt);
-
-    }
 
 
     async Task Generation(Guid messageGuid, Person person, string promt)
@@ -238,6 +229,16 @@
         }
     }
 
+    async Task ContinueGeneration(Message lastMessage)
+    {
+
+        Main.RefreshWizardPage();
+        StateHasChanged();
+        var promt = await State.ChatHistory.PromtToLLM(Settings.CurrentInstruct, lastMessage.Owner);
+        Guid currentGuid = lastMessage.GuidMessage;
+        await Generation(currentGuid, lastMessage.Owner, promt);
+
+    }
     async Task Regenerate(Person person)
     {
         if (person.IsUser)
@@ -245,12 +246,22 @@
             Alert.WarningAlert("The message from the user cannot be regenerated");
             return;
         }
-        if (isGenerating == false && State.ChatHistory.Messages.Count > 0)
+        if (isGenerating == false && State.ChatHistory.Messages.Count > 1)
         {
             isGenerating = true;
             await State.ChatHistory.DeleteLastMessage();
             await StartGeneration(person, true);
         }
+    }
+    async Task SkipUserTurn()
+    {
+        @if (State.NextPerson!=null && State.NextPerson.IsUser==false)
+        {
+            State.NextPerson = State.ChatHistory.QueueMoveOrder();
+            Main.RefreshWizardPage();
+            await StartGeneration(State.NextPerson, false);
+        }
+   
     }
 
     async Task StopGeneration()
