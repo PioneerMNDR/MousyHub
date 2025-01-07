@@ -11,6 +11,7 @@
 @inject UploaderService Uploader
 @inject AlertServices Alert
 @inject TranslatorService Translator
+@inject RAGService RAGService
 @inject IJSRuntime JS
 
 
@@ -37,7 +38,7 @@
         <MudButton Variant="Variant.Outlined" OnClick="@(Main.ToggleDrawer)" StartIcon="@Icons.Material.Filled.OpenInFull" Size="Size.Small">Wizard</MudButton>
     </MudStack>
 
-    <Chat @ref=ChatPage ChatHistory="State.ChatHistory" @bind-isVisibleUnpauseButton=isPaused AbortCallback="StopGeneration" isBusy="isBusy" isGenerating=isGenerating ClickSend="@((Person per)=>StartGeneration(per,false))" ClickRegenerate="Regenerate" SkipUserTurn="SkipUserTurn" ClickContinueGenerate="ContinueGeneration"></Chat>
+    <Chat @ref=ChatPage ChatHistory="State.ChatHistory" @bind-isVisibleUnpauseButton=isPaused  AbortCallback="StopGeneration" isRAGing="isRAGing" isBusy="isBusy" isGenerating=isGenerating ClickSend="@((Person per)=>StartGeneration(per,false))" ClickRegenerate="Regenerate" SkipUserTurn="SkipUserTurn" ClickContinueGenerate="ContinueGeneration"></Chat>
 
 
 }
@@ -46,6 +47,7 @@
     public bool isCharEditMode = false;
     public bool isGenerating = false;
     public bool isPaused = false;
+    public bool isRAGing = false;
     public bool isBusy { get { if (!isGenerating) return Provider.LLModel?.isBusy ?? false; else return false; } } // if summarizing or other inference process run (while isn't generating)
     public List<CharCard> Cards = new List<CharCard>();
     [CascadingParameter]
@@ -103,6 +105,17 @@
         if (Provider.Status && isGenerating)
             await StopGeneration();
     }
+
+    async Task RAG_Searching()
+    {
+        if (Settings.User.RAGOptions.Enabled && Settings.User.RAGOptions.Available && await RAGService.CheckMemoryAvailable(State.ChatHistory.ChatName))
+        {
+            isRAGing = true;
+            State.ChatHistory.MemoryFromChat = await RAGService.SearchInMemory(State.ChatHistory.GetLastMessage().Content, State.ChatHistory.ChatName);
+            StateHasChanged();
+            isRAGing = false;
+        }
+    }
     /// <summary>
     /// The method begins generation with the chosen character if it is not the user.
     /// </summary>
@@ -117,6 +130,7 @@
         {
             return;
         }
+        await RAG_Searching();
         //AddEmptyMessage run before PromtToLLM for include next bot name in message
         Guid currentGuid = State.ChatHistory.AddEmptyMessage(person, Settings.CurrentInstruct);
         var promt = await State.ChatHistory.PromtToLLM(Settings.CurrentInstruct, person);
@@ -131,6 +145,12 @@
         {
             Alert.InfoAlert("Summarizing... please, wait.");
             bool isSuccess = await State.ChatSummarize();
+            if (Settings.User.RAGOptions.Enabled)
+            {
+                isRAGing = true;
+                await State.ImportChatToMemory();
+                isRAGing = false;
+            }
             if (!isSuccess)
                 Alert.ErrorAlert("Summarizing error");
             else
@@ -255,7 +275,7 @@
     }
     async Task SkipUserTurn()
     {
-        @if (State.NextPerson!=null && State.NextPerson.IsUser==false)
+        @if (State.NextPerson != null && State.NextPerson.IsUser == false)
         {
             State.NextPerson = State.ChatHistory.QueueMoveOrder();
             Main.RefreshWizardPage();

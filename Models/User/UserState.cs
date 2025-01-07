@@ -14,6 +14,7 @@ namespace MousyHub.Models.User
         public string ProfileName { get; set; }
         public LocalLLamaLaunchConfig SelfInferenceConfig { get; set; } = new LocalLLamaLaunchConfig();
         public TranslatorOptions TranslatorOptions { get; set; } = new TranslatorOptions();
+        public RAGOptions RAGOptions { get; set; } =  new RAGOptions();
         public int CurrentMaxToken { get; set; } = 100;
         public int CurrentContextLength { get; set; } = 4096;
         public bool PauseBeforeGenerating { get; set; } = false;

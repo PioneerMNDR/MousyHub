@@ -11,6 +11,7 @@ namespace MousyHub.Models
         private SettingsService Settings { get; set; }
         private ProviderService Provider { get; set; }
 
+        private RAGService RAGService { get; set; }
         private TranslatorService TranslatorService { get; set; }
 
         public List<Person> AllPersons { get; set; } = new List<Person>();
@@ -19,7 +20,7 @@ namespace MousyHub.Models
 
 
 
-        public ChatState(UploaderService uploaderService, SettingsService settingsService, ProviderService Provider, TranslatorService translatorService)
+        public ChatState(UploaderService uploaderService, SettingsService settingsService, ProviderService Provider, TranslatorService translatorService, RAGService RAG)
         {
             UploaderService = uploaderService;
             Settings = settingsService;
@@ -31,6 +32,7 @@ namespace MousyHub.Models
             }
             UploaderService.SaveInfoEvent += SaveChatHistory;
             TranslatorService = translatorService;
+            RAGService = RAG;
         }
         public async Task CheckChatHistory(CharCard charCard)
         {
@@ -70,6 +72,7 @@ namespace MousyHub.Models
             //AltMessages
             ChatHistory.FillAltFirstMessagesList(ChatHistory.MainCharacter, Settings.CurrentInstruct);
             await SetContextSize();
+            await RAGService.ClearMemories(ChatHistory.ChatName);
         }
 
         public async Task SetContextSize()
@@ -83,6 +86,7 @@ namespace MousyHub.Models
 
 
         //Summarize the chat and write the summarization result to Chat History.Summarized Context
+        //*It is necessary to move the method to another class
         public async Task<bool> ChatSummarize()
         {
             string preparePromt = "";
@@ -104,6 +108,7 @@ namespace MousyHub.Models
                 }
             }
             var res = await Provider.Wizard.WizardRequest(preparePromt, Misc.Wizard.WizardFunction.Summary);
+           
             if (res.IsSuccess)
             {
                 ChatHistory.SummarizeContext = res.Content;
@@ -118,7 +123,24 @@ namespace MousyHub.Models
                 return false;
             }
         }
+        public async Task ImportChatToMemory()
+        {
+            if (Settings.User.RAGOptions.Enabled && Settings.User.RAGOptions.Available)
+            {
+                string BodyRequest = "";
+                foreach (var item in ChatHistory.Messages)
+                {
+                    if (item != ChatHistory.GetLastMessage())
+                    {
+                        BodyRequest += "\n" + item.Owner.Name + ": " + item.Content;
+                    }
+                }
+               await RAGService.ImportMemory(BodyRequest, ChatHistory.ChatName);
+            }
+        }
+
         //Prepare prompt for quick answers and return the result
+        //*It is necessary to move the method to another class
         public async Task<string> AnswerAssistant()
         {
             string preparePromt = "";
@@ -134,9 +156,14 @@ namespace MousyHub.Models
             if (res.IsSuccess)
             {
                 Console.WriteLine(res.Content);
-                var c = await TranslatorService.TranslateForUser(res.Content);
-                Console.WriteLine(c);
-                return c;
+                string response = res.Content;
+                if (Settings.User.TranslatorOptions.isEnabled)
+                {
+                     response = await TranslatorService.TranslateForUser(res.Content);
+                }
+
+                Console.WriteLine(response);
+                return response;
             }
             else
             {

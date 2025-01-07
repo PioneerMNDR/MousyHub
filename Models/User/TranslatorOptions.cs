@@ -1,10 +1,11 @@
 ﻿using GTranslate;
-
+using System.Text.Json.Serialization;
 
 namespace MousyHub.Models.User
 {
     public class TranslatorOptions
     {
+        [JsonIgnore]
         public static Dictionary<string, string> LanguageCodes = new Dictionary<string, string>
         {
             { "Afrikaans", "af" },

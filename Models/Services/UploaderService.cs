@@ -13,13 +13,22 @@ namespace MousyHub.Models.Services
         public SettingsService settingsService;
         private readonly IConfiguration Configuration;
         public readonly string ModelsPath;
-        public readonly string FullModelsPath;
+        public readonly string EmbeddingModelsPath;
 
         public UploaderService(IConfiguration configuration)
         {
             Configuration = configuration;
             ModelsPath = configuration["ModelsPath"] ?? "/wwwroot/LocalModels/";
-            FullModelsPath = Environment.CurrentDirectory + ModelsPath;
+            EmbeddingModelsPath = configuration["EmbeddingModelsPath"] ?? "/wwwroot/LocalModels/EmbeddingModel/";
+            if (!Directory.Exists(ModelsPath))
+            {
+                ModelsPath = Environment.CurrentDirectory + ModelsPath;
+            }
+            if (!Directory.Exists(EmbeddingModelsPath))
+            {
+                EmbeddingModelsPath = Environment.CurrentDirectory + EmbeddingModelsPath;
+            }
+
         }
 
         public bool isBusy { get; private set; }
@@ -171,7 +180,7 @@ namespace MousyHub.Models.Services
 
         public List<string> LoadModelsPath()
         {
-            string directory = FullModelsPath;
+            string directory = ModelsPath;
             List<string> list = new List<string>();
             if (!Directory.Exists(directory))
             {
@@ -183,6 +192,22 @@ namespace MousyHub.Models.Services
                 list.Add(file);
             }
             return list;
+        }
+        public string LoadFirstEmbeddingModelPath()
+        {
+            string directory = EmbeddingModelsPath;
+            List<string> list = new List<string>();
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+                return "";
+            }
+            foreach (string file in Directory.GetFiles(directory, "*.gguf"))
+            {
+                list.Add(file);
+            }
+            return list.FirstOrDefault("");
+
         }
 
         public string LoadGrammar(string FileNameWithExtension)

@@ -1,4 +1,5 @@
-﻿using GTranslate.Translators;
+﻿using DocumentFormat.OpenXml.Bibliography;
+using GTranslate.Translators;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -43,6 +44,7 @@ namespace MousyHub.Models.Services
         {
             try
             {
+             
                 var result = await _translator.TranslateAsync(text, "en", Settings.User.TranslatorOptions.SelectLanguage.Value);
                 RequestCount++;
                 Console.WriteLine("TranslatorRequestCount:" + RequestCount);

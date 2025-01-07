@@ -379,4 +379,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-/wwwroot/LocalModels/EmbeddingModel/nomic-embed-text-v1.5.f32.gguf
+

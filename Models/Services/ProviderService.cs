@@ -37,10 +37,12 @@ namespace MousyHub.Models.Services
         public event TaskBoolDelegate ConnectionEvent;
         public event Action ConnectionChangeEvent;
         private UploaderService UploaderService;
-        public ProviderService(UploaderService uploaderService)
+        private RAGService RAG;
+        public ProviderService(UploaderService uploaderService, RAGService RAG)
         {
             SelectType = ConnectionsTypes.First();
             UploaderService = uploaderService;
+            this.RAG = RAG;
         }
 
         public async Task<string> NewConnect(SettingsService Settings)
@@ -63,6 +65,7 @@ namespace MousyHub.Models.Services
                     if (!IsSuccessL)
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
+                    await TryRAGConnect(Settings.User.RAGOptions);
                     return await LLModel.Model();
                 case APIType.Chat_Completions:
                     break;
@@ -171,13 +174,17 @@ namespace MousyHub.Models.Services
                 return "";
             }
             return "";
-            //var Core = new LocalLlamaCore();
-            //await Core.Run(modelParams);
-            //var g = new LocalLLamaProvider(Core);
-            //Wizard.Run(g, instruct, generationConfig);
-            //WizardStatus = true;
-            //return "";
         }
+        public async Task TryRAGConnect(RAGOptions options)
+        {
+            if (options.Enabled)
+            {
+                string modelpath = UploaderService.LoadFirstEmbeddingModelPath();
+                options.Available = RAG.TryRun(modelpath);
+            }
+           
+        }
+
 
     }
 }

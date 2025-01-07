@@ -8,6 +8,7 @@ using MousyHub.Models.Misc;
 using MousyHub.Models.Services;
 using MousyHub.Models.Services.URLHandle;
 using MudExtensions.Services;
+using Microsoft.KernelMemory;
 
 
 
@@ -45,6 +46,7 @@ builder.Services.AddSingleton<ProviderService>();
 builder.Services.AddSingleton<UpdaterService>();
 builder.Services.AddSingleton<DiagnosticsService>();
 builder.Services.AddSingleton<UploaderService>();
+builder.Services.AddSingleton<RAGService>();
 builder.Services.AddSingleton<AdvancedQueryService>();
 string[] supportedCul = ["en-US", "ru-RU"];
 var localizationOptions = new RequestLocalizationOptions().SetDefaultCulture(supportedCul[0])

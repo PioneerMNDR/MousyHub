@@ -41,7 +41,7 @@ namespace MousyHub.Models.Services.URLHandle
             isBusy = true;
             _ = Tick();
             downloadProgress.FileName = GGUF_FileName;
-            var path = await HFDownloader.DownloadFileAsync(id, GGUF_FileName, progress: downloadProgress, localDir: UploaderService.FullModelsPath);
+            var path = await HFDownloader.DownloadFileAsync(id, GGUF_FileName, progress: downloadProgress, localDir: UploaderService.ModelsPath);
             isBusy = false;
             if (EndDownloadEvent != null)
                 EndDownloadEvent.Invoke(path, EventArgs.Empty);

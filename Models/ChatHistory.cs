@@ -85,8 +85,11 @@ namespace MousyHub.Models
 
         public string? SummarizeContext { get; set; }
         public string? PlayerWishes { get; set; }
-
         public string? OCC_PlayerWishes { get; set; }
+        /// <summary>
+        /// Stores the value received from RAG, reset when used
+        /// </summary>
+        public string? MemoryFromChat { get; set; }
 
         public int? ChatContextSize { get; set; }
 
@@ -112,9 +115,15 @@ namespace MousyHub.Models
             SystemMessage = PromtBuilder.SystemMessage(instruct, this, person);
             string finalpromt = SystemMessage;
             //Special condition for the narrator
-            if (person.Name == "Narrator" && PlayerWishes != null && PlayerWishes != "")
+            if (person.Name == "Narrator" && !string.IsNullOrEmpty(PlayerWishes))
             {
                 finalpromt += "\n[Player's wishes: " + PlayerWishes + "]";
+            }
+            //Memory From RAG
+            if (!string.IsNullOrEmpty(MemoryFromChat))
+            {
+                finalpromt += "\n[Early Memories from Chat (Possibly for use): {" + MemoryFromChat + "}]";
+                MemoryFromChat = string.Empty;
             }
             Message lastmessage = new Message();
             foreach (var item in Messages)

@@ -24,12 +24,12 @@
 </MudAnimate>
 
 <MudPopover Open="isOpenAvatar" OverflowBehavior="OverflowBehavior.FlipNever" Fixed AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.CenterRight">
-     <MudImage ObjectFit="ObjectFit.Fill" Height="450" @onclick="@(()=>ToggleAvatar(AvatarUrl))" Src="@($"data:image/png;base64,{AvatarUrl}")"></MudImage>
- </MudPopover>
+    <MudImage ObjectFit="ObjectFit.Fill" Height="450" @onclick="@(()=>ToggleAvatar(AvatarUrl))" Src="@($"data:image/png;base64,{AvatarUrl}")"></MudImage>
+</MudPopover>
 
 
 
- @if (ChatHistory != null)
+@if (ChatHistory != null)
 {
     <MudPaper Style="display:flex;flex-direction:column;height:86vh;" Class="anim1">
         <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-2 pb-2" id="chat" Style="flex-grow:1;overflow-y:auto;">
@@ -47,7 +47,7 @@
             @if (FastAnswers.Count > 0)
             {
                 <MudStack Row Justify="Justify.Center" StretchItems="StretchItems.All" Class="mx-4 mb-2">
-                     @for (int i = 0; i < Math.Min(FastAnswers.Count, 3); i++)
+                    @for (int i = 0; i < Math.Min(FastAnswers.Count, 3); i++)
                     {
                         int n = i;
                         <MudButton IconColor="Settings.User.QuickRepliesSetings[n].MudColor" StartIcon="@Icons.Material.Filled.Brightness1" Class="QuickReplyClass" Variant="Variant.Outlined" Color="Color.Default" OnClick="@(()=>EnterFastAnswer(FastAnswers[n]))">@FastAnswers[n]</MudButton>
@@ -57,21 +57,21 @@
             }
 
 
-            <MudTextFieldExtended OnKeyUp="EnterEvent" OnKeyDown="DeleteNewlineOnEnterEvent"  @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
-                 <AdornmentStart>
-                     <MudMenu Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu" Class="menuAnim">
-                         <MudMenuItem Icon="@Icons.Material.Filled.Quickreply" OnClick="QuickReplyGenerate" title="Generate quick reply on the last message">Quick reply</MudMenuItem>
-                         <MudMenuItem Icon="@Icons.Material.Filled.Sync" OnClick="()=>ClickRegenerate.InvokeAsync(State.ChatHistory.GetLastMessage().Owner)">Regenerate</MudMenuItem>
-                         <MudMenuItem Icon="@Icons.Material.Filled.Block" OnClick="()=>SkipUserTurn.InvokeAsync()">Skip your message</MudMenuItem>
-                         <MudMenuItem Icon="@Icons.Material.Filled.AddComment" OnClick="()=>ClickContinueGenerate.InvokeAsync(State.ChatHistory.GetLastMessage())">Continue</MudMenuItem>                  
-                     </MudMenu>
-                 </AdornmentStart>
-                 <AdornmentEnd>
-                     <div class="me-3">
-                         @if (isBusy)
+            <MudTextFieldExtended OnKeyUp="EnterEvent" OnKeyDown="DeleteNewlineOnEnterEvent" @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
+                <AdornmentStart>
+                    <MudMenu Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu" Class="menuAnim">
+                        <MudMenuItem Icon="@Icons.Material.Filled.Quickreply" OnClick="QuickReplyGenerate" title="Generate quick reply on the last message">Quick reply</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Sync" OnClick="()=>ClickRegenerate.InvokeAsync(State.ChatHistory.GetLastMessage().Owner)">Regenerate</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.Block" OnClick="()=>SkipUserTurn.InvokeAsync()">Skip your message</MudMenuItem>
+                        <MudMenuItem Icon="@Icons.Material.Filled.AddComment" OnClick="()=>ClickContinueGenerate.InvokeAsync(State.ChatHistory.GetLastMessage())">Continue</MudMenuItem>
+                    </MudMenu>
+                </AdornmentStart>
+                <AdornmentEnd>
+                    <div class="me-3">
+                        @if (isBusy || isRAGing)
                         {
                             <MudAnimate Selector=".animbusy" AnimationTiming=AnimationTiming.Linear Value="0" Paused=false ValueSecondary=1000 Duration="2" AnimationType="AnimationType.Rotate" Infinite>
-                 </MudAnimate>
+                            </MudAnimate>
 
                             <MudTooltip Text="The model is occupied with other process">
                                 <MudIcon Class="animbusy" Color=Color.Error Icon="@Icons.Material.Filled.Cyclone"></MudIcon>
@@ -98,7 +98,6 @@
                             {
                                 <MudIconButton Class="micanim" OnClick="StopRec" Variant="Variant.Filled" Color=Color.Error Icon="@Icons.Material.Filled.MicOff"></MudIconButton>
                             }
-                          
                         }
                     </div>
                 </AdornmentEnd>
@@ -146,6 +145,8 @@
     [Parameter]
     public bool isBusy { get; set; }
     [Parameter]
+    public bool isRAGing { get; set; }
+    [Parameter]
     public EventCallback<bool> isVisibleUnpauseButtonChanged { get; set; }
 
     public List<string> FastAnswers { get; set; } = new List<string>();
@@ -161,7 +162,7 @@
     {
         Person CurrentPerson = ChatHistory.GetCurrentSpeakerInQueue();
         Person NextPerson = ChatHistory.QueueMoveOrder();
-        if (CurrentPerson.IsUser==false)
+        if (CurrentPerson.IsUser == false)
         {
             Alerts.ErrorAlert("Error building queue. Write to the developer about this error");
         }
@@ -181,6 +182,7 @@
 
     }
 
+
     private async Task DeleteMessage(Message message)
     {
         await ChatHistory.DeleteMessage(message);
@@ -194,7 +196,7 @@
     }
     async Task NextFirstMessage()
     {
-        await ChatHistory.NextFirstMessage(false,Translator);
+        await ChatHistory.NextFirstMessage(false, Translator);
         StateHasChanged();
     }
 
@@ -219,7 +221,7 @@
         if (e.Key == "Enter" && e.ShiftKey == false && !string.IsNullOrWhiteSpace(CurrentMessage))
         {
             CurrentMessage = CurrentMessage.TrimEnd('\n');
-            await  SendMessage();
+            await SendMessage();
             await ClearMessage();
             await mudText.SetText("");
             StateHasChanged();
