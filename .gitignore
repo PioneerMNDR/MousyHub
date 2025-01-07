@@ -366,6 +366,8 @@ MigrationBackup/
 # Игнорировать все файлы .json
 *.json
 
+*.gguf
+
 # Исключить файлы .json в папке default
 !default/*.json
 
@@ -377,3 +379,4 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
+/wwwroot/LocalModels/EmbeddingModel/nomic-embed-text-v1.5.f32.gguf
