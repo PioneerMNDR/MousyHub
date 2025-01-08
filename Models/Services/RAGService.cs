@@ -61,8 +61,9 @@ namespace MousyHub.Models.Services
             {
                 if (await Kernel.IsDocumentReadyAsync(chatId))
                     await Kernel.DeleteDocumentAsync(chatId);
-
+                Console.WriteLine($"Import chat {chatId} in memory");
                 await Kernel.ImportTextAsync(dialog, documentId: chatId);
+                Console.WriteLine($"Import successful");
             }
 
 
@@ -84,13 +85,14 @@ namespace MousyHub.Models.Services
             if (Kernel!=null && await Kernel.IsDocumentReadyAsync(chatId))
             {
                 var searchResult = await Kernel.SearchAsync(request, filter: MemoryFilters.ByDocument(chatId));
+                var g = await Kernel.ListIndexesAsync();
                 if (searchResult.NoResult || searchResult.Results.Count==0)
                 {
                     return "";
                 }
                 Citation bigResult = searchResult.Results[0];
                 // Store the document IDs so we can load all their records later
-                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
                 Console.WriteLine($"***Memory Search Result***");
                 Console.WriteLine($"Document ID: {bigResult.DocumentId}");
                 Console.WriteLine($"Relevant partitions: {bigResult.Partitions.Count}");

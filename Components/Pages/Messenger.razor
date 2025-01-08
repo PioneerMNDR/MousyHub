@@ -140,17 +140,18 @@
             State.NextPerson = State.ChatHistory.QueueMoveOrder();
             Main.RefreshWizardPage();
         }
+        //Export chat every 5 messages
+        if (State.ChatHistory.TotalMessagesCount % 5 == 0)
+        {
+            _ = State.ExportChatToMemory();
+        }
+
         //Check new messages for summarize (auto summarize)
         if (Settings.User.AutoSummarize && State.ChatHistory.Messages.Count(x => x.isSummarized == false) > Settings.User.SummarizeMessageCount)
         {
             Alert.InfoAlert("Summarizing... please, wait.");
             bool isSuccess = await State.ChatSummarize();
-            if (Settings.User.RAGOptions.Enabled)
-            {
-                isRAGing = true;
-                await State.ImportChatToMemory();
-                isRAGing = false;
-            }
+
             if (!isSuccess)
                 Alert.ErrorAlert("Summarizing error");
             else

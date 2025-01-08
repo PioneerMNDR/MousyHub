@@ -14,9 +14,6 @@ namespace MousyHub.Models
         {
             Messages = new List<Message>();
             ChatLoading(UserPerson, CharacterPerson, AllPerson);
-
-
-
         }
         public void ChatLoading(Person UserPerson, Person CharacterPerson, List<Person> AllPerson)
         {
@@ -93,7 +90,7 @@ namespace MousyHub.Models
 
         public int? ChatContextSize { get; set; }
 
-
+        public int TotalMessagesCount {  get; private set; }
         public List<Message> Messages { get; set; }
 
         public List<Message> AlterativeFirstMessages { get; set; } = new List<Message>();
@@ -158,6 +155,7 @@ namespace MousyHub.Models
         }
         public async Task<Message> AddMessage(string content, Person person, Instruct instruct, string NativeLangContent = "")
         {
+            TotalMessagesCount++;
             if (person.IsUser == true)
             {
                 if (OCC_PlayerWishes != string.Empty) // <----Special condition for the OCC (add OOC to end of player message)
@@ -185,6 +183,7 @@ namespace MousyHub.Models
         public async Task DeleteMessage(Message message)
         {
             Messages.Remove(message);
+            TotalMessagesCount--;
         }
         public async Task ClearIsGenerationBorder()
         {
@@ -199,6 +198,7 @@ namespace MousyHub.Models
             if (Messages.Count > 0)
             {
                 Messages.Remove(Messages.Last());
+                TotalMessagesCount--;
             }
 
         }
@@ -319,6 +319,7 @@ namespace MousyHub.Models
             Message message = new Message("", content, person);
             message.isGenerating = true;
             Messages.Add(message);
+            TotalMessagesCount++;
             return message.GuidMessage;
         }
         public void FillAltFirstMessagesList(Person person, Instruct instruct)

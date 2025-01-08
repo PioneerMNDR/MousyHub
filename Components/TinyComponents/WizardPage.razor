@@ -8,6 +8,7 @@
 @inject ProviderService Provider
 @inject TranslatorService Translator
 @inject AlertServices Alert
+@inject RAGService RAG
 @if (State.ChatHistory != null)
 {
     <MudStack Row>
@@ -60,6 +61,11 @@
         </MudExpansionPanel>
         <MudExpansionPanel Text="⚖️ Summarize">
             <MudTextField @bind-Value="State.ChatHistory.SummarizeContext" Label="Summarize value" Variant="Variant.Outlined" AutoGrow Lines="4" HelperText="The meaning of dialog summarization" HelperTextOnFocus=true></MudTextField>
+            <MudStack Row>
+                <MudSwitch @bind-Value=Settings.User.UseStepsSummaryPromt UncheckedColor="Color.Tertiary" Color="Color.Primary">@(Settings.User.UseStepsSummaryPromt ? "Step version" : "Simple version")</MudSwitch>
+                <MudSwitch  @bind-Value=Settings.User.AutoSummarize Color="Color.Info" Label="Auto summarize" title="Automatic summarization at achievement of a certain border of a context"></MudSwitch>
+            </MudStack>
+
         </MudExpansionPanel>
         <MudExpansionPanel Text="🎭 OOC">
             <MudTextField @bind-Value="OOCPreview" Label="Give the character a hint outside the context of the dialogue" Variant="Variant.Outlined" AutoGrow Lines="4" HelperText="Example: let the character be less shy" HelperTextOnFocus=true></MudTextField>
@@ -189,10 +195,16 @@
         </ItemRenderer>
     </MudDropContainer>
 
+    <MudPaper Outlined >
+        <MudStack>
+            <MudButton Variant="Variant.Outlined" OnClick="State.ExportChatToMemory">Force remember chat</MudButton>
+        </MudStack>
+    </MudPaper>
+
     <MudPaper Class="ma-3">
         <MudStack Wrap="Wrap.Wrap" Row>
             <MudSwitch Class="ma-2" @bind-Value=Settings.User.PauseBeforeGenerating Color="Color.Info" Label="Pause before generation" title="Bot, will wait for your confirmation after the answer of other bot."></MudSwitch>
-            <MudSwitch Class="ma-2" @bind-Value=Settings.User.AutoSummarize Color="Color.Info" Label="Auto summarize" title="Automatic summarization at achievement of a certain border of a context"></MudSwitch>
+      
         </MudStack>
     </MudPaper>
 

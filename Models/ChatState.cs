@@ -44,7 +44,11 @@ namespace MousyHub.Models
             }
             else
             {
-                ChatHistory.ChatLoading(Settings.CurrentUserProfile, TakePerson(charCard), AllPersons);       
+                ChatHistory.ChatLoading(Settings.CurrentUserProfile, TakePerson(charCard), AllPersons);
+                if (ChatHistory.TotalMessagesCount>5)
+                {
+                    await ExportChatToMemory();
+                }
             }
             await SetContextSize();
         }
@@ -91,13 +95,13 @@ namespace MousyHub.Models
         {
             string preparePromt = "";
             List<Message> messages = new List<Message>();
-            if (ChatHistory.SummarizeContext == null)
+            if (string.IsNullOrEmpty(ChatHistory.SummarizeContext))
             {
                 preparePromt += PromtBuilder.SystemMessageShort(ChatHistory);
             }
             else
             {
-                preparePromt += "Last summary(use this for summarize too): " + ChatHistory.SummarizeContext;
+                preparePromt += $"Last summary(use this for summarize too): [{ChatHistory.SummarizeContext}]\n";
             }
             foreach (var item in ChatHistory.Messages)
             {
@@ -107,11 +111,11 @@ namespace MousyHub.Models
                     messages.Add(item);
                 }
             }
-            var res = await Provider.Wizard.WizardRequest(preparePromt, Misc.Wizard.WizardFunction.Summary);
-           
+            var res = await Provider.Wizard.WizardRequest(preparePromt, Misc.Wizard.WizardFunction.Summary,MaxTokens:300);
+         
             if (res.IsSuccess)
             {
-                ChatHistory.SummarizeContext = res.Content;
+                ChatHistory.SummarizeContext = res.Content.TrimStart('\n');
                 foreach (var item in messages)
                 {
                     item.isSummarized = true;
@@ -123,7 +127,7 @@ namespace MousyHub.Models
                 return false;
             }
         }
-        public async Task ImportChatToMemory()
+        public async Task ExportChatToMemory()
         {
             if (Settings.User.RAGOptions.Enabled && Settings.User.RAGOptions.Available)
             {

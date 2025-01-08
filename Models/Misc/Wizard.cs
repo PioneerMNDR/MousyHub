@@ -13,7 +13,7 @@ namespace MousyHub.Models.Misc
 
         public Instruct Instruct { get; set; }
 
-        public GenerationConfig DeterministicConfig = new GenerationConfig
+        public GenerationConfig WizardConifg = new GenerationConfig
         {
             temp = 1.2,
             rep_pen = 1,
@@ -61,10 +61,14 @@ namespace MousyHub.Models.Misc
         private string SummaryPromt = "You are a dedicated role-playing game (RPG) dialogue summarizer. " +
             "Your task is to create clear and concise summaries of chat dialogues between players. Follow these guidelines:\r\n\r\n1." +
             " Maintain the chronological order of events.\r\n2. Highlight key actions, decisions, and dialogue exchanges.\r\n3. " +
-            "Preserve the tone and context of the conversation.\r\n4. Exclude any out-of-character (OOC) comments.\r\n5. Keep each summary between 50-100 words.\r\n\r\nHere is an example of a chat dialogue and the corresponding summary:\r\n\r\n**Chat Dialogue:**\r\n\r\nPlayer1: \"I step into the ancient forest, cautious of any creatures" +
+            "Preserve the tone and context of the conversation.\r\n4. Exclude any out-of-character (OOC) comments.\r\n5. Keep each summary between 100-300 words.\r\n\r\nHere is an example of a chat dialogue and the corresponding summary:\r\n\r\n**Chat Dialogue:**\r\n\r\nPlayer1: \"I step into the ancient forest, cautious of any creatures" +
             " lurking in the shadows.\"\r\nPlayer2: \"I follow closely behind, my sword drawn and ready for an ambush.\"\r\nPlayer1: \"We see a flash of movement in the trees ahead. I signal Player2 to stop.\"\r\nPlayer2: \"I halt immediately, scanning the surroundings for any signs of danger.\"\n**Summary:**\nPlayer1 and Player2 enter an ancient forest, remaining alert" +
             " for any hidden threats. They notice movement in the trees and decide to proceed with caution.\r\n\r\nNow, summarize the following chat dialogue:\r\n\r\n**Chat Dialogue:**";
 
+        private string SummaryPromtAlt = "Summarize the following role-playing dialogue between two or more characters." +
+            " Extract the most important facts and events from the conversation and present them as a chronological timeline, step by step. " +
+            "Focus on key actions, decisions, significant statements, and changes in the situation." +
+            " If there are more than 15 steps, then combine the old step and add them up\r\n\r\n**Output Format:**\r\n\r\n1. [Character Name] [Action/Event/Significant Quote or Statement].\r\n2. [Character Name] [Action/Event/Significant Quote or Statement].\r\n3.....\r\n... and so on.";
         private string CustomFirstMesPromt = "It is necessary to generate the first character message for the user in the character card. This message should carry information about the location, as well as describe an interesting situation that may stand between the character and the user. Use markdown for beautiful design. Be sure to consider the user's wishes.";
 
         public Person Narrator { get; set; } = new Person("Narrator",
@@ -100,7 +104,7 @@ namespace MousyHub.Models.Misc
                     FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, DescriptionPromt) + chatHistoryInstructed;
                     break;
                 case WizardFunction.Summary:
-                    FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, SummaryPromt) + chatHistoryInstructed + "\n**Summary:**";
+                    FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, User.UseStepsSummaryPromt ? SummaryPromtAlt : SummaryPromt) + chatHistoryInstructed + "\n**Summary:**";
                     break;
                 case WizardFunction.AnswerAssistant:
                         FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, AnswerAssistantFormatter()) + chatHistoryInstructed + "\nThe following possible {{user}}'s " + AnswerAssistantMoods() + " answers: ";
@@ -112,16 +116,16 @@ namespace MousyHub.Models.Misc
             }
             FinalPromt = PromtBuilder.TagPlaceholder(FinalPromt, UserName, CharName);
             Console.WriteLine("-----Wizard request-----");
-            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.ForegroundColor = ConsoleColor.DarkYellow;
             Console.WriteLine(FinalPromt);
             Console.ResetColor();
             Console.WriteLine("-----------------");
             MessageResponse message = new MessageResponse();
-            DeterministicConfig.temp = Temperature;
-            DeterministicConfig.grammar = Grammar;
+            WizardConifg.temp = Temperature;
+            WizardConifg.grammar = Grammar;
             await Task.Run(async () =>
             {
-                message = await Model.GenerateTextAsync(FinalPromt, DeterministicConfig, MaxTokens, key: "Wizard");
+                message = await Model.GenerateTextAsync(FinalPromt, WizardConifg, MaxTokens, key: "Wizard");
 
             });
 
