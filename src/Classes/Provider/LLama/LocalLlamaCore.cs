@@ -19,12 +19,15 @@ namespace MousyHub.Models.Provider.LLama
         private ISamplingPipeline _sampler;
         StatelessExecutor? _executor = null;
 
+        string metaChatTemplate = string.Empty;
         public async Task<bool> Run(ModelParams modelParams)
         {
             try
             {
                 
                 weights = await LLamaWeights.LoadFromFileAsync(modelParams);
+                var metadata = weights.Metadata;
+                metaChatTemplate = metadata.FirstOrDefault(x=>x.Key=="tokenizer.chat_template").Value;
                 executor = new BatchedExecutor(weights, modelParams);
                 Params = modelParams;
                 return true;
@@ -399,6 +402,10 @@ namespace MousyHub.Models.Provider.LLama
         public async Task<string> ModelInfo()
         {
             return Params.ModelPath;
+        }
+        public string GetModelChatTemplateRaw()
+        {
+            return metaChatTemplate;
         }
         public async Task<bool> Status()
         {

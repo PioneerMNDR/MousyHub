@@ -134,5 +134,10 @@ namespace MousyHub.Models.Provider.LLama
         {
             _core.Dispose();
         }
+
+        public async Task<string> GetChatTemplateRaw()
+        {
+          return await Task.Run(_core.GetModelChatTemplateRaw);
+        }
     }
 }

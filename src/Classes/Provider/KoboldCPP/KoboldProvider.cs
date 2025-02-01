@@ -101,6 +101,11 @@ namespace MousyHub.Models.Provider.KoboldCPP
             client.Dispose();
         }
 
+        public async Task<string> GetChatTemplateRaw()
+        {
+             return await client.GetChatTemplateRaw();
+        }
+
         private class Token
         {
             public string token { get; set; }

@@ -1,4 +1,5 @@
 ﻿using LLama.Common;
+using MousyHub.Classes.Misc;
 using MousyHub.Models.Abstractions;
 using MousyHub.Models.Misc;
 using MousyHub.Models.Model;
@@ -6,6 +7,7 @@ using MousyHub.Models.Provider.KoboldCPP;
 using MousyHub.Models.Provider.LLama;
 using MousyHub.Models.User;
 using SharpCompress.Common;
+using UglyToad.PdfPig.Graphics.Operations.SpecialGraphicsState;
 
 namespace MousyHub.Models.Services
 {
@@ -60,6 +62,7 @@ namespace MousyHub.Models.Services
                     if (!IsSuccessK)
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
+                    await TrySetAutoChatTemplate(Settings);
                     return await LLModel.Model();
                 case APIType.Native:
                     bool IsSuccessL = await ConnectLocal(Settings);
@@ -67,6 +70,7 @@ namespace MousyHub.Models.Services
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
                     await TryRAGConnect(Settings.User.RAGOptions);
+                    await TrySetAutoChatTemplate(Settings);
                     return await LLModel.Model();
                 case APIType.Chat_Completions:
                     break;
@@ -74,7 +78,7 @@ namespace MousyHub.Models.Services
                     break;
             }
             await ConnectionEvent.Invoke(Status);
-
+        
             return "";
         }
 
@@ -112,6 +116,16 @@ namespace MousyHub.Models.Services
             }
             return "?";
         }
+        public async Task<bool> TrySetAutoChatTemplate(SettingsService settings)
+        {
+            if (Status)
+            {
+                var ct = await LLModel.GetChatTemplateRaw();
+                var bestChatTemplate = ChatTemplateDetector.FindMatchingInstruct(ct, settings.InstructList);
+                return true;
+            }
+            return false;
+        }
 
 
         private async Task<bool> ConnectKoboldCPP()
@@ -132,19 +146,6 @@ namespace MousyHub.Models.Services
             {
                 return false;
             }
-            int[] metadata = GGUFReader.ReadGGUFMetadata(Settings.User.SelfInferenceConfig.ModelPath);
-
-            if (metadata != null)
-            {
-                Console.WriteLine($"Layer Count: {metadata[0]}");
-                Console.WriteLine($"Head Count KV: {metadata[1]}");
-                Console.WriteLine($"Max Key/Value Length: {metadata[2]}");
-            }
-            else
-            {
-                Console.WriteLine("Failed to read metadata or file is not GGUF.");
-            }
-
             ModelParams modelParams = new ModelParams(Settings.User.SelfInferenceConfig.ModelPath)
             {
                 ContextSize = (uint)Settings.User.SelfInferenceConfig.ContextSize,
@@ -155,9 +156,8 @@ namespace MousyHub.Models.Services
                 BatchThreads = (int?)Settings.User.SelfInferenceConfig.BatchThreads,
                 BatchSize = Settings.User.SelfInferenceConfig.BatchSize,
                 FlashAttention = Settings.User.SelfInferenceConfig.UseFlashAttention,
-                
-            };
 
+            };
             var Core = new LocalLlamaCore();
             var isSuccess = await Core.Run(modelParams);
             if (isSuccess)
@@ -183,7 +183,7 @@ namespace MousyHub.Models.Services
         {
             if (Status)
             {
-                Wizard.UpdateInstructions(LLModel, instruct, userState,UploaderService);
+                Wizard.UpdateInstructions(LLModel, instruct, userState, UploaderService);
                 WizardStatus = true;
                 return "";
             }
@@ -196,7 +196,7 @@ namespace MousyHub.Models.Services
                 string modelpath = UploaderService.LoadFirstEmbeddingModelPath();
                 options.Available = RAG.TryRun(modelpath);
             }
-           
+
         }
 
 

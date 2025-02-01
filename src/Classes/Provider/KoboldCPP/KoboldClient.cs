@@ -130,6 +130,22 @@ namespace MousyHub.Models.Provider.KoboldCPP
                 throw;
             }
         }
+
+        public async Task<string> GetChatTemplateRaw()
+        {
+            try
+            {
+                var response = await _client.GetAsync($"{_baseUri}/props");
+                var content = response.Content.ReadAsStringAsync().Result;
+                var json = JsonDocument.Parse(content);
+                return json.RootElement.GetProperty("chat_template").GetString();
+            }
+            catch (Exception)
+            {
+                return "";
+                throw;
+            }
+        }
         public async Task<bool> Status()
         {
             try
