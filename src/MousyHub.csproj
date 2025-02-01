@@ -80,5 +80,11 @@
   </ItemGroup>
 
 
+  
+  <ItemGroup>
+    <ProjectReference Include="..\HuggingfaceHub\HuggingfaceHub\HuggingfaceHub.csproj" />
+  </ItemGroup>
+
+
 
 </Project>

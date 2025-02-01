@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MousyUpdater", "..\MousyUpdater\MousyUpdater.csproj", "{20211E0E-BEAA-4CB5-A204-CDFFF5F3B894}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MousyUpdater", "MousyUpdater\MousyUpdater.csproj", "{20211E0E-BEAA-4CB5-A204-CDFFF5F3B894}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MousyHub", "src\MousyHub.csproj", "{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HuggingfaceHub", "HuggingfaceHub\HuggingfaceHub\HuggingfaceHub.csproj", "{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,18 @@ Global
 		{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}.Release|Arm64.Build.0 = Release|Any CPU
 		{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}.Release|x64.ActiveCfg = Release|Any CPU
 		{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}.Release|x64.Build.0 = Release|Any CPU
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Debug|Arm64.ActiveCfg = Debug|Arm64
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Debug|Arm64.Build.0 = Debug|Arm64
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Debug|x64.ActiveCfg = Debug|x64
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Debug|x64.Build.0 = Debug|x64
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Release|Arm64.ActiveCfg = Release|Arm64
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Release|Arm64.Build.0 = Release|Arm64
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Release|x64.ActiveCfg = Release|x64
+		{52A3C2A0-F016-4E59-850C-4F3FB5BD98BD}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
