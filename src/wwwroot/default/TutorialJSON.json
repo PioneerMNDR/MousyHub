@@ -1,0 +1,540 @@
+[
+  {
+    "Position": 0,
+    "Index": 1,
+    "Key": "TutorialStep_1",
+    "Text": "Hi! I'm Mousy. Welcome to MousyHub. I won't keep you long with the tutorial. I'll teach you the basics of using LLMs.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 5,
+        "ElementId": "",
+        "Value1": "0"
+      },
+      {
+        "Type": 1,
+        "ElementId": "download-page",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 2,
+    "Key": "TutorialStep_2",
+    "Text": "To start chatting with characters, we need to connect a 'brain' to our application. This is what we call a large language model.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 3,
+    "Key": "TutorialStep_3",
+    "Text": "There are a couple of ways to do this: run it locally or use a cloud solution. Cloud solutions usually cost money and don't require powerful hardware on your end. If you've heard of Claude, ChatGPT, and Gemini - those are examples. There are also services that host open-source models that we can use for free.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 4,
+    "Key": "TutorialStep_4",
+    "Text": "Our main focus will be on local models and how to use them.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 5,
+    "Key": "TutorialStep_5",
+    "Text": "The advantages of local models are clear: they're free to use, not subject to censorship (fine-tuning), and all conversations with them are stored only on your computer.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 6,
+    "Key": "TutorialStep_6",
+    "Text": "There are some challenges though...",
+    "PNG_Name": "TutorialMouse3.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 7,
+    "Key": "TutorialStep_7",
+    "Text": "You need some basic knowledge about which model to download, how to run it correctly, and most importantly, understand what might be going wrong if it doesn't work.",
+    "PNG_Name": "TutorialMouse3.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 8,
+    "Key": "TutorialStep_8",
+    "Text": "So, our local model is a single .gguf file, which is about 8GB in size.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 9,
+    "Key": "TutorialStep_9",
+    "Text": "Yes, that's quite a lot, considering it's essentially a super-compressed copy of a portion of the internet. And, I forgot to mention, this is one of the smallest and most reasonable models for chatting. More on that later...",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 10,
+    "Key": "TutorialStep_10",
+    "Text": "Models come in different sizes: 3B, 8B, 12B, 70B. The larger the number, the smarter the model, and the more memory your PC needs.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 11,
+    "Key": "TutorialStep_11",
+    "Text": "Therefore, you need to know which size of LLM is suitable for your PC.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 12,
+    "Key": "TutorialStep_12",
+    "Text": "Here's a quick guide:8B - 8 GB VRAM, 12B - 12GB VRAM. These are good ratios for generation speed. But if you have more video memory, even better!",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 13,
+    "Key": "TutorialStep_13",
+    "Text": "So, here's a list of great models for role-playing:",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 2,
+        "ElementId": "download-page",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 14,
+    "Key": "TutorialStep_14",
+    "Text": "If the recommended memory number is green, you can confidently download the model - it will run smoothly on your PC. You can download it later if you want, but let's move on...",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 15,
+    "Key": "TutorialStep_15",
+    "Text": "Below, you can see two identical models, but their requirements are different. This is because there's a method of 'compressing' models called quantization.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 16,
+    "Key": "TutorialStep_16",
+    "Text": "Quantization is a great optimization method that makes models faster, smaller in size, and also... slightly less accurate.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 17,
+    "Key": "TutorialStep_17",
+    "Text": "Here are the different levels of quantization: Q8 - the most accurate, and Q2 - the least accurate. Some Q2 models are so inaccurate that they're almost unusable. Therefore, Q4 is the lowest reasonable level.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 18,
+    "Key": "TutorialStep_18",
+    "Text": "Hopefully, this isn't too complicated? Here's a simple example: a 12B model quantized to Q4 can fit entirely into 8GB of VRAM. You can use online GGUF calculators to estimate the required size.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 19,
+    "Key": "TutorialStep_19",
+    "Text": "Now, let's get to the good stuff... Preparing to run the model.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 3,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 20,
+    "Key": "TutorialStep_20",
+    "Text": "And no, don't worry. If you don't have a model yet, or it's still downloading, we won't run it right now. I'll just explain the most important aspects for running it.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 5,
+        "ElementId": null,
+        "Value1": "1"
+      },
+      {
+        "Type": 1,
+        "ElementId": "select-api",
+        "Value1": null
+      },
+      {
+        "Type": 1,
+        "ElementId": "instruct-editor",
+        "Value1": null
+      },
+      {
+        "Type": 1,
+        "ElementId": "text-gen-editor",
+        "Value1": null
+      },
+      {
+        "Type": 1,
+        "ElementId": "other-launch-config",
+        "Value1": null
+      },
+      {
+        "Type": 1,
+        "ElementId": "context-length",
+        "Value1": null
+      },
+      {
+        "Type": 1,
+        "ElementId": "gpu-layer",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 21,
+    "Key": "TutorialStep_21",
+    "Text": "Welcome to the provider page - the most technically confusing page.",
+    "PNG_Name": "TutorialMouse3.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 2,
+        "ElementId": "context-length",
+        "Value1": null
+      },
+      {
+        "Type": 2,
+        "ElementId": "gpu-layer",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 22,
+    "Key": "TutorialStep_22",
+    "Text": "There are several parameters for running the model, mainly related to how it uses your PC's memory.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 23,
+    "Key": "TutorialStep_23",
+    "Text": "The first and most important parameter is the number of model layers in the GPU... Imagine we can split our LLM into parts and load one part into video memory and the other into RAM.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 3,
+        "ElementId": "gpu-layer",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 24,
+    "Key": "TutorialStep_24",
+    "Text": "And yes, I slightly lied at the beginning. The model can also run on RAM. In our case, it's no different from VRAM, except for one crucial parameter...",
+    "PNG_Name": "TutorialMouse3.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 25,
+    "Key": "TutorialStep_25",
+    "Text": "RAM speed is about 5 times slower than video memory speed. That's why VRAM is needed, so the model doesn't respond at a snail's pace.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 26,
+    "Key": "TutorialStep_26",
+    "Text": "If you set the GPU layer to zero, all model layers will be loaded into RAM, and you'll experience very, very slow response times. Also, if the model requires, for example, 8GB of memory, it will take up the same amount in RAM as in VRAM... it doesn't matter here.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 27,
+    "Key": "TutorialStep_27",
+    "Text": "Therefore, choose the maximum number of layers for the model to fully utilize your video card's memory. Below are labels that show the maximum number of layers for the model.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 4,
+        "ElementId": "gpu-layer",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 28,
+    "Key": "TutorialStep_28",
+    "Text": "The next super important parameter is the model's context length... It determines the size of your model's memory in tokens.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 2,
+    "Actions": [
+      {
+        "Type": 3,
+        "ElementId": "context-length",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 29,
+    "Key": "TutorialStep_29",
+    "Text": "For example, if the context is 2048, your conversation with the character will literally consist of a couple of messages, and then an error will appear that your model's memory is full.",
+    "PNG_Name": "TutorialMouse3.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 30,
+    "Key": "TutorialStep_30",
+    "Text": "For MousyHub, a context of 8k is recommended. The application has built-in memory optimizers. One of them is a dialogue summarizer, which will summarize and shorten part of your dialogue, highlighting only the most important parts.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 4,
+        "ElementId": "context-length",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 31,
+    "Key": "TutorialStep_31",
+    "Text": "I also forgot to mention that the context also consumes your PC's memory. This number is different for each model. But for an 8B model, an 8192 context will take up 1.5GB in RAM. It's not much, but it's worth considering when launching.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 4,
+        "ElementId": "context-length",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 32,
+    "Key": "TutorialStep_32",
+    "Text": "Here's another panel with additional settings for advanced users. From all of this, I can highlight Flash Attention, which can increase the response speed.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 2,
+        "ElementId": "other-launch-config",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 33,
+    "Key": "TutorialStep_33",
+    "Text": "Next is the provider selection. 'Native' is selected by default. Another option for running local models is KoboldCPP. It has much better settings and options than 'Native', but you have to run this program separately alongside MousyHub, which complicates things a bit.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 2,
+        "ElementId": "select-api",
+        "Value1": null
+      },
+      {
+        "Type": 3,
+        "ElementId": "select-api",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 34,
+    "Key": "TutorialStep_34",
+    "Text": "Hopefully, this isn't too complicated? Let's move on. There's just a little bit left.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 4,
+        "ElementId": "select-api",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 35,
+    "Key": "TutorialStep_35",
+    "Text": "Here's another very complex panel. These are the samplers. They determine the character's response style. Will it be more creative and unconventional, or more correct and predictable?",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 2,
+        "ElementId": "text-gen-editor",
+        "Value1": null
+      },
+      {
+        "Type": 3,
+        "ElementId": "text-gen-editor",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 36,
+    "Key": "TutorialStep_36",
+    "Text": "I recommend paying attention to the important parameter - Max new tokens. It determines how many tokens (characters, words) the model will write at once. You'll immediately notice when the character doesn't finish their thought - that means you need to increase this number.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 37,
+    "Key": "TutorialStep_37",
+    "Text": "I recommend choosing only from the ready-made presets, because they are well-configured and tested.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 4,
+        "ElementId": "text-gen-editor",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 38,
+    "Key": "TutorialStep_38",
+    "Text": "And the last window on this page is the chat template. This is an important attribute, essential for the model, without which it will respond very poorly.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 2,
+        "ElementId": "instruct-editor",
+        "Value1": null
+      },
+      {
+        "Type": 3,
+        "ElementId": "instruct-editor",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 39,
+    "Key": "TutorialStep_39",
+    "Text": "When a model is trained, its responses are taught to write in a specific markup, for example, <model>response here<model>. And the questions it answers are seen in the markup <user>question here<user>. This makes it easier for the model to navigate the chat.",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 40,
+    "Key": "TutorialStep_40",
+    "Text": "Here too, I recommend choosing only ready-made presets and not changing anything. Which chat format to use depends on the model's architecture. They are always listed on the model's page on HuggingFace.co. For example, for L3-8B-Stheno-v3.4, the Llama 3 Instruct format is used.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": [
+      {
+        "Type": 4,
+        "ElementId": "instruct-editor",
+        "Value1": null
+      }
+    ]
+  },
+  {
+    "Position": 0,
+    "Index": 41,
+    "Key": "TutorialStep_41",
+    "Text": "That concludes the tutorial... Let me repeat what's needed to start a conversation with characters:",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 42,
+    "Key": "TutorialStep_42",
+    "Text": "Model: A .gguf file; 7B, 12B, 32B - the number of model parameters, the more, the smarter the model and the more memory your PC needs; Q8, Q6, Q4, Q2 - the degree of quantization (compression), the lower this degree, the less memory the model consumes and the less accurate it becomes. I recommend Q4 as a minimum.",
+    "PNG_Name": "TutorialMouse1.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  },
+  {
+    "Position": 0,
+    "Index": 43,
+    "Key": "TutorialStep_43",
+    "Text": "Well, okay, that was a bit heavy, but you made it to the end. I hope MousyHub brings something new and interesting into your life. Goodbye, friend!",
+    "PNG_Name": "TutorialMouse2.png",
+    "TextSlowdown": 1,
+    "Actions": []
+  }
+]
