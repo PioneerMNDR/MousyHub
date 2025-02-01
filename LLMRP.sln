@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MousyUpdater", "..\MousyUpdater\MousyUpdater.csproj", "{20211E0E-BEAA-4CB5-A204-CDFFF5F3B894}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MousyHub", "MousyHub.csproj", "{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MousyHub", "src\MousyHub.csproj", "{CC7DD2BF-FBBC-4F74-8623-B808EAAC2E81}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

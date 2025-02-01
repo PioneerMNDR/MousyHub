@@ -5,6 +5,7 @@ using MousyHub.Models.Model;
 using MousyHub.Models.Provider.KoboldCPP;
 using MousyHub.Models.Provider.LLama;
 using MousyHub.Models.User;
+using SharpCompress.Common;
 
 namespace MousyHub.Models.Services
 {
@@ -131,6 +132,19 @@ namespace MousyHub.Models.Services
             {
                 return false;
             }
+            int[] metadata = GGUFReader.ReadGGUFMetadata(Settings.User.SelfInferenceConfig.ModelPath);
+
+            if (metadata != null)
+            {
+                Console.WriteLine($"Layer Count: {metadata[0]}");
+                Console.WriteLine($"Head Count KV: {metadata[1]}");
+                Console.WriteLine($"Max Key/Value Length: {metadata[2]}");
+            }
+            else
+            {
+                Console.WriteLine("Failed to read metadata or file is not GGUF.");
+            }
+
             ModelParams modelParams = new ModelParams(Settings.User.SelfInferenceConfig.ModelPath)
             {
                 ContextSize = (uint)Settings.User.SelfInferenceConfig.ContextSize,
