@@ -21,6 +21,7 @@ namespace MousyHub.Models.Services
 
         public UserState User;
 
+
         public SettingsService(UploaderService uploaderService, ProviderService providerServices, AlertServices alertServices, DiagnosticsService diagnostics)
         {
             //this.alertServices = alertServices;  
@@ -33,18 +34,15 @@ namespace MousyHub.Models.Services
             PresetsList = uploaderService.LoadPresets();
             ThemeList = uploaderService.LoadThemes();
             User = uploaderService.LoadSettings();
-            LocalModelsList = uploaderService.LoadModelsPath();
-            if (LocalModelsList.Contains(User.SelfInferenceConfig.ModelPath) == false)
-                User.SelfInferenceConfig.ModelPath = "";
+
             if (User.SelfInferenceConfig.Threads == null)
             {
                 User.SelfInferenceConfig.Threads = (uint?)(diagnostics.LogicalProcessorCount / 2);
                 User.SelfInferenceConfig.BatchThreads = (uint?)(diagnostics.LogicalProcessorCount / 2);
             }
-
             ProfileList = uploaderService.LoadProfileList();
+            LoadModelsList(uploaderService);
             LoadDefault();
-
             uploaderService.settingsService = this;
             this.alertServices = alertServices;
         }
@@ -72,7 +70,12 @@ namespace MousyHub.Models.Services
 
         public Person? CurrentUserProfile { get; set; }
 
-
+        public void LoadModelsList(UploaderService uploader)
+        {
+            LocalModelsList = uploader.LoadModelsPath(User.CustomModelPathFolder);
+            if (LocalModelsList.Contains(User.SelfInferenceConfig.ModelPath) == false)
+                User.SelfInferenceConfig.ModelPath = LocalModelsList.FirstOrDefault("");
+        }
         public void DeleteInstructPreset()
         {
             if (InstructList.Count >= 2)

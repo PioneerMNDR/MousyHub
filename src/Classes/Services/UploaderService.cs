@@ -18,7 +18,7 @@ namespace MousyHub.Models.Services
         public UploaderService(IConfiguration configuration)
         {
             Configuration = configuration;
-            ModelsPath = configuration["ModelsPath"] ?? "/wwwroot/LocalModels/";
+            ModelsPath = "/wwwroot/LocalModels/";
             EmbeddingModelsPath = configuration["EmbeddingModelsPath"] ?? "/wwwroot/LocalModels/EmbeddingModel/";
             if (!Directory.Exists(ModelsPath))
             {
@@ -178,9 +178,11 @@ namespace MousyHub.Models.Services
             return list;
         }
 
-        public List<string> LoadModelsPath()
+        public List<string> LoadModelsPath(string CustomModelPath)
         {
             string directory = ModelsPath;
+            if (!string.IsNullOrEmpty(CustomModelPath) && Directory.Exists(CustomModelPath))
+             directory = CustomModelPath;
             List<string> list = new List<string>();
             if (!Directory.Exists(directory))
             {

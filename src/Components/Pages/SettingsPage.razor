@@ -12,10 +12,11 @@
 @inject AlertServices Alert
 @inject UpdaterService Updater
 @inject ChatState State
+@inject IJSRuntime JSRuntime
 <MudThemeProvider Theme="@Settings.Theme.MudTheme" IsDarkMode="true" />
 @* <MudThemeManagerButton OnClick="@((e)=>{themeOpen=!themeOpen;})"></MudThemeManagerButton> *@
 @*   <MudThemeManager @bind-Open=themeOpen ColorPickerView="ColorPickerView.Spectrum" IsDarkMode @bind-Theme=ManagerTheme ></MudThemeManager> *@
-<MudGrid  >    
+<MudGrid>
     <MudItem xs="12" md="12">
         <MudPaper Class="pa-3">
             <MudText Typo="Typo.h4">Wizard</MudText>
@@ -78,7 +79,7 @@
             <MudGrid Justify="Justify.SpaceAround" Class="align-end pe-3">
                 <MudItem>
                     @{
-                            var imageSrc = Convert.ToBase64String(Settings.CurrentUserProfile?.Avatar ?? new byte[0]);
+                        var imageSrc = Convert.ToBase64String(Settings.CurrentUserProfile?.Avatar ?? new byte[0]);
                     }
                     <MudAvatar Rounded Style="display:flex" Size="Size.Large">
                         <MudImage Fluid Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
@@ -126,7 +127,7 @@
             <MudStack>
                 <MudText>Current version: @AppVersion._version</MudText>
                 <MudText>Last version: @Updater.lastVersion</MudText>
-                @if (Updater.ReadyToUpdate && Updater.isUpdating==false)
+                @if (Updater.ReadyToUpdate && Updater.isUpdating == false)
                 {
                     <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Updater.LaunchUpdater">Update</MudButton>
                 }
@@ -150,6 +151,11 @@
                         <MudSelectItem Value="@item">@item.Name</MudSelectItem>
                     }
                 </MudSelect>
+                <MudStack Row>
+                    <MudTextField Label="Custom model directory" @bind-Value=newDir ></MudTextField>
+                    <MudButton OnClick="SelectDirectoryAsync" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small">Save directory</MudButton>
+                    <MudButton Variant="Variant.Filled" Size="Size.Small" OnClick="@(()=>{newDir = "";Settings.User.CustomModelPathFolder=string.Empty;Settings.LoadModelsList(Uploader); Alert.SuccessAlert("Returned to default path");})">Default path</MudButton>
+                </MudStack>
                 <MudSwitch @bind-Value=Settings.User.HideNSFWPicture Color="Color.Primary" Label="Hide NSFW picture"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.HideDownloadPage Color="Color.Primary" Label="Hide Download Page"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.GenerateShortDesOnImport Color="Color.Primary" Label="Generate short description on card import"></MudSwitch>
@@ -204,6 +210,7 @@
     Func<string, string> converter = p => Path.GetFileName(p);
     bool themeOpen = false;
     string themeName = "";
+    string newDir = "";
     // private ThemeManagerTheme ManagerTheme = new ThemeManagerTheme();
 
     // private void savepreset()
@@ -223,7 +230,29 @@
         StateHasChanged();
     }
 
+    private void SelectDirectoryAsync()
+    {
+        try
+        {
+            if (Directory.Exists(newDir))
+            {
+                Settings.User.CustomModelPathFolder = newDir;
+                Settings.LoadModelsList(Uploader);
+                Alert.SuccessAlert("New models directory saved");
+            }
+            else
+            {
+                Alert.WarningAlert("Incorrect path");
+            }
 
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+        }
+        StateHasChanged();
+
+    }
 
     private async Task UploadFile(IBrowserFile file)
     {

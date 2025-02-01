@@ -33,7 +33,7 @@ namespace MousyHub.Models.User
 
         public bool isTutorialGone { get; set; } = false;
         private DateTime RegisterDate { get; set; } = DateTime.Now;
-
+        public string CustomModelPathFolder { get; set; } = string.Empty;
         public void SaveSettings(SettingsService settings)
         {
             //I turn off the Download tab three days after registration
