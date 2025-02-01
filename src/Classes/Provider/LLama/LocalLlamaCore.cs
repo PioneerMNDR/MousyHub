@@ -401,7 +401,7 @@ namespace MousyHub.Models.Provider.LLama
         }
         public async Task<string> ModelInfo()
         {
-            return Params.ModelPath;
+            return Path.GetFileNameWithoutExtension(Params.ModelPath);
         }
         public string GetModelChatTemplateRaw()
         {

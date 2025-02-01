@@ -27,8 +27,6 @@ namespace MousyHub.Classes.Misc
                     bestMatch = ResolveTie(chatTemplate, bestMatch, instruct);
                 }
             }
-            Console.WriteLine("Best template found: ");
-            Console.Write(bestMatch!=null ? bestMatch?.name : "Not found");
             return maxScore > 0 ? bestMatch : null;
         }
 

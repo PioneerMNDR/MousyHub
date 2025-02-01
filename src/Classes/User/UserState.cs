@@ -1,4 +1,5 @@
-﻿using MousyHub.Models;
+﻿
+using MousyHub.Models;
 using MousyHub.Models.Misc;
 using MousyHub.Models.Provider.LLama;
 using MousyHub.Models.Services;
@@ -34,6 +35,7 @@ namespace MousyHub.Models.User
         public bool isTutorialGone { get; set; } = false;
         private DateTime RegisterDate { get; set; } = DateTime.Now;
         public string CustomModelPathFolder { get; set; } = string.Empty;
+
         public void SaveSettings(SettingsService settings)
         {
             //I turn off the Download tab three days after registration
@@ -49,6 +51,7 @@ namespace MousyHub.Models.User
             {
                 ProfileName = settings.CurrentUserProfile.Name;
             }
+
             Saver.SaveToJson(this, "User");
         }
 

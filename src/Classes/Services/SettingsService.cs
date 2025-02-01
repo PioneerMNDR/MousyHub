@@ -1,6 +1,7 @@
 ﻿using MousyHub.Models;
 using MousyHub.Models.Model;
 using MousyHub.Models.User;
+using System.Linq;
 using Theme = MousyHub.Models.Misc.Theme;
 
 
@@ -20,7 +21,7 @@ namespace MousyHub.Models.Services
         public AlertServices alertServices;
 
         public UserState User;
-
+        private readonly ProviderService _providerServices;
 
         public SettingsService(UploaderService uploaderService, ProviderService providerServices, AlertServices alertServices, DiagnosticsService diagnostics)
         {
@@ -45,6 +46,7 @@ namespace MousyHub.Models.Services
             LoadDefault();
             uploaderService.settingsService = this;
             this.alertServices = alertServices;
+            _providerServices = providerServices;
         }
 
 
@@ -131,6 +133,23 @@ namespace MousyHub.Models.Services
             theme.MudTheme = new MudBlazor.MudTheme();
             var loadTheme = ThemeList.Where(x => x.Name == User.ThemeName).FirstOrDefault(ThemeList.Where(x => x.Name == DefaultName).FirstOrDefault(theme));
             return loadTheme;
+        }
+        public async Task LinkModelToCurrentInstruct()
+        {
+            if (CurrentInstruct.LinkedModels == null)
+                CurrentInstruct.LinkedModels = new List<string>();
+            if (_providerServices.Status)
+            {
+                string modelname = await _providerServices.LLModel.Model();
+                //we delete this model from all lists and bind it to the last selected one
+                foreach (var item in InstructList.Where(x => x.LinkedModels != null && x.LinkedModels.Contains(modelname)))
+                {
+                    item.LinkedModels.Remove(modelname);
+                }
+                if (!CurrentInstruct.LinkedModels.Contains(modelname))
+                    CurrentInstruct.LinkedModels.Add(modelname);
+            }
+
         }
 
 

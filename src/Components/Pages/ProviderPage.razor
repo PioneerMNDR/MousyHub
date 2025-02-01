@@ -150,7 +150,7 @@
             <TextGenParamEditor ></TextGenParamEditor>
         </MudItem>
         <MudItem md="6">
-            <InstructEditor ></InstructEditor>
+            <InstructEditor @ref=InstructEditor ></InstructEditor>
         </MudItem>
     </MudGrid>
 </MudPaper>
@@ -165,12 +165,14 @@
     private string ModelName = "";
     bool isLoading = false;
     Func<string, string> converter = p => Path.GetFileName(p);
+    InstructEditor InstructEditor;
 
     private async Task ConnectionChanged()
     {
         isLoading = true;
         ModelName = await Service.NewConnect(Settings);
         isLoading = false;
+        InstructEditor.ReRenderState();
     }
     private void ValueSelectConnectionChange(KeyValuePair<ProviderService.APIType, string> newValue)
     {

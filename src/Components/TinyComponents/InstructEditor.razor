@@ -104,6 +104,12 @@
     string symbol = "@";
     string preview { get; set; } = "";
     bool isWaitNameInput = false;
+
+    public void ReRenderState()
+    {
+        InvokeAsync(StateHasChanged);
+
+    }
     private void TextChanged<T>(string val, Expression<Func<T, object>> propertyExpession)
     {
         var property = (PropertyInfo)((MemberExpression)propertyExpession.Body).Member;

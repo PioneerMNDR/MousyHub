@@ -229,6 +229,7 @@ namespace MousyHub.Models.Services
                 isBusy = true;
                 Console.WriteLine("Saving Presets~");
                 SaveInfoEvent.Invoke(null, EventArgs.Empty);
+                settingsService.LinkModelToCurrentInstruct();
                 Saver.SaveListJson(settingsService.PresetsList);
                 Saver.SaveListJson(settingsService.InstructList);
                 Saver.SaveListJson(settingsService.ProfileList);

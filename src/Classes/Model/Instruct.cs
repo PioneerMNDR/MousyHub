@@ -28,7 +28,7 @@ namespace MousyHub.Models.Model
         public string name { get; set; }
 
         public bool forWizard { get; set; } = false;
-
+        public List<string> LinkedModels { get; set; }
         public void CloneInList(List<Instruct> instructs)
         {
             var name = this.name;

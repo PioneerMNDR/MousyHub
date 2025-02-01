@@ -1,4 +1,5 @@
 ﻿using LLama.Common;
+using Microsoft.Extensions.Logging.Abstractions;
 using MousyHub.Classes.Misc;
 using MousyHub.Models.Abstractions;
 using MousyHub.Models.Misc;
@@ -121,7 +122,19 @@ namespace MousyHub.Models.Services
             if (Status)
             {
                 var ct = await LLModel.GetChatTemplateRaw();
+                var modelname = await LLModel.Model();
                 var bestChatTemplate = ChatTemplateDetector.FindMatchingInstruct(ct, settings.InstructList);
+                if (bestChatTemplate != null)
+                {
+                    settings.CurrentInstruct = bestChatTemplate;
+                }
+                if (settings.InstructList.Any(x=>x.LinkedModels!=null && x.LinkedModels.Contains(modelname)))
+                {
+                    var linkedInstruct =  settings.InstructList.FirstOrDefault(x => x.LinkedModels!=null && x.LinkedModels.Contains(modelname));
+                    if (linkedInstruct != null)
+                    settings.CurrentInstruct = linkedInstruct; Console.WriteLine("Choose linked chat template " + linkedInstruct.name);
+
+                }
                 return true;
             }
             return false;
