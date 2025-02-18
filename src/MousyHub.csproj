@@ -72,11 +72,7 @@
     <Folder Include="ThemeManager\" />
     <Folder Include="wwwroot\Cards\" />
     <Folder Include="wwwroot\chatHistory\" />
-    <Folder Include="wwwroot\config\" />
-    <Folder Include="wwwroot\config\Profiles\" />
     <Folder Include="wwwroot\default\Grammar\" />
-    <Folder Include="wwwroot\InstructConfigs\" />
-    <Folder Include="wwwroot\Presets\" />
   </ItemGroup>
 
 

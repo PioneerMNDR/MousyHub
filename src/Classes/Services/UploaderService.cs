@@ -61,17 +61,14 @@ namespace MousyHub.Models.Services
             if (Default)
                 directory = Environment.CurrentDirectory + "/wwwroot/default/InstructConfigs/";
             List<Instruct> list = new List<Instruct>();
-            if (!Directory.Exists(directory))
+            if (Directory.Exists(directory))
             {
-                return list;
-            }
-            foreach (string file in Directory.GetFiles(directory, "*.json"))
-            {
-                string json = File.ReadAllText(file);
-                Instruct ints = JsonConvert.DeserializeObject<Instruct>(json);
-
-
-                list.Add(ints);
+                foreach (string file in Directory.GetFiles(directory, "*.json"))
+                {
+                    string json = File.ReadAllText(file);
+                    Instruct ints = JsonConvert.DeserializeObject<Instruct>(json);
+                    list.Add(ints);
+                }
             }
             if (list.Count == 0 && Default == false)
                 list = LoadInstructs(Default: true);
@@ -83,16 +80,15 @@ namespace MousyHub.Models.Services
             if (Default)
                 directory = Environment.CurrentDirectory + "/wwwroot/default/Presets/kobold";
             List<GenerationConfig> list = new List<GenerationConfig>();
-            if (!Directory.Exists(directory))
+            if (Directory.Exists(directory))
             {
-                return list;
-            }
-            foreach (string file in Directory.GetFiles(directory, "*.json"))
-            {
-                string json = File.ReadAllText(file);
-                GenerationConfig ints = JsonConvert.DeserializeObject<GenerationConfig>(json);
-                ints.ConfigName = Path.GetFileNameWithoutExtension(file);
-                list.Add(ints);
+                foreach (string file in Directory.GetFiles(directory, "*.json"))
+                {
+                    string json = File.ReadAllText(file);
+                    GenerationConfig ints = JsonConvert.DeserializeObject<GenerationConfig>(json);
+                    ints.ConfigName = Path.GetFileNameWithoutExtension(file);
+                    list.Add(ints);
+                }
             }
             if (list.Count == 0 && Default == false)
                 list = LoadPresets(Default: true);
@@ -182,7 +178,7 @@ namespace MousyHub.Models.Services
         {
             string directory = ModelsPath;
             if (!string.IsNullOrEmpty(CustomModelPath) && Directory.Exists(CustomModelPath))
-             directory = CustomModelPath;
+                directory = CustomModelPath;
             List<string> list = new List<string>();
             if (!Directory.Exists(directory))
             {
@@ -216,7 +212,7 @@ namespace MousyHub.Models.Services
         {
             string path = Environment.CurrentDirectory + "/wwwroot/default/Grammar/" + FileNameWithExtension;
             if (File.Exists(path))
-            { 
+            {
                 string grammar = File.ReadAllText(path).Trim();
                 return grammar;
             }
