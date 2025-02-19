@@ -46,7 +46,7 @@
                 </MudContainer>
             </ChildContent>
         </MudTabPanel>
-        <MudTabPanel Text="@(!isMobile ? Loc["Messenger"] : string.Empty)" Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Message" Style="width:30vw"  OnClick="@(()=>isChatPageClick(true))" id="messenger-page-button">
+            <MudTabPanel Text="@(!isMobile ? Loc["Messenger"] : string.Empty)" Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Message" Style="width:30vw" OnClick="@(()=>isChatPageClick(true))" UserAttributes="@(new Dictionary<string, object> { { "id", "messenger-page-button" } })">
             <MudDrawerContainer>
                 @if (isFocusOnChatPage)
                 {
@@ -65,7 +65,7 @@
             </MudDrawerContainer>
         </MudTabPanel>
 
-        <MudTabPanel Text="@(!isMobile ? Loc["Settings"] : string.Empty)" Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Settings" Style="width:25vw" OnClick="@(()=>isChatPageClick(false))" id="settings-page-button">
+            <MudTabPanel Text="@(!isMobile ? Loc["Settings"] : string.Empty)" Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Settings" Style="width:25vw" OnClick="@(()=>isChatPageClick(false))" UserAttributes="@(new Dictionary<string, object> { { "id", "settings-page-button" } })" >
             <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
                 <SettingsPage></SettingsPage>
             </MudContainer>
