@@ -9,27 +9,28 @@
 @implements IDisposable
 
 <MudContainer id="download-page" Class="py-3">
+     <MudStack Justify="Justify.Center" Row>
     @if (BestGPU != null)
-    {
-        <MudStack Justify="Justify.Center" Row>
+    {      
             <MudCard>
                 <MudCardContent>
                     <MudText Typo="Typo.h5">Best GPU</MudText>
                     <MudText>@BestGPU.Model @BestGPU.VRAM_GB Gb</MudText>
                 </MudCardContent>
-            </MudCard>
-            @if (HFService.isBusy)
-            {
-                <MudCard>
-                    <MudCardContent>
-                        <MudText>Download progress @HFService.downloadProgress.Progress %</MudText>
-                        <MudProgressLinear Color="Color.Primary" Value="@HFService.downloadProgress.Progress"></MudProgressLinear>
-                        <MudText>File: @HFService.downloadProgress.FileName</MudText>
-                    </MudCardContent>
-                </MudCard>
-            }
-        </MudStack>
+            </MudCard>       
     }
+        @if (HFService.isBusy)
+        {
+            <MudCard>
+                <MudCardContent>
+                    <MudText>Download progress @HFService.downloadProgress.Progress %</MudText>
+                    <MudProgressLinear Color="Color.Primary" Value="@HFService.downloadProgress.Progress"></MudProgressLinear>
+                    <MudText>File: @HFService.downloadProgress.FileName</MudText>
+                </MudCardContent>
+            </MudCard>
+        }
+
+    </MudStack>
 
 
     <MudGrid Justify="Justify.Center">
