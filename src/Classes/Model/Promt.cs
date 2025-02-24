@@ -45,12 +45,17 @@ namespace MousyHub.Classes.Model
             {
                 if (item.Owner.IsUser && item.isSummarized == false)
                 {
-                    Elements.Add(new PromtElement(MessageRole.User, $"{item.Owner.Name}: {item.Content}"));
+                    Elements.Add(new PromtElement(MessageRole.User, $"{item.Content}"));
                     FullDialogue += item.InstructContent;
                 }
                 else if (item.isSummarized == false)
                 {
-                    Elements.Add(new PromtElement(MessageRole.Assistant, $"{item.Owner.Name}: {item.Content}"));
+    
+                        if (person == chatHistory.MainCharacter)
+                            Elements.Add(new PromtElement(MessageRole.Assistant, $"{item.Content}"));
+                        else
+                            Elements.Add(new PromtElement(MessageRole.Assistant, $"{item.Owner.Name}: {item.Content}"));
+            
                     FullDialogue += item.InstructContent;
                     FullDialogue += item.Content;
                 }
