@@ -1,8 +1,11 @@
 ﻿using DocumentFormat.OpenXml.Bibliography;
+using MousyHub.Classes.Misc;
+using MousyHub.Classes.Model;
 using MousyHub.Models.Misc;
 using MousyHub.Models.Model;
 using MousyHub.Models.Services;
 using Newtonsoft.Json;
+using System;
 
 namespace MousyHub.Models
 {
@@ -107,51 +110,19 @@ namespace MousyHub.Models
         /// </summary>
         /// <param name="instruct"></param>
         /// <returns></returns>
-        public async Task<string> PromtToLLM(Instruct instruct, Person person, bool console = true)
+        
+        public Promt GetPromt(Instruct instruct, Person person)
         {
-            SystemMessage = PromtBuilder.SystemMessage(instruct, this, person);
-            string finalpromt = SystemMessage;
-            //Special condition for the narrator
-            if (person.Name == "Narrator" && !string.IsNullOrEmpty(PlayerWishes))
-            {
-                finalpromt += "\n[Player's wishes: " + PlayerWishes + "]";
-            }
-            //Memory From RAG
-            if (!string.IsNullOrEmpty(MemoryFromChat))
-            {
-                finalpromt += "\n[Early Memories from Chat (Possibly for use): {" + MemoryFromChat + "}]";
-                MemoryFromChat = string.Empty;
-            }
-            Message lastmessage = new Message();
-            foreach (var item in Messages)
-            {
-                if (item.Owner.IsUser && item.isSummarized == false)
-                {
-
-                    finalpromt += item.InstructContent;
-                }
-                else if (item.isSummarized == false)
-                {
-                    //If the bot answers behind other bot, then we need to follow a template
-                    if (lastmessage.Owner != null && lastmessage.Owner.IsUser == false)
-                    {
-                        finalpromt += instruct.output_sequence;
-                    }
-                    finalpromt += item.InstructContent;
-                    finalpromt += item.Content;
-                }
-                lastmessage = item;
-            }
-            if (console)
+            Promt promt = new Promt(this, instruct, person);
+            if (true)
             {
                 Console.WriteLine("-----Promt-----");
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine(finalpromt);
+                Console.WriteLine(promt.FullContent);
                 Console.ResetColor();
                 Console.WriteLine("---------------");
             }
-
-            return finalpromt;
+            return promt;   
         }
         public async Task<Message> AddMessage(string content, Person person, Instruct instruct, string NativeLangContent = "")
         {
@@ -163,7 +134,7 @@ namespace MousyHub.Models
                     content += "\n" + OCC_PlayerWishes;
                     OCC_PlayerWishes = string.Empty;
                 }
-                var InstructContent = PromtBuilder.UserMessage(instruct, content, person.Name);
+                var InstructContent = StringHelperBuilder.UserMessageInstructed(instruct, content, person.Name);
                 var newMes = new Message(content, InstructContent, person);
                 newMes.UserNativeLanguageContent = NativeLangContent;
                 Messages.Add(newMes);
@@ -171,8 +142,8 @@ namespace MousyHub.Models
             }
             else
             {
-                var InstructContent = PromtBuilder.BotMessageFormatting(instruct, person.Name);
-                content = PromtBuilder.TagPlaceholder(content, MainUser.Name, MainCharacter.Name);
+                var InstructContent = StringHelperBuilder.BotMessageInstructed(instruct, person.Name);
+                content = StringHelperBuilder.TagPlaceholder(content, MainUser.Name, MainCharacter.Name);
                 var newMes = new Message(content, InstructContent, person);
                 newMes.UserNativeLanguageContent = NativeLangContent;
                 Messages.Add(newMes);
@@ -315,7 +286,7 @@ namespace MousyHub.Models
         public Guid AddEmptyMessage(Person person, Instruct instruct)
         {
             //Add next person name to new emptyMessage content
-            var content = PromtBuilder.BotMessageFormatting(instruct, person.Name);
+            var content = StringHelperBuilder.BotMessageInstructed(instruct, person.Name);
             Message message = new Message("", content, person);
             message.isGenerating = true;
             Messages.Add(message);
@@ -325,13 +296,13 @@ namespace MousyHub.Models
         public void FillAltFirstMessagesList(Person person, Instruct instruct)
         {
             AlterativeFirstMessages.Clear();
-            var InstructContent = PromtBuilder.BotMessageFormatting(instruct, person.Name);
+            var InstructContent = StringHelperBuilder.BotMessageInstructed(instruct, person.Name);
             AlterativeFirstMessages.Add(Messages[0]);
             foreach (var item in Alt_greetings)
             {
                 string content = item;
                 if (content == null) continue;
-                content = PromtBuilder.TagPlaceholder(content, MainUser.Name, MainCharacter.Name);
+                content = StringHelperBuilder.TagPlaceholder(content, MainUser.Name, MainCharacter.Name);
                 var newMes = new Message(content, InstructContent, person);
                 AlterativeFirstMessages.Add(newMes);
             }
@@ -340,8 +311,8 @@ namespace MousyHub.Models
         }
         public void AddNewAltFirstMessage(Instruct instruct, string RawContent)
         {
-            var InstructContent = PromtBuilder.BotMessageFormatting(instruct, MainCharacter.Name);
-            var ProcContent = PromtBuilder.TagPlaceholder(RawContent, MainUser.Name, MainCharacter.Name);
+            var InstructContent = StringHelperBuilder.BotMessageInstructed(instruct, MainCharacter.Name);
+            var ProcContent = StringHelperBuilder.TagPlaceholder(RawContent, MainUser.Name, MainCharacter.Name);
             var newMes = new Message(ProcContent, InstructContent, MainCharacter);
             AlterativeFirstMessages.Add(newMes);
         }

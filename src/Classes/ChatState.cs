@@ -1,6 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MousyHub.Models.Services;
-using MousyHub.Models.Model;
+using MousyHub.Classes.Misc;
 
 namespace MousyHub.Models
 {
@@ -83,7 +83,7 @@ namespace MousyHub.Models
         {
             if (ChatHistory != null)
             {
-                ChatHistory.ChatContextSize = await Provider.TokenCount(await ChatHistory.PromtToLLM(Settings.CurrentInstruct, ChatHistory.MainCharacter, false));
+                ChatHistory.ChatContextSize = await Provider.TokenCount(ChatHistory.GetPromt(Settings.CurrentInstruct, ChatHistory.MainCharacter).FullContent);
             }
         }
 
@@ -97,21 +97,24 @@ namespace MousyHub.Models
             List<Message> messages = new List<Message>();
             if (string.IsNullOrEmpty(ChatHistory.SummarizeContext))
             {
-                preparePromt += PromtBuilder.SystemMessageShort(ChatHistory);
+                preparePromt += StringHelperBuilder.SystemMessageShort(ChatHistory);
             }
             else
             {
                 preparePromt += $"Last summary(use this for summarize too): [{ChatHistory.SummarizeContext}]\n";
             }
+            preparePromt += "<ACTUAL DIALOG>";
             foreach (var item in ChatHistory.Messages)
             {
+           
                 if (item.isSummarized == false && item != ChatHistory.GetLastMessage())
                 {
                     preparePromt += "\n" + item.Owner.Name + ": " + item.Content;
                     messages.Add(item);
                 }
             }
-            var res = await Provider.Wizard.WizardRequest(preparePromt, Misc.Wizard.WizardFunction.Summary,MaxTokens:300);
+            preparePromt += "<END>";
+            var res = await Provider.Wizard.WizardRequest(preparePromt, Misc.Wizard.WizardFunction.Summary,MaxTokens:300, Temperature: 0.5);
          
             if (res.IsSuccess)
             {
@@ -148,7 +151,7 @@ namespace MousyHub.Models
         public async Task<string> AnswerAssistant()
         {
             string preparePromt = "";
-            preparePromt += PromtBuilder.SystemMessageShort(ChatHistory);
+            preparePromt += StringHelperBuilder.SystemMessageShort(ChatHistory);
             preparePromt += "[DIALOGUE]: ";
             //Take only 4 last message
             foreach (var item in ChatHistory.Messages.TakeLast(4))
@@ -156,7 +159,7 @@ namespace MousyHub.Models
                 preparePromt += "\n" + item.Owner.Name + ": " + item.Content;
             }
             preparePromt += "[END OF DIALOGUE]";
-            var res = await Provider.Wizard.WizardRequest(preparePromt, Misc.Wizard.WizardFunction.AnswerAssistant,UserName: ChatHistory.MainUser.Name,CharName: ChatHistory.GetLastMessage(true).Owner.Name);
+            var res = await Provider.Wizard.WizardRequest(preparePromt, Misc.Wizard.WizardFunction.AnswerAssistant,UserName: ChatHistory.MainUser.Name,CharName: ChatHistory.GetLastMessage(true).Owner.Name,Temperature:0.5);
             if (res.IsSuccess)
             {
                 Console.WriteLine(res.Content);

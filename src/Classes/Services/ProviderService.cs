@@ -6,6 +6,7 @@ using MousyHub.Models.Misc;
 using MousyHub.Models.Model;
 using MousyHub.Models.Provider.KoboldCPP;
 using MousyHub.Models.Provider.LLama;
+using MousyHub.Models.Services.URLHandle;
 using MousyHub.Models.User;
 using SharpCompress.Common;
 using UglyToad.PdfPig.Graphics.Operations.SpecialGraphicsState;
@@ -20,7 +21,7 @@ namespace MousyHub.Models.Services
         {
             { APIType.Native,"Native" },
             { APIType.KoboldCPP,"KoboldCPP" },
-            { APIType.Chat_Completions,"Chat Completions API (soon...)" },
+            { APIType.Chat_Completions,"Chat Completions API beta" },
 
         };
         public KeyValuePair<APIType, string> SelectType = new KeyValuePair<APIType, string>();
@@ -32,7 +33,8 @@ namespace MousyHub.Models.Services
         }
         public ILanguageModel? LLModel;
         public Wizard Wizard { get; set; } = new Wizard();
-        public string BaseUrl = "http://localhost:5001";
+
+ 
         public bool Status = false;
         private bool isLocalRun = false;
         public string MaxContextSize = "?";
@@ -42,6 +44,9 @@ namespace MousyHub.Models.Services
         public event Action ConnectionChangeEvent;
         private UploaderService UploaderService;
         private RAGService RAG;
+        //Chat completions options...
+        public List<string> ModelList = new List<string>();
+        public string SelectModel;
         public ProviderService(UploaderService uploaderService, RAGService RAG)
         {
             SelectType = ConnectionsTypes.First();
@@ -59,7 +64,7 @@ namespace MousyHub.Models.Services
             switch (SelectType.Key)
             {
                 case APIType.KoboldCPP:
-                    bool IsSuccessK = await ConnectKoboldCPP();
+                    bool IsSuccessK = await ConnectKoboldCPP(Settings.User.BaseUrl);
                     if (!IsSuccessK)
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
@@ -74,6 +79,10 @@ namespace MousyHub.Models.Services
                     await TrySetAutoChatTemplate(Settings);
                     return await LLModel.Model();
                 case APIType.Chat_Completions:
+                    bool IsSuccessC = await ConnectChatCompl(Settings.User.BaseUrl, Settings.User.APIKey);
+                    if (!IsSuccessC)
+                        return "";
+                    await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
                     break;
                 default:
                     break;
@@ -95,6 +104,7 @@ namespace MousyHub.Models.Services
         public void ChangeConnectionType()
         {
             ConnectionChangeEvent.Invoke();
+
         }
         public async Task<int> TokenCount(string promt)
         {
@@ -141,9 +151,9 @@ namespace MousyHub.Models.Services
         }
 
 
-        private async Task<bool> ConnectKoboldCPP()
+        private async Task<bool> ConnectKoboldCPP(string URL)
         {
-            LLModel = new KoboldProvider(BaseUrl);
+            LLModel = new KoboldProvider(URL);
             Status = await LLModel.Status();
             await ConnectionEvent.Invoke(Status);
             if (!Status)
@@ -151,6 +161,21 @@ namespace MousyHub.Models.Services
                 return Status;
             }
             MaxContextSize = await MaxTokenCount();
+            return Status;
+        }
+        private async Task<bool> ConnectChatCompl(string URL, string APIKey)
+        {
+            if (string.IsNullOrEmpty(URL) || string.IsNullOrEmpty(SelectModel))
+            {               
+                return false;
+            }
+            LLModel = new ChatCompletionProvider(URL, APIKey, SelectModel);
+            Status = await LLModel.Status();
+            await ConnectionEvent.Invoke(Status);
+            if (!Status)
+            {
+                return Status;
+            }
             return Status;
         }
         private async Task<bool> ConnectLocal(SettingsService Settings)
@@ -192,11 +217,12 @@ namespace MousyHub.Models.Services
 
 
         }
+      
         public async Task<string> NewWizardConnect(Instruct instruct, UserState userState)
         {
             if (Status)
             {
-                Wizard.UpdateInstructions(LLModel, instruct, userState, UploaderService);
+                Wizard.UpdateInstructions(LLModel, instruct, userState, UploaderService, SelectType.Key is APIType.Chat_Completions ? true :false);
                 WizardStatus = true;
                 return "";
             }

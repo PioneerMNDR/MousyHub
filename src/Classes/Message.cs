@@ -40,10 +40,11 @@ namespace MousyHub.Models
 
         public string UserNativeLanguageContent { get; set; }
 
+        //if user <start>user<end>Hello<end><botstart>
         public string InstructContent { get; set; }
 
         public DateTime dateTime { get; set; }
-        public bool isNewMessage { get; set; } = true;
+
         public bool isGenerating { get; set; } = false;
 
         public bool isSummarized { get; set; } = false;

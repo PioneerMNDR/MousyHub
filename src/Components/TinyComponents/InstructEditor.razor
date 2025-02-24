@@ -1,4 +1,5 @@
-﻿@using MousyHub.Models
+﻿@using MousyHub.Classes.Misc
+@using MousyHub.Models
 @using MousyHub.Models.Model
 @using System.Text.RegularExpressions
 @using System.Linq.Expressions
@@ -7,6 +8,8 @@
 @inject ProviderService Service
 @using MousyHub.Models.User
 @inject SettingsService Settings
+
+
 
 @if (Settings.InstructList != null && Settings.CurrentInstruct != null)
 {
@@ -57,29 +60,29 @@
             @if (Settings.CurrentInstruct.forWizard==false)
             {
                 <MudItem md="12" xs=12>
-                    <MudTextField Label="System promt" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.system_prompt) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.system_prompt)) Variant="Variant.Filled"></MudTextField>
+                    <MudTextField Label="System promt" Value=@StringHelperBuilder.ToLiteral(Settings.CurrentInstruct.system_prompt) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.system_prompt)) Variant="Variant.Filled"></MudTextField>
                 </MudItem>
             }
             <MudItem md="6" xs=6>
-                <MudTextField Label="System sequence" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.system_sequence) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.system_sequence)) Variant="Variant.Filled"></MudTextField>
+                <MudTextField Label="System sequence" Value=@StringHelperBuilder.ToLiteral(Settings.CurrentInstruct.system_sequence) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.system_sequence)) Variant="Variant.Filled"></MudTextField>
             </MudItem>
             <MudItem md="6" xs=6>
-                <MudTextField Label="Input sequence" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.input_sequence) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.input_sequence)) Variant="Variant.Filled"></MudTextField>
+                <MudTextField Label="Input sequence" Value=@StringHelperBuilder.ToLiteral(Settings.CurrentInstruct.input_sequence) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.input_sequence)) Variant="Variant.Filled"></MudTextField>
             </MudItem>
             <MudItem md="6" xs=6>
-                <MudTextField Label="Output sequence" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.output_sequence) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.output_sequence)) Variant="Variant.Filled"></MudTextField>
+                <MudTextField Label="Output sequence" Value=@StringHelperBuilder.ToLiteral(Settings.CurrentInstruct.output_sequence) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.output_sequence)) Variant="Variant.Filled"></MudTextField>
             </MudItem>
             <MudItem md="6" xs=6>
-                <MudTextField Label="System suffix" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.system_suffix) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.system_suffix)) Variant="Variant.Filled"></MudTextField>
+                <MudTextField Label="System suffix" Value=@StringHelperBuilder.ToLiteral(Settings.CurrentInstruct.system_suffix) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.system_suffix)) Variant="Variant.Filled"></MudTextField>
             </MudItem>
             <MudItem md="6" xs=6>
-                <MudTextField Label="Input suffix" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.input_suffix) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.input_suffix)) Variant="Variant.Filled"></MudTextField>
+                <MudTextField Label="Input suffix" Value=@StringHelperBuilder.ToLiteral(Settings.CurrentInstruct.input_suffix) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.input_suffix)) Variant="Variant.Filled"></MudTextField>
             </MudItem>
             <MudItem md="6" xs=6>
-                <MudTextField Label="Output suffix" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.output_suffix) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.output_suffix)) Variant="Variant.Filled"></MudTextField>
+                <MudTextField Label="Output suffix" Value=@StringHelperBuilder.ToLiteral(Settings.CurrentInstruct.output_suffix) ValueChanged=@((string e)=>TextChanged<Instruct>(e,x=>x.output_suffix)) Variant="Variant.Filled"></MudTextField>
             </MudItem>
             <MudItem md="12" xs=12>
-                <MudTextField Label="Stop sequence" HelperText="(stopS1,stopS2,stopsSn...)" Value=@PromtBuilder.ToLiteral(Settings.CurrentInstruct.stop_sequence) ValueChanged=@((string e)=>{TextChanged<Instruct>(e,x=>x.stop_sequence);}) Variant="Variant.Filled"></MudTextField>
+                <MudTextField Label="Stop sequence" HelperText="(stopS1,stopS2,stopsSn...)" Value=@StringHelperBuilder.ToLiteral(Settings.CurrentInstruct.stop_sequence) ValueChanged=@((string e)=>{TextChanged<Instruct>(e,x=>x.stop_sequence);}) Variant="Variant.Filled"></MudTextField>
             </MudItem>
             <MudItem md="6" xs=6>
                 <MudSwitch Label="Include names" Color="Color.Primary" @bind-Value=Settings.CurrentInstruct.names></MudSwitch>

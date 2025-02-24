@@ -1,12 +1,16 @@
-﻿using MousyHub.Models;
+﻿using Microsoft.IdentityModel.Tokens;
+using MousyHub.Models;
+using MousyHub.Models.Model;
 
-namespace MousyHub.Models.Model
+namespace MousyHub.Classes.Misc
 {
-    public static class PromtBuilder
+    public static class StringHelperBuilder
     {
+
 
         static string separator = "\n";
 
+        
         public static string SystemMessage(Instruct instruct, ChatHistory chatHistory, Person person)
         {
             string story_string = "";
@@ -30,9 +34,12 @@ namespace MousyHub.Models.Model
             story_string = TagPlaceholder(story_string, chatHistory.MainUser.Name, chatHistory.MainCharacter.Name);
             return story_string;
         }
+        public static string TagPlaceholder(string message, string Username, string CharacterName)
+        {
+            string result = message.Replace("{{User}}", Username).Replace("{{user}}", Username).Replace("{{char}}", CharacterName).Replace("{{Char}}", CharacterName);
 
-
-
+            return result;
+        }
         public static string SystemMessageShort(ChatHistory chatHistory)
         {
             string story_string = "";
@@ -40,38 +47,32 @@ namespace MousyHub.Models.Model
             story_string = TagPlaceholder(story_string, chatHistory.MainUser.Name, chatHistory.MainCharacter.Name);
             return story_string;
         }
-        public static string UserMessage(Instruct instruct, string promt, string personName)
+
+        /// <returns>Returns a phrase for a chat like: '<|im_end|><|im_start|>user\UserName: '</returns>
+        public static string UserMessageInstructed(Instruct instruct, string promt, string personName)
         {
             var n1 = personName + ": ";
-            //var n2 = botname + ": ";
             if (instruct.names == false)
             {
-                n1 = "";/* n2 = ""*/;
+                n1 = "";
             }
             if (instruct.macro)
             {
                 instruct.input_sequence.Replace("{{name}}", personName);
-                //instruct.output_sequence.Replace("{{name}}", botname);
             }
-            if (instruct.wrap && instruct.input_suffix == "")
+            if (instruct.wrap && string.IsNullOrEmpty(instruct.input_suffix))
             {
                 instruct.input_suffix = "\n";
             }
-            if (instruct.wrap && instruct.output_suffix == "")
-            {
-                instruct.output_suffix = "\n";
-            }
-            //string e = instruct.input_suffix + instruct.input_sequence + separator + n1 + promt + instruct.output_suffix + instruct.output_sequence + separator + n2;
-
-            string e = instruct.input_suffix + instruct.input_sequence + separator + n1 + promt + instruct.output_suffix + instruct.output_sequence;
+            string e = instruct.input_suffix + instruct.input_sequence + n1 + promt;
             return e;
         }
 
 
-        /// <returns>Returns a phrase for a chat like: 'CharName: '</returns>
-        public static string BotMessageFormatting(Instruct instruct, string personName)
+        /// <returns>Returns a phrase for a chat like: '<|im_end|><|im_start|>assistant\nCharName: '</returns>
+        public static string BotMessageInstructed(Instruct instruct, string personName)
         {
-            var n2 = separator + personName + ": ";
+            var n2 = personName + ": ";
             if (instruct.names == false)
             {
                 n2 = "";
@@ -80,16 +81,16 @@ namespace MousyHub.Models.Model
             {
                 instruct.output_sequence.Replace("{{name}}", personName);
             }
-            string content = n2;
+  
+            if (instruct.wrap && string.IsNullOrEmpty(instruct.output_suffix))
+            {
+                instruct.output_suffix = "\n";
+            }
+            string content = instruct.output_suffix + instruct.output_sequence + n2;
             return content;
         }
 
-        public static string TagPlaceholder(string message, string Username, string CharacterName)
-        {
-            string result = message.Replace("{{User}}", Username).Replace("{{user}}", Username).Replace("{{char}}", CharacterName).Replace("{{Char}}", CharacterName);
 
-            return result;
-        }
         public static string[] Stop_sequence_split(string stop_s)
         {
             var seq = stop_s.Split(',', options: StringSplitOptions.None);
@@ -98,17 +99,21 @@ namespace MousyHub.Models.Model
 
 
 
-        public static string WizardSystemMessage(Instruct instruct, string systemPromt)
+        public static string WizardSystemMessage(Instruct instruct, string systemPromt, bool isInstructed)
         {
-            string system = instruct.system_sequence + separator + systemPromt + separator;
-            return system;
+            if (isInstructed) 
+               return instruct.system_sequence + separator + systemPromt + separator;
+            else
+                return systemPromt + separator;
         }
 
 
-        public static string WizardRequestMessage(Instruct instruct, string request)
+        public static string WizardRequestMessage(Instruct instruct, string request, bool isInstructed)
         {
-            string e = instruct.input_suffix + instruct.input_sequence + separator + request + instruct.output_suffix + instruct.output_sequence + separator;
-            return e;
+            if (isInstructed)
+                return instruct.input_suffix + instruct.input_sequence + separator + request + instruct.output_suffix + instruct.output_sequence + separator;
+            else
+                return request;
         }
         public static string ToLiteral(string input)
         {

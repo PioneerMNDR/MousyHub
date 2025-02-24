@@ -5,6 +5,7 @@ using System.Text;
 using MousyHub.Models;
 using MousyHub.Models.Misc;
 using MousyHub.Models.Services;
+using System.Text.Json;
 
 
 namespace MousyHub.Models.Services.URLHandle
@@ -86,7 +87,74 @@ namespace MousyHub.Models.Services.URLHandle
         }
 
 
+        public static async Task<List<string>> GetModelIdsAsync(string baseUrl, string apiKey = null)
+        {
+            if (string.IsNullOrWhiteSpace(baseUrl))
+                throw new ArgumentException("Base URL cannot be empty", nameof(baseUrl));
 
+            using var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            // Добавляем API ключ, если он предоставлен
+            if (!string.IsNullOrEmpty(apiKey))
+            {
+                httpClient.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", apiKey);
+            }
+
+            try
+            {
+                // Формируем URL
+                string requestUrl = $"{baseUrl.TrimEnd('/')}/v1/models";
+
+                // Выполняем запрос
+                HttpResponseMessage response = await httpClient.GetAsync(requestUrl);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorContent = await response.Content.ReadAsStringAsync();
+                    throw new HttpRequestException(
+                        $"Failed to get models. Status: {response.StatusCode}, Error: {errorContent}");
+                }
+
+                // Читаем и парсим ответ
+                string jsonResponse = await response.Content.ReadAsStringAsync();
+                using JsonDocument document = JsonDocument.Parse(jsonResponse);
+
+                var modelIds = new List<string>();
+                JsonElement root = document.RootElement;
+
+                // Проверяем, что есть свойство "data" и это массив
+                if (root.TryGetProperty("data", out JsonElement dataArray) &&
+                    dataArray.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (JsonElement model in dataArray.EnumerateArray())
+                    {
+                        // Извлекаем id модели
+                        if (model.TryGetProperty("id", out JsonElement idElement) &&
+                            idElement.ValueKind == JsonValueKind.String)
+                        {
+                            modelIds.Add(idElement.GetString());
+                        }
+                    }
+                }
+
+                return modelIds;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"HTTP request failed: {ex.Message}", ex);
+            }
+            catch (System.Text.Json.JsonException ex)
+            {
+                throw new Exception($"Failed to parse models response: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An unexpected error occurred: {ex.Message}", ex);
+            }
+        }
 
 
 

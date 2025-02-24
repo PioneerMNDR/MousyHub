@@ -1,4 +1,6 @@
 ﻿@page "/messenger"
+@using MousyHub.Classes.Misc
+@using MousyHub.Classes.Model
 @using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Model
@@ -133,7 +135,7 @@
         await RAG_Searching();
         //AddEmptyMessage run before PromtToLLM for include next bot name in message
         Guid currentGuid = State.ChatHistory.AddEmptyMessage(person, Settings.CurrentInstruct);
-        var promt = await State.ChatHistory.PromtToLLM(Settings.CurrentInstruct, person);
+        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, person);
         await Generation(currentGuid, person, promt);
         if (Force == false)
         {
@@ -182,7 +184,7 @@
 
 
 
-    async Task Generation(Guid messageGuid, Person person, string promt)
+    async Task Generation(Guid messageGuid, Person person, Promt promt)
     {
 
         await JS.InvokeVoidAsync("initializeScrollTracker", "chat");
@@ -190,7 +192,7 @@
         isGenerating = true;
         StateHasChanged();
         Message? message = null;
-        string stop_seq = Settings.CurrentInstruct.stop_sequence + PromtBuilder.TagPlaceholder(",{{user}}:,{{char}}:", State.ChatHistory.MainUser.Name, State.ChatHistory.MainCharacter.Name);
+        string stop_seq = Settings.CurrentInstruct.stop_sequence + StringHelperBuilder.TagPlaceholder(",{{user}}:,{{char}}:", State.ChatHistory.MainUser.Name, State.ChatHistory.MainCharacter.Name);
         await Task.Run(async () =>
         {
             await Provider.LLModel.GenerateStreamTextAsync(promt, Settings.CurrentGenerationConfig, Settings.User.CurrentMaxToken, Settings.User.CurrentContextLength, stop_seq, person.Key, onTokenReceived: async messageResponse =>
@@ -255,7 +257,7 @@
 
         Main.RefreshWizardPage();
         StateHasChanged();
-        var promt = await State.ChatHistory.PromtToLLM(Settings.CurrentInstruct, lastMessage.Owner);
+        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, lastMessage.Owner);
         Guid currentGuid = lastMessage.GuidMessage;
         await Generation(currentGuid, lastMessage.Owner, promt);
 
@@ -276,7 +278,7 @@
     }
     async Task SkipUserTurn()
     {
-        @if (State.NextPerson != null && State.NextPerson.IsUser == false)
+        if (State.NextPerson != null && State.NextPerson.IsUser == true)
         {
             State.NextPerson = State.ChatHistory.QueueMoveOrder();
             Main.RefreshWizardPage();

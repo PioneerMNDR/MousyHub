@@ -1,5 +1,7 @@
 ﻿using LLama.Common;
 using LLama.Sampling;
+using MousyHub.Classes.Misc;
+using MousyHub.Classes.Model;
 using MousyHub.Models.Abstractions;
 using MousyHub.Models.Model;
 using MousyHub.Models.Provider.LLama.Sampler;
@@ -78,7 +80,7 @@ namespace MousyHub.Models.Provider.LLama
 
             if (stop_seq != "")
             {
-                inferenceParams.AntiPrompts = PromtBuilder.Stop_sequence_split(stop_seq).ToList();
+                inferenceParams.AntiPrompts = StringHelperBuilder.Stop_sequence_split(stop_seq).ToList();
             }
 
             return inferenceParams;
@@ -90,21 +92,21 @@ namespace MousyHub.Models.Provider.LLama
             return _cts.CancelAsync();
         }
 
-        public async Task GenerateStreamTextAsync(string prompt, GenerationConfig config, int maxTokens = 100, int contextLength = 4096, string stop_seq = "", string key = "main", Func<MessageResponse, Task> onTokenReceived = null)
+        public async Task GenerateStreamTextAsync(Promt prompt, GenerationConfig config, int maxTokens = 100, int contextLength = 4096, string stop_seq = "", string key = "main", Func<MessageResponse, Task> onTokenReceived = null)
         {
             isBusy = true;
             _cts = new CancellationTokenSource();
             InferenceParams inferenceParams = ConvertFromGenerationConfig(config, maxTokens, stop_seq);
-            await _core.GenerateStream(prompt, key, inferenceParams, onTokenReceived, _cts.Token);
+            await _core.GenerateStream(prompt.FullContent, key, inferenceParams, onTokenReceived, _cts.Token);
             isBusy = false;
         }
 
-        public async Task<MessageResponse> GenerateTextAsync(string prompt, GenerationConfig config, int maxTokens = 100, int contextLength = 4096, string stop_seq = "", string key = "main")
+        public async Task<MessageResponse> GenerateTextAsync(Promt prompt, GenerationConfig config, int maxTokens = 100, int contextLength = 4096, string stop_seq = "", string key = "main")
         {
             isBusy = true;
             _cts = new CancellationTokenSource();
             InferenceParams inferenceParams = ConvertFromGenerationConfig(config, maxTokens, stop_seq);
-            var res = await _core.Generate(prompt, key, inferenceParams, _cts.Token);
+            var res = await _core.Generate(prompt.FullContent, key, inferenceParams, _cts.Token);
             isBusy = false;
             return res;
 

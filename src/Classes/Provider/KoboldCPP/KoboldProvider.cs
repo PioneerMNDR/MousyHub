@@ -1,4 +1,6 @@
-﻿using MousyHub.Models.Abstractions;
+﻿using MousyHub.Classes.Misc;
+using MousyHub.Classes.Model;
+using MousyHub.Models.Abstractions;
 using MousyHub.Models.Model;
 using Newtonsoft.Json;
 
@@ -19,17 +21,17 @@ namespace MousyHub.Models.Provider.KoboldCPP
         public bool isBusy { get { return _isbusy; } private set { _isbusy = value; BusyChanged.Invoke(this, EventArgs.Empty); } }
 
 
-        public async Task<MessageResponse> GenerateTextAsync(string prompt, GenerationConfig config, int maxTokens = 100, int contextLength = 4096, string stop_seq = "", string key = "main")
+        public async Task<MessageResponse> GenerateTextAsync(Promt prompt, GenerationConfig config, int maxTokens = 100, int contextLength = 4096, string stop_seq = "", string key = "main")
         {
             isBusy = true;
             string json = JsonConvert.SerializeObject(config);
             KoboldGenParams param = JsonConvert.DeserializeObject<KoboldGenParams>(json);
-            param.Prompt = prompt;
+            param.Prompt = prompt.FullContent;
             param.MaxLength = maxTokens;
             param.MaxContextLength = contextLength;
-            param.stop_sequence = PromtBuilder.Stop_sequence_split(stop_seq);
+            param.stop_sequence = StringHelperBuilder.Stop_sequence_split(stop_seq);
             param.genkey = key;
-            param.dry_sequence_breakers = PromtBuilder.Stop_sequence_split(config.dry_sequence_breakers_string);
+            param.dry_sequence_breakers = StringHelperBuilder.Stop_sequence_split(config.dry_sequence_breakers_string);
             param.SetDynTemp(config.dynatemp, (float)config.min_temp, (float)config.max_temp);
             var output = await client.Generate(param);
             isBusy = false;
@@ -40,17 +42,17 @@ namespace MousyHub.Models.Provider.KoboldCPP
             return new MessageResponse(null, false, "API error");
 
         }
-        public async Task GenerateStreamTextAsync(string prompt, GenerationConfig config, int maxTokens = 100, int contextLength = 4096, string stop_seq = "", string key = "main", Func<MessageResponse, Task> onTokenReceived = null)
+        public async Task GenerateStreamTextAsync(Promt prompt, GenerationConfig config, int maxTokens = 100, int contextLength = 4096, string stop_seq = "", string key = "main", Func<MessageResponse, Task> onTokenReceived = null)
         {
             isBusy = true;
             string json = JsonConvert.SerializeObject(config);
             KoboldGenParams param = JsonConvert.DeserializeObject<KoboldGenParams>(json);
-            param.Prompt = prompt;
+            param.Prompt = prompt.FullContent;
             param.MaxLength = maxTokens;
             param.MaxContextLength = contextLength;
-            param.stop_sequence = PromtBuilder.Stop_sequence_split(stop_seq);
+            param.stop_sequence = StringHelperBuilder.Stop_sequence_split(stop_seq);
             param.genkey = key;
-            param.dry_sequence_breakers = PromtBuilder.Stop_sequence_split(config.dry_sequence_breakers_string);
+            param.dry_sequence_breakers = StringHelperBuilder.Stop_sequence_split(config.dry_sequence_breakers_string);
             param.SetDynTemp(config.dynatemp, (float)config.min_temp, (float)config.max_temp);
             await client.GenerateStream(param, async messageResponse =>
             {

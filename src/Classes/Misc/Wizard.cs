@@ -1,4 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Office2016.Drawing.Charts;
+using MousyHub.Classes.Misc;
+using MousyHub.Classes.Model;
 using MousyHub.Models;
 using MousyHub.Models.Abstractions;
 using MousyHub.Models.Model;
@@ -10,7 +12,6 @@ namespace MousyHub.Models.Misc
     public class Wizard
     {
         public ILanguageModel Model;
-
         public Instruct Instruct { get; set; }
 
         public GenerationConfig WizardConifg = new GenerationConfig
@@ -19,7 +20,7 @@ namespace MousyHub.Models.Misc
             rep_pen = 1,
             rep_pen_range = 0,
             top_p = 1,
-            top_a = 0,
+            top_a = 0.5,
             top_k = 0,
             typical = 1,
             tfs = 1,
@@ -77,14 +78,16 @@ namespace MousyHub.Models.Misc
 
 
         //I haven't used it yet, it needs some improvement
-        string QuickReplyGrammar { get; set; }
+        string QuickReplyGrammar { get; set; } = string.Empty;
+        bool IsChatCompletions { get; set; }    
 
-        public void UpdateInstructions(ILanguageModel Model, Instruct instruct, UserState userState,UploaderService uploader)
+        public void UpdateInstructions(ILanguageModel Model, Instruct instruct, UserState userState,UploaderService uploader, bool _IsChatCompletions)
         {
             this.Model = Model;
             Instruct = instruct;
             User = userState;
             QuickReplyGrammar = uploader.LoadGrammar("QuickReply.gbnf");
+            IsChatCompletions = _IsChatCompletions;
         }
 
         /// <summary>
@@ -95,37 +98,43 @@ namespace MousyHub.Models.Misc
         /// <returns></returns>
         public async Task<MessageResponse> WizardRequest(string promt, WizardFunction wizardFunction, double Temperature = 1.1, int MaxTokens = 150, string UserName = "", string CharName = "")
         {
-            string chatHistoryInstructed = PromtBuilder.WizardRequestMessage(Instruct, promt);
-            string FinalPromt = "";
+            string SystemPromt = "";
+            bool IsInstructed = !IsChatCompletions;
+            string UserRequest = StringHelperBuilder.WizardRequestMessage(Instruct, promt, IsInstructed);
+
             string Grammar = "";
             switch (wizardFunction)
             {
                 case WizardFunction.CharDescription:
-                    FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, DescriptionPromt) + chatHistoryInstructed;
+                    SystemPromt = StringHelperBuilder.WizardSystemMessage(Instruct, DescriptionPromt, IsInstructed);
                     break;
                 case WizardFunction.Summary:
-                    FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, User.UseStepsSummaryPromt ? SummaryPromtAlt : SummaryPromt) + chatHistoryInstructed + "\n**Summary:**";
+                    SystemPromt = StringHelperBuilder.WizardSystemMessage(Instruct, User.UseStepsSummaryPromt ? SummaryPromtAlt : SummaryPromt, IsInstructed);
+                    UserRequest += "\n**Summary:**";
                     break;
                 case WizardFunction.AnswerAssistant:
-                        FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, AnswerAssistantFormatter()) + chatHistoryInstructed + "\nThe following possible {{user}}'s " + AnswerAssistantMoods() + " answers: ";
+                    SystemPromt = StringHelperBuilder.WizardSystemMessage(Instruct, AnswerAssistantFormatter(), IsInstructed);
+                    UserRequest +=  "\nThe following possible {{user}}'s " + AnswerAssistantMoods() + " answers: ";
                     break;
                 case WizardFunction.CustomFirstMessage:
-                    FinalPromt = PromtBuilder.WizardSystemMessage(Instruct, CustomFirstMesPromt) + chatHistoryInstructed;
+                    SystemPromt = StringHelperBuilder.WizardSystemMessage(Instruct, CustomFirstMesPromt, IsInstructed) ;
                     break;
 
             }
-            FinalPromt = PromtBuilder.TagPlaceholder(FinalPromt, UserName, CharName);
+            SystemPromt = StringHelperBuilder.TagPlaceholder(SystemPromt, UserName, CharName);
+            UserRequest = StringHelperBuilder.TagPlaceholder(UserRequest, UserName, CharName);
             Console.WriteLine("-----Wizard request-----");
             Console.ForegroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine(FinalPromt);
+            Console.WriteLine(SystemPromt + UserRequest);
             Console.ResetColor();
             Console.WriteLine("-----------------");
             MessageResponse message = new MessageResponse();
             WizardConifg.temp = Temperature;
             WizardConifg.grammar = Grammar;
+            
             await Task.Run(async () =>
             {
-                message = await Model.GenerateTextAsync(FinalPromt, WizardConifg, MaxTokens, key: "Wizard");
+                message = await Model.GenerateTextAsync(new Promt(SystemPromt, UserRequest), WizardConifg, MaxTokens, key: "Wizard");
 
             });
 

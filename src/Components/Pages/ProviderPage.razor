@@ -1,13 +1,14 @@
 ﻿@using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Services
+@using MousyHub.Models.Services.URLHandle
 @using MousyHub.Models.User
 @inject ProviderService Service
 @inject SettingsService Settings
-
+@inject AlertServices Alert
 
 <MudGrid id="select-api">
-    <MudItem md="10" xs="7" >
+    <MudItem md="10" xs="7">
         <MudSelect AnchorOrigin="Origin.BottomCenter" Label="Select API" Variant="Variant.Outlined" Value="Service.SelectType" ValueChanged="@((KeyValuePair<ProviderService.APIType, string> newValue)=>ValueSelectConnectionChange(newValue))" OpenIcon="@Icons.Material.Filled.Api">
             @foreach (var item in Service.ConnectionsTypes)
             {
@@ -37,7 +38,7 @@
             {
                 case ProviderService.APIType.KoboldCPP:
                     <MudItem Class="d-flex align-content-center">
-                        <MudTextField @bind-Value="@Service.BaseUrl" Label="URL"></MudTextField>
+                        <MudTextField @bind-Value="@Settings.User.BaseUrl" Label="URL"></MudTextField>
                     </MudItem>
                     <MudItem Class="d-flex align-content-center align-end">
                         <MudText>@ModelName</MudText>
@@ -137,6 +138,23 @@
                     </MudItem>
                     break;
                 case ProviderService.APIType.Chat_Completions:
+                    <MudItem Class="d-flex align-content-center">
+                        <MudTextField @bind-Value="@Settings.User.BaseUrl" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
+                    </MudItem>
+
+                    <MudItem Class="d-flex align-content-center">
+                        <MudTextField @bind-Value="@Settings.User.APIKey"  Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
+                    </MudItem>
+
+                    <MudSpacer></MudSpacer>
+
+                    <MudItem Class="d-flex align-center pb-3">
+                        <MudButton OnClick="GetModelList" Variant="Variant.Filled" Color="Color.Primary">Get models</MudButton>
+                    </MudItem>
+                    <MudSpacer></MudSpacer>
+                    <MudItem md="4">
+                        <MudAutocomplete AnchorOrigin="Origin.BottomCenter"  MaxItems="int.MaxValue" SearchFunc="@AutocompleteSearch"  Clearable Label="Select model" HelperText="Enter URL, click get models and select" Variant="Variant.Outlined" @bind-Value="Service.SelectModel" />                                      
+                    </MudItem>
                     break;
                 default:
                     break;
@@ -145,13 +163,16 @@
     </MudContainer>
 </MudPaper>
 <MudPaper Class="mt-5 pa-4">
-    <MudGrid Spacing="2">
-        <MudItem md="6">
-            <TextGenParamEditor ></TextGenParamEditor>
+    <MudGrid  Spacing="2">
+        <MudItem md="Service.SelectType.Key is ProviderService.APIType.Chat_Completions ? 12 : 6">
+            <TextGenParamEditor></TextGenParamEditor>
         </MudItem>
-        <MudItem md="6">
-            <InstructEditor @ref=InstructEditor ></InstructEditor>
-        </MudItem>
+        @if (Service.SelectType.Key is not ProviderService.APIType.Chat_Completions)
+        {
+            <MudItem md="6">
+                <InstructEditor @ref=InstructEditor></InstructEditor>
+            </MudItem>
+        }
     </MudGrid>
 </MudPaper>
 
@@ -172,15 +193,59 @@
         isLoading = true;
         ModelName = await Service.NewConnect(Settings);
         isLoading = false;
-        InstructEditor.ReRenderState();
+        if (InstructEditor !=null && Service.SelectType.Key is not ProviderService.APIType.Chat_Completions)
+        {
+            InstructEditor.ReRenderState();
+        }
+       
     }
     private void ValueSelectConnectionChange(KeyValuePair<ProviderService.APIType, string> newValue)
     {
         Service.SelectType = newValue;
         Service.ChangeConnectionType();
-
     }
 
+    bool isShowPassword = false;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+    void PasswordVisibleSwitch()
+    {
+        if (isShowPassword)
+        {
+            isShowPassword = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShowPassword = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+    private async Task<IEnumerable<string>> AutocompleteSearch(string value, CancellationToken token)
+    {
+        // if text is null or empty, show complete list
+        if (string.IsNullOrEmpty(value))
+            return Service.ModelList;
+        return Service.ModelList.Where(x => x.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    public async Task GetModelList()
+    {
+        Settings.User.SaveSettings(Settings);
+        if (Settings.User.BaseUrl == string.Empty)
+        {
+            Alert.ErrorAlert("Enter URL");
+            return;
+        }
+        Service.ModelList = await URLImporterService.GetModelIdsAsync(Settings.User.BaseUrl, Settings.User.APIKey);
+        if (Service.ModelList.Count > 0)
+        {
+            Alert.SuccessAlert("Models loaded!");
+        }
+        StateHasChanged();
+    }
 
 
 
