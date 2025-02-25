@@ -44,7 +44,10 @@ namespace MousyHub.Models.Services
         {
             try
             {
-             
+                if (string.IsNullOrEmpty(text))
+                {
+                    return text;
+                }
                 var result = await _translator.TranslateAsync(text, "en", Settings.User.TranslatorOptions.SelectLanguage.Value);
                 RequestCount++;
                 Console.WriteLine("TranslatorRequestCount:" + RequestCount);
@@ -61,6 +64,10 @@ namespace MousyHub.Models.Services
         {
             try
             {
+                if (string.IsNullOrEmpty(text))
+                {
+                    return text;
+                }
                 var result = await _translator.TranslateAsync(text, Settings.User.TranslatorOptions.SelectLanguage.Value, "en");
                 RequestCount++;
                 Console.WriteLine("TranslatorRequestCount:" + RequestCount);
@@ -87,23 +94,57 @@ namespace MousyHub.Models.Services
 
                 int starCount = 0;
                 StringBuilder result = new StringBuilder(input.Length);
+                bool isNewLine = true; // Флаг для отслеживания начала новой строки
 
                 for (int i = 0; i < input.Length; i++)
                 {
                     char currentChar = input[i];
 
-                    if (currentChar == '*')
+                    // Проверка на начало новой строки с маркером списка (*, -, +)
+                    if (isNewLine && (currentChar == '*' || currentChar == '-' || currentChar == '+') &&
+                        i + 1 < input.Length && input[i + 1] == ' ')
+                    {
+                        // Для тире можно заменить на длинное тире
+                        if (currentChar == '-')
+                            result.Append("—");
+                        else
+                            result.Append(currentChar); // Для * и + просто добавляем символ
+
+                        i++; // Пропускаем пробел после маркера
+                        isNewLine = false;
+                        continue;
+                    }
+
+                    // Проверка на случай "* - " (звездочка, пробел, тире, пробел)
+                    if (currentChar == '*' && i + 3 < input.Length &&
+                        input[i + 1] == ' ' && input[i + 2] == '-' && input[i + 3] == ' ')
+                    {
+                        result.Append('*'); // Добавляем звездочку
+                        result.Append("—"); // Заменяем " - " на длинное тире
+                        i += 3; // Пропускаем " - "
+                        continue;
+                    }
+
+                    if (currentChar == '\n' || currentChar == '\r')
+                    {
+                        isNewLine = true;
+                        result.Append(currentChar);
+                    }
+                    else if (currentChar == '*')
                     {
                         starCount++;
                         result.Append(currentChar);
+                        isNewLine = false;
                     }
                     else if (currentChar == ' ' && starCount % 2 == 1 && i > 0 && input[i - 1] == '*')
                     {
-                        // Skip this space because it is after an odd count of stars and directly follows a star.
+                        // Пропускаем пробел после нечетного количества звездочек
+                        isNewLine = false;
                     }
                     else
                     {
                         result.Append(currentChar);
+                        isNewLine = false;
                     }
                 }
 

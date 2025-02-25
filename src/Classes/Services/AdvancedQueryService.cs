@@ -19,9 +19,9 @@ namespace MousyHub.Models.Services
 
         private void DetectAPIType()
         {
-            isInstructed = _providerService.SelectType.Key is ProviderService.APIType.Chat_Completions ? false : true;
+            isInstructed = _providerService.SelectType.Key is ProviderService.APIType.Cloud ? false : true;
         }
-        public async Task<MessageResponse> Generate(string SystemPromt, string UserPromt, GenerationConfig generationConfig, Instruct instruct, string BotName = "Assistant", string UserName = "User", string PromtAfterOutputSequence = "")
+        public async Task<MessageResponse> Generate(string SystemPromt, string UserPromt, GenerationConfig generationConfig, Instruct instruct, string BotName = "Assistant", string UserName = "User", string PromtAfterOutputSequence = "", bool isChatCompletions=false)
         {
             DetectAPIType();
             if (_providerService.Status)
@@ -32,7 +32,7 @@ namespace MousyHub.Models.Services
                 //Make request
                 string PreparedSystemPromt = StringHelperBuilder.TagPlaceholder(StringHelperBuilder.WizardSystemMessage(instruct, SystemPromt, isInstructed), UserName, BotName);
                 string PreparedUserPromt = StringHelperBuilder.TagPlaceholder(StringHelperBuilder.WizardRequestMessage(instruct, UserPromt, isInstructed) + PromtAfterOutputSequence, UserName, BotName);
-                Promt promt = new Promt(PreparedSystemPromt, PreparedUserPromt);
+                Promt promt = new Promt(PreparedSystemPromt, PreparedUserPromt, isChatCompletions);
                 //Debug
                 Console.WriteLine("Query Promt: " + promt.FullContent);
 
@@ -41,7 +41,7 @@ namespace MousyHub.Models.Services
             return new MessageResponse("", false, "No connection");
 
         }
-        public async Task<MessageResponse> Continue(string SystemPromt, string UserPromt, string PromtForContinue, GenerationConfig generationConfig, Instruct instruct, string BotName = "Assistant", string UserName = "User", string PromtAfterOutputSequence = "")
+        public async Task<MessageResponse> Continue(string SystemPromt, string UserPromt, string PromtForContinue, GenerationConfig generationConfig, Instruct instruct, string BotName = "Assistant", string UserName = "User", string PromtAfterOutputSequence = "", bool isChatCompletions = false)
         {
             DetectAPIType();
             if (_providerService.Status)
@@ -49,7 +49,7 @@ namespace MousyHub.Models.Services
                 //Make request
                 string PreparedSystemPromt = StringHelperBuilder.TagPlaceholder(StringHelperBuilder.WizardSystemMessage(instruct, SystemPromt, isInstructed), UserName, BotName);
                 string PreparedUserPromt = StringHelperBuilder.TagPlaceholder(StringHelperBuilder.WizardRequestMessage(instruct, UserPromt, isInstructed) + PromtAfterOutputSequence + PromtForContinue, UserName, BotName);
-                Promt promt = new Promt(PreparedSystemPromt, PreparedUserPromt);
+                Promt promt = new Promt(PreparedSystemPromt, PreparedUserPromt, isChatCompletions);
                 //Set custom temp
                 GenerationConfig newGenConfig = (GenerationConfig)Util.CloneObject(generationConfig);
                 newGenConfig.temp = CustomTemperature;

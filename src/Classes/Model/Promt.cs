@@ -10,15 +10,18 @@ namespace MousyHub.Classes.Model
     public class Promt
     {
         static string separator = "\n";
-        public Promt(ChatHistory chatHistory, Instruct instruct, Person person)
+
+        public Promt(ChatHistory chatHistory, Instruct instruct, Person person, bool isChat)
         {
+            this.isChat = isChat;
             Elements = new List<PromtElement>();
-            FullContent = string.Empty;
+            FullContent = string.Empty;         
             Build(chatHistory, instruct, person);
         }
 
-        public Promt(string SystemPromt, string UserPromt)
+        public Promt(string SystemPromt, string UserPromt, bool isChat)
         {
+            this.isChat = isChat;
             Elements = new List<PromtElement>();
             Elements.Add(new PromtElement(MessageRole.System, SystemPromt));
             Elements.Add(new PromtElement(MessageRole.User, UserPromt));
@@ -27,7 +30,10 @@ namespace MousyHub.Classes.Model
 
         public List<PromtElement> Elements { get; private set; }
         public string FullContent { get; private set; }
-
+        /// <summary>
+        /// Parameter that determines whether Chat completions or text completions will be used in Cloud services
+        /// </summary>
+        public bool isChat { get; set; } = false;
 
         private void Build(ChatHistory chatHistory, Instruct instruct, Person person)
         {                          

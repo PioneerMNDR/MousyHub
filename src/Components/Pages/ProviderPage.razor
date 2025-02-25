@@ -38,7 +38,7 @@
             {
                 case ProviderService.APIType.KoboldCPP:
                     <MudItem Class="d-flex align-content-center">
-                        <MudTextField @bind-Value="@Settings.User.BaseUrl" Label="URL"></MudTextField>
+                        <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" Label="URL"></MudTextField>
                     </MudItem>
                     <MudItem Class="d-flex align-content-center align-end">
                         <MudText>@ModelName</MudText>
@@ -137,23 +137,27 @@
 
                     </MudItem>
                     break;
-                case ProviderService.APIType.Chat_Completions:
-                    <MudItem Class="d-flex align-content-center">
-                        <MudTextField @bind-Value="@Settings.User.BaseUrl" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
+                case ProviderService.APIType.Cloud:
+                    <MudItem Class="d-flex align-content-center" md="3">
+                        <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
                     </MudItem>
 
-                    <MudItem Class="d-flex align-content-center">
-                        <MudTextField @bind-Value="@Settings.User.APIKey"  Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
+                    <MudItem Class="d-flex align-content-center" md="3">
+                        <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey" Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
                     </MudItem>
 
-                    <MudSpacer></MudSpacer>
-
-                    <MudItem Class="d-flex align-center pb-3">
+         
+               
+                    <MudItem>
+                        <MudTooltip Text="Parameter that determines whether Cloud services will use Chat completions or Text completions. The latter may be better.">
+                            <MudSwitch  Size=Size.Medium Label="Use chat completions" Color="Color.Info" @bind-Value=Settings.User.CloudBasedConfig.UseChatCompletions></MudSwitch>
+                        </MudTooltip>
+                    </MudItem>
+                    <MudItem md="6">
+                        <MudAutocomplete AnchorOrigin="Origin.BottomCenter" MaxItems="int.MaxValue" SearchFunc="@AutocompleteSearch" Clearable Label="Select model" HelperText="Enter URL, click get models and select" Variant="Variant.Outlined" @bind-Value="Service.SelectModel" />
+                    </MudItem>
+                    <MudItem Class="d-flex align-center pb-4" md="2">
                         <MudButton OnClick="GetModelList" Variant="Variant.Filled" Color="Color.Primary">Get models</MudButton>
-                    </MudItem>
-                    <MudSpacer></MudSpacer>
-                    <MudItem md="4">
-                        <MudAutocomplete AnchorOrigin="Origin.BottomCenter"  MaxItems="int.MaxValue" SearchFunc="@AutocompleteSearch"  Clearable Label="Select model" HelperText="Enter URL, click get models and select" Variant="Variant.Outlined" @bind-Value="Service.SelectModel" />                                      
                     </MudItem>
                     break;
                 default:
@@ -163,11 +167,11 @@
     </MudContainer>
 </MudPaper>
 <MudPaper Class="mt-5 pa-4">
-    <MudGrid  Spacing="2">
-        <MudItem md="Service.SelectType.Key is ProviderService.APIType.Chat_Completions ? 12 : 6">
+    <MudGrid Spacing="2">
+        <MudItem md="@(shouldShowInstructEditor ? 6 : 12)">
             <TextGenParamEditor></TextGenParamEditor>
         </MudItem>
-        @if (Service.SelectType.Key is not ProviderService.APIType.Chat_Completions)
+        @if (shouldShowInstructEditor)
         {
             <MudItem md="6">
                 <InstructEditor @ref=InstructEditor></InstructEditor>
@@ -188,16 +192,19 @@
     Func<string, string> converter = p => Path.GetFileName(p);
     InstructEditor InstructEditor;
 
+    private bool shouldShowInstructEditor =>
+    !(Service.SelectType.Key is ProviderService.APIType.Cloud && Settings.User.CloudBasedConfig.UseChatCompletions);
+
     private async Task ConnectionChanged()
     {
         isLoading = true;
         ModelName = await Service.NewConnect(Settings);
         isLoading = false;
-        if (InstructEditor !=null && Service.SelectType.Key is not ProviderService.APIType.Chat_Completions)
+        if (InstructEditor != null && Service.SelectType.Key is not ProviderService.APIType.Cloud)
         {
             InstructEditor.ReRenderState();
         }
-       
+
     }
     private void ValueSelectConnectionChange(KeyValuePair<ProviderService.APIType, string> newValue)
     {
@@ -234,12 +241,12 @@
     public async Task GetModelList()
     {
         Settings.User.SaveSettings(Settings);
-        if (Settings.User.BaseUrl == string.Empty)
+        if (Settings.User.CloudBasedConfig.BaseUrl == string.Empty)
         {
             Alert.ErrorAlert("Enter URL");
             return;
         }
-        Service.ModelList = await URLImporterService.GetModelIdsAsync(Settings.User.BaseUrl, Settings.User.APIKey);
+        Service.ModelList = await URLImporterService.GetModelIdsAsync(Settings.User.CloudBasedConfig.BaseUrl, Settings.User.CloudBasedConfig.APIKey);
         if (Service.ModelList.Count > 0)
         {
             Alert.SuccessAlert("Models loaded!");

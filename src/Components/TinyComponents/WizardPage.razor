@@ -269,11 +269,11 @@
         if (useCurrentFirstMessageAsSample)
         {
             var message = State.ChatHistory.GetCurrentFirstMessage();
-            currentFirstMessage = $"\nSample first message from the card creator: [{message.Content}]";
+            currentFirstMessage = $"\nSample first message from the card creator. Be sure to use this as a basis for your message!:   [{message.Content}]";
         }
 
-        string PreparePromt = $"{State.ChatHistory?.CharDesription}{currentFirstMessage}\nUser's wishes: {TranslatedWish}\n";
-        var Response = await Provider.Wizard.WizardRequest(PreparePromt, Wizard.WizardFunction.CustomFirstMessage, 1.4, 300);
+        string PreparePromt = $"\n{State.ChatHistory?.CharDesription}{currentFirstMessage}\nUser's wishes: {TranslatedWish}\n";
+        var Response = await Provider.Wizard.WizardRequest(PreparePromt, Wizard.WizardFunction.CustomFirstMessage, 1, 300);
         State.ChatHistory.AddNewAltFirstMessage(Settings.CurrentInstruct, Response.Content);
         await State.ChatHistory.NextFirstMessage(true, Translator);
         _Main.messengerPage.ReRenderState();

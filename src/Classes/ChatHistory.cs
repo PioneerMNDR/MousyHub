@@ -111,9 +111,9 @@ namespace MousyHub.Models
         /// <param name="instruct"></param>
         /// <returns></returns>
         
-        public Promt GetPromt(Instruct instruct, Person person)
+        public Promt GetPromt(Instruct instruct, Person person, bool isChat)
         {
-            Promt promt = new Promt(this, instruct, person);
+            Promt promt = new Promt(this, instruct, person, isChat);
             if (true)
             {
                 Console.WriteLine("-----Promt-----");

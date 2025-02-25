@@ -1,4 +1,5 @@
 ﻿
+using MousyHub.Classes.Provider.ChatCompletions;
 using MousyHub.Models;
 using MousyHub.Models.Misc;
 using MousyHub.Models.Provider.LLama;
@@ -13,12 +14,11 @@ namespace MousyHub.Models.User
         public string ThemeName { get; set; }
         public string WizardGenConfigName { get; set; }
         public string ProfileName { get; set; }
-        public string BaseUrl { get; set; } = "http://localhost:5001";
-        public string APIKey { get; set; }
 
         public LocalLLamaLaunchConfig SelfInferenceConfig { get; set; } = new LocalLLamaLaunchConfig();
         public TranslatorOptions TranslatorOptions { get; set; } = new TranslatorOptions();
         public RAGOptions RAGOptions { get; set; } =  new RAGOptions();
+        public CloudBasedConfig CloudBasedConfig { get; set; } = new CloudBasedConfig();
         public int CurrentMaxToken { get; set; } = 250;
         public int CurrentContextLength { get; set; } = 4096;
         public bool PauseBeforeGenerating { get; set; } = false;
@@ -34,7 +34,6 @@ namespace MousyHub.Models.User
         private bool AttemptHideDownloadPage { get; set; } = false;
         public bool GenerateShortDesOnImport { get; set; } = true;
         public QuickReplySetting[] QuickRepliesSetings { get; set; } = { new QuickReplySetting(QuickReplySetting.ResponseEmotion.Positive), new QuickReplySetting(QuickReplySetting.ResponseEmotion.Neutral), new QuickReplySetting(QuickReplySetting.ResponseEmotion.Negative) };
-
         public bool isTutorialGone { get; set; } = false;
         public DateTime RegisterDate { get; set; } = DateTime.Now;
         public string CustomModelPathFolder { get; set; } = string.Empty;

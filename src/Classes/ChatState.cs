@@ -83,7 +83,7 @@ namespace MousyHub.Models
         {
             if (ChatHistory != null)
             {
-                ChatHistory.ChatContextSize = await Provider.TokenCount(ChatHistory.GetPromt(Settings.CurrentInstruct, ChatHistory.MainCharacter).FullContent);
+                ChatHistory.ChatContextSize = await Provider.TokenCount(ChatHistory.GetPromt(Settings.CurrentInstruct, ChatHistory.MainCharacter,false).FullContent);
             }
         }
 

@@ -135,7 +135,7 @@
         await RAG_Searching();
         //AddEmptyMessage run before PromtToLLM for include next bot name in message
         Guid currentGuid = State.ChatHistory.AddEmptyMessage(person, Settings.CurrentInstruct);
-        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, person);
+        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, person, Settings.User.CloudBasedConfig.UseChatCompletions);
         await Generation(currentGuid, person, promt);
         if (Force == false)
         {
@@ -257,7 +257,7 @@
 
         Main.RefreshWizardPage();
         StateHasChanged();
-        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, lastMessage.Owner);
+        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, lastMessage.Owner, Settings.User.CloudBasedConfig.UseChatCompletions);
         Guid currentGuid = lastMessage.GuidMessage;
         await Generation(currentGuid, lastMessage.Owner, promt);
 

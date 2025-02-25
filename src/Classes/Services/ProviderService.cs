@@ -21,13 +21,13 @@ namespace MousyHub.Models.Services
         {
             { APIType.Native,"Native" },
             { APIType.KoboldCPP,"KoboldCPP" },
-            { APIType.Chat_Completions,"Chat Completions API beta" },
+            { APIType.Cloud,"Chat Completions API beta" },
 
         };
         public KeyValuePair<APIType, string> SelectType = new KeyValuePair<APIType, string>();
         public enum APIType
         {
-            Chat_Completions,
+            Cloud,
             KoboldCPP,
             Native
         }
@@ -64,7 +64,7 @@ namespace MousyHub.Models.Services
             switch (SelectType.Key)
             {
                 case APIType.KoboldCPP:
-                    bool IsSuccessK = await ConnectKoboldCPP(Settings.User.BaseUrl);
+                    bool IsSuccessK = await ConnectKoboldCPP(Settings.User.CloudBasedConfig.BaseUrl);
                     if (!IsSuccessK)
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
@@ -78,8 +78,8 @@ namespace MousyHub.Models.Services
                     await TryRAGConnect(Settings.User.RAGOptions);
                     await TrySetAutoChatTemplate(Settings);
                     return await LLModel.Model();
-                case APIType.Chat_Completions:
-                    bool IsSuccessC = await ConnectChatCompl(Settings.User.BaseUrl, Settings.User.APIKey);
+                case APIType.Cloud:
+                    bool IsSuccessC = await ConnectChatCompl(Settings.User.CloudBasedConfig.BaseUrl, Settings.User.CloudBasedConfig.APIKey);
                     if (!IsSuccessC)
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
@@ -222,7 +222,7 @@ namespace MousyHub.Models.Services
         {
             if (Status)
             {
-                Wizard.UpdateInstructions(LLModel, instruct, userState, UploaderService, SelectType.Key is APIType.Chat_Completions ? true :false);
+                Wizard.UpdateInstructions(LLModel, instruct, userState, UploaderService, (SelectType.Key is APIType.Cloud && userState.CloudBasedConfig.UseChatCompletions) ? true : false);
                 WizardStatus = true;
                 return "";
             }

@@ -70,7 +70,7 @@ namespace MousyHub.Models.Misc
             " Extract the most important facts and events from the conversation and present them as a chronological timeline, step by step. " +
             "Focus on key actions, decisions, significant statements, and changes in the situation." +
             " If there are more than 15 steps, then combine the old step and add them up\r\n\r\n**Output Format:**\r\n\r\n1. [Character Name] [Action/Event/Significant Quote or Statement].\r\n2. [Character Name] [Action/Event/Significant Quote or Statement].\r\n3.....\r\n... and so on.";
-        private string CustomFirstMesPromt = "It is necessary to generate the first character message for the user in the character card. This message should carry information about the location, as well as describe an interesting situation that may stand between the character and the user. Use markdown for beautiful design. Be sure to consider the user's wishes.";
+        private string CustomFirstMesPromt = "It is necessary to generate the first character message for the user in the character card. This message should carry information about the location, as well as describe an interesting situation that may stand between the character and the user. Use markdown for beautiful design. But don't use headings, lists. Only direct speech or *thoughts*. Be sure to consider the user's wishes.";
 
         public Person Narrator { get; set; } = new Person("Narrator",
             "You play the role of a narrator who periodically intervenes in the dialogue between the user and the character in the RPG session. Your goal is to advance the plot and change the scenes so that the dialogue does not linger in one place for too long. You can add descriptions of the environment, minor characters, and events. However, in no case should you be responsible for the main characters or make serious decisions for them that affect the plot. Let the user and the character choose for themselves what to do at key points in the story.\r\n\r\nMake sure that the dialogue and events remain sane and correspond to the genre and setting of the game. Gently steer the plot in the right direction if the user or character starts to deviate from the main line or act illogically. But do it unobtrusively, leaving them free to choose and improvise.\r\n\r\nDescribe what is happening in the present tense in the third person. Start your lines with \"*\" (for example, * Meanwhile in the main square of the city ...). Do not interfere in the dialogue too often, give the user and the character the opportunity to fully communicate. Add descriptions and change scenes only when it is really necessary for the development of the plot." +
@@ -118,6 +118,7 @@ namespace MousyHub.Models.Misc
                     break;
                 case WizardFunction.CustomFirstMessage:
                     SystemPromt = StringHelperBuilder.WizardSystemMessage(Instruct, CustomFirstMesPromt, IsInstructed) ;
+                    UserRequest += "\n**First message:**";
                     break;
 
             }
@@ -134,7 +135,7 @@ namespace MousyHub.Models.Misc
             
             await Task.Run(async () =>
             {
-                message = await Model.GenerateTextAsync(new Promt(SystemPromt, UserRequest), WizardConifg, MaxTokens, key: "Wizard");
+                message = await Model.GenerateTextAsync(new Promt(SystemPromt, UserRequest,IsChatCompletions), WizardConifg, MaxTokens, key: "Wizard");
 
             });
 

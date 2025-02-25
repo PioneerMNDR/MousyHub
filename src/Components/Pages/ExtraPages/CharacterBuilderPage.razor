@@ -219,7 +219,7 @@
         {
             FinalPromt = await Translator.TranslateForLLM(FinalPromt);
         }
-        var res = await QueryService.Generate(SystemPromt, FinalPromt, Provider.Wizard.WizardConifg, Settings.CurrentInstruct, "Character Build Assistant", PromtAfterOutputSequence: currentStep.StepName + ":");
+        var res = await QueryService.Generate(SystemPromt, FinalPromt, Provider.Wizard.WizardConifg, Settings.CurrentInstruct, "Character Build Assistant", PromtAfterOutputSequence: currentStep.StepName + ":",isChatCompletions:Settings.User.CloudBasedConfig.UseChatCompletions);
         currentStep.Response = res.Content.Trim();
         StateHasChanged();
     }
@@ -227,7 +227,7 @@
     {
         StateHasChanged();
         string FinalPromt = CharToString() + currentStep.PrePromt + "\n{{user}}'s wishes: " + currentStep.UserRequest;
-        var res = await QueryService.Continue(SystemPromt, FinalPromt, currentStep.Response, Provider.Wizard.WizardConifg, Settings.CurrentInstruct, "Character Build Assistant", PromtAfterOutputSequence: currentStep.StepName + ":");
+        var res = await QueryService.Continue(SystemPromt, FinalPromt, currentStep.Response, Provider.Wizard.WizardConifg, Settings.CurrentInstruct, "Character Build Assistant", PromtAfterOutputSequence: currentStep.StepName + ":", isChatCompletions: Settings.User.CloudBasedConfig.UseChatCompletions);
         currentStep.Response += res.Content.Trim();
         StateHasChanged();
     }
