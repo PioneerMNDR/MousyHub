@@ -32,8 +32,6 @@
 
 @if (!isCharSelectMode)
 {
-
-
     <MudStack Row Justify="Justify.SpaceAround" Class="mb-3">
         <MudButton Variant="Variant.Outlined" OnClick="CloseChat" StartIcon="@Icons.Material.Filled.ArrowBack" Size="Size.Small">Back to select</MudButton>
         <MudButton Variant="Variant.Outlined" OnClick="RestartChat" StartIcon="@Icons.Material.Filled.Add" Size="Size.Small">New chat</MudButton>
@@ -41,8 +39,6 @@
     </MudStack>
 
     <Chat @ref=ChatPage ChatHistory="State.ChatHistory" @bind-isVisibleUnpauseButton=isPaused  AbortCallback="StopGeneration" isRAGing="isRAGing" isBusy="isBusy" isGenerating=isGenerating ClickSend="@((Person per)=>StartGeneration(per,false))" ClickRegenerate="Regenerate" SkipUserTurn="SkipUserTurn" ClickContinueGenerate="ContinueGeneration"></Chat>
-
-
 }
 @code {
     public bool isCharSelectMode = true;

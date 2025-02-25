@@ -24,6 +24,10 @@ namespace MousyHub.Models.Services.URLHandle
 
         public async Task ImportURL(string url, bool generateShortDes)
         {
+            if (string.IsNullOrEmpty(url))
+            {
+                return;
+            }
             bool isChub = url.Contains("chub.ai") || url.Contains("characterhub.org");
 
             if (isChub)
