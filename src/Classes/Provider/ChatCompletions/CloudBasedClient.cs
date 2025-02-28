@@ -59,7 +59,7 @@ public class ChatCompletionsClient : IDisposable
                 temperature = config.temp,
                 top_p = config.top_p,
                 stop = stopSequence,
-                top_k = config.top_k,
+                //top_k = config.top_k,
                 min_p = config.min_p,
                 repeat_penalty = config.rep_pen,
             };
@@ -75,7 +75,7 @@ public class ChatCompletionsClient : IDisposable
                 temperature = config.temp,
                 top_p = config.top_p,
                 stop = stopSequence,
-                top_k = config.top_k,
+                //top_k = config.top_k,
                 min_p = config.min_p,
                 repeat_penalty = config.rep_pen,
             };
@@ -150,7 +150,7 @@ public class ChatCompletionsClient : IDisposable
                 temperature = config.temp,
                 top_p = config.top_p,
                 stop = stopSequence,
-                top_k = config.top_k,
+                //top_k = config.top_k,
                 min_p = config.min_p,
                 repeat_penalty = config.rep_pen,
                 stream = true
@@ -166,7 +166,7 @@ public class ChatCompletionsClient : IDisposable
                 temperature = config.temp,
                 top_p = config.top_p,
                 stop = stopSequence,
-                top_k = config.top_k,
+                //top_k = config.top_k,
                 min_p = config.min_p,
                 repeat_penalty = config.rep_pen,
                 stream = true

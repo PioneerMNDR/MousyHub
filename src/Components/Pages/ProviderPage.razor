@@ -52,7 +52,7 @@
                                     @if (Settings.LocalModelsList.Count > 0)
                                     {
                                         <MudText>Model:</MudText>
-                                        <MudSelect AnchorOrigin="Origin.BottomCenter" @bind-Value=Settings.User.SelfInferenceConfig.ModelPath ToStringFunc="converter">
+                                        <MudSelect  @bind-Value=Settings.User.SelfInferenceConfig.ModelPath ToStringFunc="converter">
                                             @foreach (var item in Settings.LocalModelsList)
                                             {
                                                 <MudSelectItem Value="item">@Path.GetFileName(item)</MudSelectItem>
@@ -139,11 +139,15 @@
                     break;
                 case ProviderService.APIType.Cloud:
                     <MudItem Class="d-flex align-content-center" md="3">
-                        <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
+                        <MudForm>
+                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
+                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey" Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
+                        </MudForm>
+                  
                     </MudItem>
 
                     <MudItem Class="d-flex align-content-center" md="3">
-                        <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey" Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
+                    
                     </MudItem>
 
          
