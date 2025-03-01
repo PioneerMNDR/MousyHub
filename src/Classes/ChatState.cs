@@ -107,7 +107,7 @@ namespace MousyHub.Models
             foreach (var item in ChatHistory.Messages)
             {
            
-                if (item.isSummarized == false && item != ChatHistory.GetLastMessage())
+                if (item.isSummarized == false && item != ChatHistory.GetLastMessage() && item != ChatHistory.GetLastMessage(offset:1))
                 {
                     preparePromt += "\n" + item.Owner.Name + ": " + item.Content;
                     messages.Add(item);

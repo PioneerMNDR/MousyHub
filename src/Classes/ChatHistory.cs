@@ -361,19 +361,26 @@ namespace MousyHub.Models
             }
             return new Message();
         }
-        public Message GetLastMessage(bool avoidNarrator = false)
+        /// <summary>
+        /// Retrieves a message from the message list with a specified offset from the end.
+        /// </summary>
+        /// <param name="avoidNarrator">If true, skips messages from the "Narrator" owner when possible.</param>
+        /// <param name="offset">Specifies which message to retrieve from the end (0 for last message, 1 for second-to-last, etc.).</param>
+        /// <returns>The message at the specified position from the end of the list. Returns an empty message if the list doesn't contain enough messages.</returns>
+        public Message GetLastMessage(bool avoidNarrator = false, int offset = 0)
         {
-            Message Message = new Message();
-            if (Messages.Count > 0)
+            Message message = new Message();
+            if (Messages.Count > offset)
             {
-                Message = Messages.Last();
-                if (avoidNarrator && Message.Owner.Name == "Narrator" && Messages.Count > 2)
+                message = Messages[Messages.Count - 1 - offset];
+
+                if (avoidNarrator && message.Owner.Name == "Narrator" && Messages.Count > offset + 2)
                 {
-                    Message = Messages[Messages.Count - 2];
+                    message = Messages[Messages.Count - 2 - offset];
                 }
             }
 
-            return Message;
+            return message;
         }
         public async Task<Message> StreamLLMEditingMessage(string newtoken, Guid guid)
         {

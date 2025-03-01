@@ -25,7 +25,7 @@ namespace MousyHub.Models.User
         public bool AutoSummarize { get; set; } = true;
         public bool UseStepsSummaryPromt { get; set; } = true;
 
-        public int SummarizeMessageCount = 10;
+        public int SummarizeMessageCount = 15;
         public bool AnswerAssistant { get; set; } = false;
         public bool SquareAvatars { get; set; } = false;
         public bool HideNSFWPicture { get; set; } = false;
