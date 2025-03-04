@@ -8,17 +8,17 @@
 
 @implements IDisposable
 
-<MudContainer id="download-page" Class="py-3">
-     <MudStack Justify="Justify.Center" Row>
-    @if (BestGPU != null)
-    {      
+<MudContainer MaxWidth="MaxWidth.Medium" id="download-page" Class="pt-5 pb-5 childTab ">
+    <MudStack Justify="Justify.Center" Row>
+        @if (BestGPU != null)
+        {
             <MudCard>
                 <MudCardContent>
                     <MudText Typo="Typo.h5">Best GPU</MudText>
                     <MudText>@BestGPU.Model @BestGPU.VRAM_GB Gb</MudText>
                 </MudCardContent>
-            </MudCard>       
-    }
+            </MudCard>
+        }
         @if (HFService.isBusy)
         {
             <MudCard>
@@ -31,30 +31,60 @@
         }
 
     </MudStack>
+    <MudDivider Class="my-3"></MudDivider>
+    <MudGrid >
+        <MudItem md="7">
+            <MudGrid Justify="Justify.Center">
+                <MudItem md="12" Class="d-flex justify-center"><MudText Typo="Typo.h4"> Main LLM models</MudText></MudItem>
+                @foreach (var item in RecommendedModels)
+                {
+                    <MudItem md="6">
+                        <MudCard Class="ma-2" Outlined="true" Style="height: 230px; display: flex; flex-direction: column;">
+                            <MudCardContent Style="flex: 1; overflow: hidden;">
+                                <MudText Typo="Typo.h5" GutterBottom>@item.Name</MudText>
+                                <MudText Style="overflow-y: auto; height: 60px;" Typo="Typo.body2">@item.Description</MudText>
 
+                                <MudStack Row AlignItems="AlignItems.Baseline" Class="mt-3">
+                                    <MudText Typo="Typo.h6">Recommended VRAM:</MudText>
+                                    <MudText Typo="Typo.h6" Color="@((BestGPU!=null && BestGPU.VRAM_GB<item.RecommendedVRAM) ? Color.Warning : Color.Success)">@item.RecommendedVRAM Gb</MudText>
+                                </MudStack>
+                            </MudCardContent>
+                            <MudCardActions Style="padding-top: 0;">
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadModel(item.RepoName,item.FileNameInRepo))">Download</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudItem>
+        <MudItem md="5">
+            <MudGrid Justify="Justify.Center">
+                <MudItem md="12" Class="d-flex justify-center"> <MudText Typo="Typo.h4">Models for RAG</MudText></MudItem>
+                <MudItem md="6">
+                    <MudCard Class="ma-2" Outlined="true" Style="height: 230px; display: flex; flex-direction: column;">
+                        <MudCardContent Style="flex: 1; overflow: hidden;">
+                            <MudText Typo="Typo.h5" GutterBottom>nomic-embed-text</MudText>
+                            <MudText Style="overflow-y: auto; height: 60px;" Typo="Typo.body2">This model is used exclusively for searching information in saved dialogs. File size: 548 MB</MudText>
 
-    <MudGrid Justify="Justify.Center">
+                            <MudStack Row AlignItems="AlignItems.Baseline" Class="mt-3">
+                                <MudText Typo="Typo.h6">Recommended RAM: </MudText>
+                                <MudText Typo="Typo.h6" Color="Color.Success">1 Gb</MudText>
+                            </MudStack>
+                        </MudCardContent>
+                        <MudCardActions Style="padding-top: 0;">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadEmbeddingModel("nomic-ai/nomic-embed-text-v1.5-GGUF","nomic-embed-text-v1.5.f32.gguf"))">Download</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+  
+    </MudItem>
 
-        @foreach (var item in RecommendedModels)
-        {
-            <MudItem md="6">
-                <MudCard Style="height:230px;" Class="ma-2" Outlined="true">
-                    <MudCardContent>  
-                            <MudText Typo="Typo.h5"  GutterBottom>@item.Name</MudText>
-                            <MudText Style="overflow-y:auto;max-height:60px;"  Typo="Typo.body2">@item.Description</MudText>
-                   
-                        <MudStack Row AlignItems="AlignItems.Baseline" Class="mt-3">
-                            <MudText Typo="Typo.h6">Recommended VRAM:</MudText>
-                            <MudText Typo="Typo.h6" Color="@((BestGPU!=null && BestGPU.VRAM_GB<item.RecommendedVRAM) ? Color.Warning : Color.Success)">@item.RecommendedVRAM Gb</MudText>
-                        </MudStack>
-                    </MudCardContent>
-                    <MudCardActions>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadModel(item.RepoName,item.FileNameInRepo))">Download</MudButton>
-                    </MudCardActions>
-                </MudCard>
-            </MudItem>
-        }
     </MudGrid>
+
+
+
+
 </MudContainer>
 
 
@@ -68,7 +98,7 @@
         HFService.DownloadTickEvent += ReRenderProgressBar;
     }
 
-    private void ReRenderProgressBar(object? o,EventArgs e)
+    private void ReRenderProgressBar(object? o, EventArgs e)
     {
         StateHasChanged();
     }

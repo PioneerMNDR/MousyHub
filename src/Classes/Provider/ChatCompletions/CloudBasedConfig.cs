@@ -2,7 +2,7 @@
 {
     public class CloudBasedConfig
     {
-        public string BaseUrl { get; set; } = "http://localhost:5001";
+        public string BaseUrl { get; set; } = "https://openrouter.ai/api/";
         public string APIKey { get; set; }
         public bool UseChatCompletions { get; set; } = false;
     }

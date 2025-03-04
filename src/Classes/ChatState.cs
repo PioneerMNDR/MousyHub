@@ -132,7 +132,7 @@ namespace MousyHub.Models
         }
         public async Task ExportChatToMemory()
         {
-            if (Settings.User.RAGOptions.Enabled && Settings.User.RAGOptions.Available)
+            if (Settings.User.RAGOptions.Enabled && RAGService.IsAvailable)
             {
                 string BodyRequest = "";
                 foreach (var item in ChatHistory.Messages)

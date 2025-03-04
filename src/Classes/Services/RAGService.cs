@@ -7,7 +7,7 @@ namespace MousyHub.Models.Services
     public class RAGService
     {
         private IKernelMemory? Kernel { get; set; }
-
+        public bool IsAvailable { get; private set; } = false;
 
         public RAGService()
         {
@@ -46,11 +46,13 @@ namespace MousyHub.Models.Services
             .WithLlamaTextEmbeddingGeneration(llamaConfig)
             .Build(); 
                 Console.WriteLine("Embedding model is run");
+                IsAvailable = true;
                 return true;
 
             }
             catch (Exception ex)
             {
+                IsAvailable = false;
                 return false;
             }
      

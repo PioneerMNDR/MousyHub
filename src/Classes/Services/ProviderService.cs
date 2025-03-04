@@ -21,7 +21,7 @@ namespace MousyHub.Models.Services
         {
             { APIType.Native,"Native" },
             { APIType.KoboldCPP,"KoboldCPP" },
-            { APIType.Cloud,"Chat Completions API beta" },
+            { APIType.Cloud,"Cloud-based API beta" },
 
         };
         public KeyValuePair<APIType, string> SelectType = new KeyValuePair<APIType, string>();
@@ -83,6 +83,7 @@ namespace MousyHub.Models.Services
                     if (!IsSuccessC)
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
+                    await TryRAGConnect(Settings.User.RAGOptions);
                     break;
                 default:
                     break;
@@ -233,7 +234,7 @@ namespace MousyHub.Models.Services
             if (options.Enabled)
             {
                 string modelpath = UploaderService.LoadFirstEmbeddingModelPath();
-                options.Available = RAG.TryRun(modelpath);
+                RAG.TryRun(modelpath);
             }
 
         }

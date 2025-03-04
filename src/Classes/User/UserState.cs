@@ -15,6 +15,7 @@ namespace MousyHub.Models.User
         public string WizardGenConfigName { get; set; }
         public string ProfileName { get; set; }
 
+        public string KoboldURL { get; set; } = "http://localhost:5001";
         public LocalLLamaLaunchConfig SelfInferenceConfig { get; set; } = new LocalLLamaLaunchConfig();
         public TranslatorOptions TranslatorOptions { get; set; } = new TranslatorOptions();
         public RAGOptions RAGOptions { get; set; } =  new RAGOptions();

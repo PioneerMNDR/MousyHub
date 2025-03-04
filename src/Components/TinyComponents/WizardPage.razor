@@ -40,7 +40,10 @@
             }
             else
             {
-                <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined">Context: @State.ChatHistory.ChatContextSize/@Provider.MaxContextSize</MudAlert>
+                <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined">
+                    Context: @State.ChatHistory.ChatContextSize /
+                    @(Provider.MaxContextSize == "?" ? "Unlimited" : Provider.MaxContextSize)
+                </MudAlert>
             }
             <SystemMonitor Mode="SystemMonitor.MonitorMode.RAM" ProgressBar></SystemMonitor>
         </MudStack>
@@ -183,28 +186,41 @@
                                     <MudNumericField ShrinkLabel Underline=false Label="Skip" Value="context.SkipCount" ValueChanged="@((int newt)=>{context.SkipCount=newt;context.SkipNow=newt;})" Min="0" HideSpinButtons></MudNumericField>
                                 </MudTooltip>
                             </MudItem>
-
-
-
                         </MudGrid>
                     </ChildContent>
-
-
                 </MudListItem>
             }
         </ItemRenderer>
     </MudDropContainer>
+    <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.End">
+        <MudText Typo="Typo.h5" Align="Align.Center">Chat memory</MudText>
+        <MudTooltip>
+            <ChildContent>
+                <MudIcon Icon="@Icons.Material.Rounded.Info"></MudIcon>
+            </ChildContent>
+            <TooltipContent>
+                <MudText Typo="Typo.h6">What is this?</MudText>
+                <MudText Typo="Typo.body2">RAG is a system for storing your dialogue in internal memory, as well as searching for relevant memory segments to prompt the main model with moments from the past</MudText>
+            </TooltipContent>
+        </MudTooltip>
+        </MudStack>
 
-    <MudPaper Outlined >
+    <MudDivider DividerType="DividerType.Middle"></MudDivider>
+    <MudPaper Outlined Class="ma-3 pa-3">
         <MudStack>
-            <MudButton Variant="Variant.Outlined" OnClick="State.ExportChatToMemory">Force remember chat</MudButton>
+            <MudStack Row AlignItems="AlignItems.Baseline" Justify="Justify.SpaceBetween">
+                RAG Status:
+                <MudText Color="@(RAG.IsAvailable ? Color.Success : Color.Error)">Available: @RAG.IsAvailable.ToString()</MudText>
+                <MudText Color="@(Settings.User.RAGOptions.Enabled ? Color.Success : Color.Error)">Enabled: @Settings.User.RAGOptions.Enabled.ToString()</MudText>
+                </MudStack>
+            <MudTextField Label="The value retrieved from memory for the bot's next message" MaxLines="2" @bind-Value="State.ChatHistory.MemoryFromChat" Disabled></MudTextField>
+            <MudButton Variant="Variant.Outlined" OnClick="State.ExportChatToMemory">Remember chat now</MudButton>
         </MudStack>
     </MudPaper>
 
     <MudPaper Class="ma-3">
         <MudStack Wrap="Wrap.Wrap" Row>
-            <MudSwitch Class="ma-2" @bind-Value=Settings.User.PauseBeforeGenerating Color="Color.Info" Label="Pause before generation" title="Bot, will wait for your confirmation after the answer of other bot."></MudSwitch>
-      
+            <MudSwitch Class="ma-2" @bind-Value=Settings.User.PauseBeforeGenerating Color="Color.Info" Label="Pause before generation" title="Bot, will wait for your confirmation after the answer of other bot."></MudSwitch> 
         </MudStack>
     </MudPaper>
 

@@ -46,6 +46,20 @@ namespace MousyHub.Models.Services.URLHandle
             if (EndDownloadEvent != null)
                 EndDownloadEvent.Invoke(path, EventArgs.Empty);
         }
+        public async Task DownloadEmbeddingModel(string id, string GGUF_FileName)
+        {
+            if (isBusy)
+            {
+                return;
+            }
+            isBusy = true;
+            _ = Tick();
+            downloadProgress.FileName = GGUF_FileName;
+            var path = await HFDownloader.DownloadFileAsync(id, GGUF_FileName, progress: downloadProgress, localDir: UploaderService.EmbeddingModelsPath);
+            isBusy = false;
+            if (EndDownloadEvent != null)
+                EndDownloadEvent.Invoke(path, EventArgs.Empty);
+        }
 
         private async Task Tick()
         {
@@ -53,6 +67,7 @@ namespace MousyHub.Models.Services.URLHandle
             {
                 if (DownloadTickEvent != null)
                 DownloadTickEvent.Invoke(null,EventArgs.Empty);
+                Console.WriteLine("Progress:" + downloadProgress.Progress +"%");
                 await Task.Delay(1000);
             }
         }

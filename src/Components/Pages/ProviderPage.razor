@@ -38,7 +38,7 @@
             {
                 case ProviderService.APIType.KoboldCPP:
                     <MudItem Class="d-flex align-content-center">
-                        <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" Label="URL"></MudTextField>
+                        <MudTextField @bind-Value="@Settings.User.KoboldURL" Label="URL"></MudTextField>
                     </MudItem>
                     <MudItem Class="d-flex align-content-center align-end">
                         <MudText>@ModelName</MudText>
@@ -138,31 +138,30 @@
                     </MudItem>
                     break;
                 case ProviderService.APIType.Cloud:
-                    <MudItem Class="d-flex align-content-center" md="3">
-                        <MudForm>
-                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
-                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey" Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
-                        </MudForm>
-                  
+                    <MudItem Class="d-flex align-content-center" md="6">
+                        <MudForm Class="w-100">
+                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl"  HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
+                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey"  Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
+                        </MudForm>                 
                     </MudItem>
+                    <MudItem  Class="px-5" md="6">
+                        <MudText Typo="Typo.h5">Configuration</MudText>
+                        <MudPaper Outlined  Class="pa-4">
+                            <MudText>Selected model: @(Service.Status ? Service.SelectModel : "Not connected")</MudText>
+                            <MudTooltip Text="Parameter that determines whether Cloud services will use Chat completions or Text completions. The latter may be better.">
+                                <MudSwitch  Size=Size.Medium Label="Use chat completions" Color="Color.Info" @bind-Value=Settings.User.CloudBasedConfig.UseChatCompletions></MudSwitch>
+                            </MudTooltip>
+                        </MudPaper>
 
-                    <MudItem Class="d-flex align-content-center" md="3">
-                    
                     </MudItem>
-
-         
-               
-                    <MudItem>
-                        <MudTooltip Text="Parameter that determines whether Cloud services will use Chat completions or Text completions. The latter may be better.">
-                            <MudSwitch LabelPlacement="Placement.Top"  Size=Size.Medium Label="Use chat completions" Color="Color.Info" @bind-Value=Settings.User.CloudBasedConfig.UseChatCompletions></MudSwitch>
+                    <MudItem md="6"  Class="d-flex align-center">
+                        <MudTooltip Text="Get models">
+                            <MudFab OnClick="GetModelList" Disabled="string.IsNullOrEmpty(Settings.User.CloudBasedConfig.BaseUrl)" StartIcon="@Icons.Material.Filled.CloudDownload" Color="Color.Primary">Get models</MudFab>
                         </MudTooltip>
-                    </MudItem>
-                    <MudItem md="6">
+                        <MudDivider Vertical FlexItem Class="mx-3" ></MudDivider>
                         <MudAutocomplete  MaxItems="int.MaxValue" SearchFunc="@AutocompleteSearch" Clearable Label="Select model" HelperText="Enter URL, click get models and select" Variant="Variant.Outlined" @bind-Value="Service.SelectModel" />
                     </MudItem>
-                    <MudItem Class="d-flex align-center pb-4" md="2">
-                        <MudButton OnClick="GetModelList" Variant="Variant.Filled" Color="Color.Primary">Get models</MudButton>
-                    </MudItem>
+              
                     break;
                 default:
                     break;

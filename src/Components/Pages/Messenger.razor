@@ -106,7 +106,7 @@
 
     async Task RAG_Searching()
     {
-        if (Settings.User.RAGOptions.Enabled && Settings.User.RAGOptions.Available && await RAGService.CheckMemoryAvailable(State.ChatHistory.ChatName))
+        if (Settings.User.RAGOptions.Enabled && RAGService.IsAvailable && await RAGService.CheckMemoryAvailable(State.ChatHistory.ChatName))
         {
             isRAGing = true;
             State.ChatHistory.MemoryFromChat = await RAGService.SearchInMemory(State.ChatHistory.GetLastMessage().Content, State.ChatHistory.ChatName);
