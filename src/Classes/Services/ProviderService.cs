@@ -21,7 +21,7 @@ namespace MousyHub.Models.Services
         {
             { APIType.Native,"Native" },
             { APIType.KoboldCPP,"KoboldCPP" },
-            { APIType.Cloud,"Cloud-based API beta" },
+            { APIType.Cloud,"Cloud-based API" },
 
         };
         public KeyValuePair<APIType, string> SelectType = new KeyValuePair<APIType, string>();
@@ -64,10 +64,11 @@ namespace MousyHub.Models.Services
             switch (SelectType.Key)
             {
                 case APIType.KoboldCPP:
-                    bool IsSuccessK = await ConnectKoboldCPP(Settings.User.CloudBasedConfig.BaseUrl);
+                    bool IsSuccessK = await ConnectKoboldCPP(Settings.User.KoboldURL);
                     if (!IsSuccessK)
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
+                    await TryRAGConnect(Settings.User.RAGOptions);
                     await TrySetAutoChatTemplate(Settings);
                     return await LLModel.Model();
                 case APIType.Native:

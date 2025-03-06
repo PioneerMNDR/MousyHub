@@ -68,11 +68,11 @@
                 <MudGrid>
                     <MudItem xs="6" md="6">
                         @{
-                            var imageSrc = Convert.ToBase64String(NewCard.avatarPNG);
+                            var imageSrc = NewCard.GetAvatar();
                         }
                         <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
                             <MudImage Class="rounded" Height="400" ObjectFit="ObjectFit.Contain" Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
-                            <MudFileUpload T="IBrowserFile" FilesChanged="UploadFile" Accept=".png, .jpg">
+                            <MudFileUpload T="IBrowserFile" FilesChanged="UploadFile"   Accept=".png, .jpg">
                                 <ActivatorContent>
                                     <MudButton Color="Color.Primary" Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Image">Load avatar</MudButton>
                                 </ActivatorContent>
@@ -192,7 +192,7 @@
             }
 
         }
-        NewCard.avatarPNG = UploaderService.LoadDefaultAvatar();
+        NewCard.SetAvatar(UploaderService.LoadDefaultAvatar());
         currentStep = Steps[0];
         currentStep.Active = true;
         currentStep.Select();
@@ -277,7 +277,7 @@
             {
                 var MemoryStream = new MemoryStream();
                 await file.OpenReadStream().CopyToAsync(MemoryStream);
-                NewCard.avatarPNG = Util.CompressImage(MemoryStream.ToArray());
+                NewCard.SetAvatar(Util.CompressImage(MemoryStream.ToArray()));
                 StateHasChanged();
             }
 

@@ -24,7 +24,7 @@
 </MudAnimate>
 
 <MudPopover Open="isOpenAvatar" OverflowBehavior="OverflowBehavior.FlipNever" Fixed AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.CenterRight">
-    <MudImage ObjectFit="ObjectFit.Fill" Height="450" @onclick="@(()=>ToggleAvatar(AvatarUrl))" Src="@($"data:image/png;base64,{AvatarUrl}")"></MudImage>
+    <MudImage ObjectFit="ObjectFit.Fill" Width="300"  @onclick="@(()=>ToggleAvatar(AvatarUrl))" Src="@($"data:image/png;base64,{AvatarUrl}")"></MudImage>
 </MudPopover>
 
 

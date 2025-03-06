@@ -8,11 +8,11 @@
 
 @implements IDisposable
 
-<MudContainer MaxWidth="MaxWidth.Medium" id="download-page" Class="pt-5 pb-5 childTab ">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" id="download-page" Class="pt-5 pb-5 childTab ">
     <MudStack Justify="Justify.Center" Row>
         @if (BestGPU != null)
         {
-            <MudCard>
+            <MudCard Class="ma-2 pa-1 rounded-xl">
                 <MudCardContent>
                     <MudText Typo="Typo.h5">Best GPU</MudText>
                     <MudText>@BestGPU.Model @BestGPU.VRAM_GB Gb</MudText>
@@ -21,7 +21,7 @@
         }
         @if (HFService.isBusy)
         {
-            <MudCard>
+            <MudCard Class="ma-2 pa-1 rounded-xl">
                 <MudCardContent>
                     <MudText>Download progress @HFService.downloadProgress.Progress %</MudText>
                     <MudProgressLinear Color="Color.Primary" Value="@HFService.downloadProgress.Progress"></MudProgressLinear>
@@ -39,7 +39,7 @@
                 @foreach (var item in RecommendedModels)
                 {
                     <MudItem md="6">
-                        <MudCard Class="ma-2" Outlined="true" Style="height: 230px; display: flex; flex-direction: column;">
+                        <MudCard Class="ma-2 pa-1 rounded-xl" Outlined="true" Style="height: 240px; display: flex; flex-direction: column;">
                             <MudCardContent Style="flex: 1; overflow: hidden;">
                                 <MudText Typo="Typo.h5" GutterBottom>@item.Name</MudText>
                                 <MudText Style="overflow-y: auto; height: 60px;" Typo="Typo.body2">@item.Description</MudText>
@@ -50,7 +50,7 @@
                                 </MudStack>
                             </MudCardContent>
                             <MudCardActions Style="padding-top: 0;">
-                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadModel(item.RepoName,item.FileNameInRepo))">Download</MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Class="rounded-xl" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadModel(item.RepoName,item.FileNameInRepo))">Download</MudButton>
                             </MudCardActions>
                         </MudCard>
                     </MudItem>
@@ -61,7 +61,7 @@
             <MudGrid Justify="Justify.Center">
                 <MudItem md="12" Class="d-flex justify-center"> <MudText Typo="Typo.h4">Models for RAG</MudText></MudItem>
                 <MudItem md="6">
-                    <MudCard Class="ma-2" Outlined="true" Style="height: 230px; display: flex; flex-direction: column;">
+                    <MudCard Class="ma-2 pa-1 rounded-xl" Outlined="true" Style="height: 240px; display: flex; flex-direction: column;">
                         <MudCardContent Style="flex: 1; overflow: hidden;">
                             <MudText Typo="Typo.h5" GutterBottom>nomic-embed-text</MudText>
                             <MudText Style="overflow-y: auto; height: 60px;" Typo="Typo.body2">This model is used exclusively for searching information in saved dialogs. File size: 548 MB</MudText>
@@ -72,7 +72,7 @@
                             </MudStack>
                         </MudCardContent>
                         <MudCardActions Style="padding-top: 0;">
-                            <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadEmbeddingModel("nomic-ai/nomic-embed-text-v1.5-GGUF","nomic-embed-text-v1.5.f32.gguf"))">Download</MudButton>
+                            <MudButton Class="rounded-xl" Variant="Variant.Outlined" Color="Color.Info" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadEmbeddingModel("nomic-ai/nomic-embed-text-v1.5-GGUF","nomic-embed-text-v1.5.f32.gguf"))">Download</MudButton>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>

@@ -25,6 +25,59 @@ namespace MousyHub.Models
             }
             private set { }
         }
+        public string GetAvatar()
+        {
+            // Проверяем наличие аватарки
+            if (avatarPNG != null && avatarPNG.Length > 0)
+            {
+                // Возвращаем существующую аватарку в формате base64
+                return Convert.ToBase64String(avatarPNG);
+            }
+            else
+            {
+                // Возвращаем заглушку - маленькое белое изображение в формате base64
+                return "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=";
+            }
+        }
+        public byte[] GetAvatarBytes()
+        {
+            // Проверяем наличие аватарки
+            if (avatarPNG != null && avatarPNG.Length > 0)
+            {
+                // Возвращаем существующую аватарку
+                return avatarPNG;
+            }
+            else
+            {
+                // Возвращаем заглушку - маленькое белое изображение в виде байтов
+                return Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII=");
+            }
+        }
+        public void SetAvatar(byte[] imageBytes)
+        {
+            // Устанавливаем новую аватарку из массива байтов
+            avatarPNG = imageBytes;
+        }
+
+        public void SetAvatar(string base64Image)
+        {
+            try
+            {
+                // Удаляем префикс data:image если он присутствует
+                if (base64Image.Contains(","))
+                {
+                    base64Image = base64Image.Substring(base64Image.IndexOf(",") + 1);
+                }
+
+                // Конвертируем base64 в массив байтов и устанавливаем аватарку
+                avatarPNG = Convert.FromBase64String(base64Image);
+            }
+            catch
+            {
+                // В случае ошибки устанавливаем пустой массив
+                avatarPNG = null;
+            }
+        }
 
         public class Data
         {

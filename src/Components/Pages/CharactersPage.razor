@@ -1,4 +1,5 @@
-﻿@using MousyHub.Models
+﻿@using MousyHub.Classes.Misc
+@using MousyHub.Models
 @using MousyHub.Models.Misc
 @using Microsoft.Extensions.Localization
 @using MousyHub.Models.Services
@@ -15,7 +16,7 @@
     <MudFab Color="Color.Default" Label="Date" DropShadow=false OnClick="ToggleDateSort" EndIcon="@(dateSort ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward)"></MudFab>
     <MudFab Color="Color.Default" Label="Rating" DropShadow=false OnClick="ToggleRatingSort" EndIcon="@(rateSort ? Icons.Material.Filled.ArrowDownward : Icons.Material.Filled.ArrowUpward)"></MudFab>
     <MudSpacer></MudSpacer>
-    <MudTextField @bind-Value=Search Immediate AdornmentIcon="@Icons.Material.Filled.Search" OnKeyDown="SearchKeyDown" Variant="Variant.Filled" Adornment="Adornment.End" Label="Search"></MudTextField>
+    <MudTextField @bind-Value=Search Immediate AdornmentIcon="@Icons.Material.Filled.Search" OnKeyDown="SearchKeyDown" Variant="Variant.Filled"  Adornment="Adornment.End" Label="Search"></MudTextField>
 </MudStack>
 @if (Cards != null && Cards.Count != 0)
 {
@@ -23,14 +24,14 @@
         @for (int i = 0; i < Cards.Count; i += ElementPerPage)
         {
             int f = i;
-            <MudCarouselItem Class="d-flex justify-space-between">
+            <MudCarouselItem Class="d-flex justify-space-between pt-1">
                 @for (int j = f; j < Math.Min(f + ElementPerPage, Cards.Count); j++)
                 {
                     int s = j;
-                    var imageSrc = Convert.ToBase64String(Cards[s].avatarPNG);
-                    string newClassDynamic = "CharCard bg-info";
+                    var imageSrc =  Cards[s].GetAvatar();
+                    string newClassDynamic = "CharCard bg-info rounded-xl";
                     if (Cards[s].isNew)
-                        newClassDynamic = "CharCard bg-info newCard";
+                        newClassDynamic = "CharCard bg-info newCard  rounded-xl";
 
                     <MudCard Class="@newClassDynamic">
                         <MudCardHeader Class="CharContent Header">
@@ -58,8 +59,8 @@
                    
                        
                         <MudCardContent Class="CharContent pb-0 pt-1">
-                         
-                            <MudText Style="height:70%;overflow:auto" Typo="Typo.body2">@Util.TruncateString(Cards[s].data.creator_notes, 50)</MudText>
+
+                            <MudText Style="height:70%;overflow:auto" Typo="Typo.body2">@StringHelperBuilder.TagPlaceholder(Util.TruncateString(Cards[s].data.creator_notes, 50), "Player", Cards[s].data.name)</MudText>
                             <MudDivider></MudDivider>
                             <div class="d-flex" style="overflow:auto">
                                 @foreach (var item in @Cards[s].data.tags.Take(4))
@@ -71,7 +72,7 @@
                         <MudCardActions Style="height:15%" Class="d-flex justify-center pt-0">
                             <MudStack Spacing=0 Justify="Justify.Center">
                                 <MudBadge Content="@newWord" Color="Color.Success" Overlap Visible=Cards[s].isNew>
-                                    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async()=>await StartChatClick.InvokeAsync(Cards[s]))" Size="Size.Large">Chat</MudButton>
+                                    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="@(async()=>await StartChatClick.InvokeAsync(Cards[s]))" Class="rounded-lg" Size="Size.Large">Chat</MudButton>
                                 </MudBadge>
 
                             </MudStack>

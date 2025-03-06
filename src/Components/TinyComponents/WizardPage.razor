@@ -213,7 +213,7 @@
                 <MudText Color="@(RAG.IsAvailable ? Color.Success : Color.Error)">Available: @RAG.IsAvailable.ToString()</MudText>
                 <MudText Color="@(Settings.User.RAGOptions.Enabled ? Color.Success : Color.Error)">Enabled: @Settings.User.RAGOptions.Enabled.ToString()</MudText>
                 </MudStack>
-            <MudTextField Label="The value retrieved from memory for the bot's next message" MaxLines="2" @bind-Value="State.ChatHistory.MemoryFromChat" Disabled></MudTextField>
+            <MudTextField Label="The value retrieved from memory for the bot's next message" MaxLines="4" AutoGrow @bind-Value="State.ChatHistory.MemoryFromChat" ReadOnly></MudTextField>
             <MudButton Variant="Variant.Outlined" OnClick="State.ExportChatToMemory">Remember chat now</MudButton>
         </MudStack>
     </MudPaper>

@@ -12,7 +12,7 @@
     </MudAnimate>
     <MudGrid Class="mt-1 mes1" Spacing="0">
         <MudItem md="1" xs="2">
-            <MudAvatar Class="mt-2" Size="@(Main.isMobile ? Size.Medium :Size.Large)" Elevation="2" Rounded="Settings.User.SquareAvatars">
+            <MudAvatar Class="mt-2 cursor-pointer" Size="@(Main.isMobile ? Size.Medium :Size.Large)" Elevation="2" Rounded="Settings.User.SquareAvatars">
                 @{
                     var imageSrc = Convert.ToBase64String(Message.Owner.Avatar);
                 }

@@ -79,7 +79,7 @@ namespace MousyHub.Models.Services.URLHandle
                 string base64String = Convert.ToBase64String(imageBytes);
                 string jsoncard = await reader.ReadCharacterDataAsync(base64String);
                 CharCard card = JsonConvert.DeserializeObject<CharCard>(jsoncard);
-                card.avatarPNG = Util.CompressImage(imageBytes);
+                card.SetAvatar(Util.CompressImage(imageBytes));
                 return card;
             }
             else

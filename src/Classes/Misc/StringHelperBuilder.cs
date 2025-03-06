@@ -36,9 +36,14 @@ namespace MousyHub.Classes.Misc
         }
         public static string TagPlaceholder(string message, string Username, string CharacterName)
         {
-            string result = message.Replace("{{User}}", Username).Replace("{{user}}", Username).Replace("{{char}}", CharacterName).Replace("{{Char}}", CharacterName);
-
-            return result;
+            if (!string.IsNullOrEmpty(message))
+            {
+                string result = message.Replace("{{User}}", Username).Replace("{{user}}", Username).Replace("{{char}}", CharacterName).Replace("{{Char}}", CharacterName);
+                return result;
+            }
+        
+            return string.Empty;
+         
         }
         public static string SystemMessageShort(ChatHistory chatHistory)
         {
@@ -93,6 +98,10 @@ namespace MousyHub.Classes.Misc
 
         public static string[] Stop_sequence_split(string stop_s)
         {
+            if (string.IsNullOrEmpty(stop_s))
+            {
+                return Array.Empty<string>();
+            }
             var seq = stop_s.Split(',', options: StringSplitOptions.None);
             return seq;
         }

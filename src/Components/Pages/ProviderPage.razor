@@ -9,10 +9,35 @@
 
 <MudGrid id="select-api">
     <MudItem md="10" xs="7">
-        <MudSelect  Label="Select API" Variant="Variant.Outlined" Value="Service.SelectType" ValueChanged="@((KeyValuePair<ProviderService.APIType, string> newValue)=>ValueSelectConnectionChange(newValue))" OpenIcon="@Icons.Material.Filled.Api">
+        <MudSelect Label="Select API" Variant="Variant.Outlined" Value="Service.SelectType" ValueChanged="@((KeyValuePair<ProviderService.APIType, string> newValue)=>ValueSelectConnectionChange(newValue))" OpenIcon="@Icons.Material.Filled.Api">
             @foreach (var item in Service.ConnectionsTypes)
             {
-                <MudSelectItem Value="@item">@item.Value</MudSelectItem>
+                <MudSelectItem Value="@item">
+                    <MudStack Row AlignItems="AlignItems.Center" Spacing="0">
+                        <MudText Typo="Typo.subtitle1" Class="me-2">@item.Value</MudText>
+                        @switch (item.Key)
+                        {
+                            case ProviderService.APIType.Native:
+                                <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Success">quick start</MudChip>
+                                <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Success">local</MudChip>
+                                <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Primary">based on LlamaSharp</MudChip>
+                                break;
+                            case ProviderService.APIType.KoboldCPP:
+                                <MudChip Size="Size.Small" Style="height:20px" Icon="@Icons.Material.Filled.Star" T="string" Color="Color.Warning">best quality</MudChip>
+                                <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Success">local</MudChip>
+                                <MudChip Size="Size.Small" Style="height:20px" T="string">requires another program</MudChip>
+                                break;
+                            case ProviderService.APIType.Cloud:
+                                <MudChip Size="Size.Small" Style="height:20px" Icon="@Icons.Material.Filled.Cloud" T="string" Color="Color.Info">cloud</MudChip>
+                                <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Success">quick start</MudChip>
+                                <MudChip Size="Size.Small" Style="height:20px" T="string">usually for a fee</MudChip>
+                                <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Dark">BETA</MudChip>
+                                break;
+                            default:
+                                break;
+                        }
+                    </MudStack>
+                </MudSelectItem>
             }
         </MudSelect>
     </MudItem>
@@ -26,23 +51,38 @@
             <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="ConnectionChanged" FullWidth>Connect</MudButton>
         }
     </MudItem>
-
 </MudGrid>
 
 
 <MudDivider Class="mt-3 mb-3"></MudDivider>
 <MudPaper Elevation="2">
     <MudContainer Class="pa-4">
-        <MudGrid Spacing="2">
+        <MudGrid Spacing="2" Justify="Justify.SpaceBetween">
             @switch (Service.SelectType.Key)
             {
                 case ProviderService.APIType.KoboldCPP:
-                    <MudItem Class="d-flex align-content-center">
+                    <MudItem md="12">
+                        <MudText Typo="Typo.h6">What is KoboldCPP</MudText>
+                        <MudPaper Outlined Class="pa-4">
+                            <MudStack>
+
+                                <MudText>KoboldCPP is the best backend application for running LLM today. Kobold supports the most modern models, as well as cool and complex samplers that provide the best experience of communicating with characters</MudText>
+                                <MudText>
+                                    You can download the KoboldCPP program
+                                    <MudLink href="https://github.com/LostRuins/koboldcpp/releases" Target="_blank">HERE</MudLink>.
+                                    Don't forget to choose the version you need according to your PC's specifications
+                                </MudText>
+                            </MudStack>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem Class="d-flex align-content-center" md="4">
                         <MudTextField @bind-Value="@Settings.User.KoboldURL" Label="URL"></MudTextField>
                     </MudItem>
-                    <MudItem Class="d-flex align-content-center align-end">
+                 
+                    <MudItem Class="d-flex align-content-center align-end" md="4">
                         <MudText>@ModelName</MudText>
                     </MudItem>
+           
                     break;
                 case ProviderService.APIType.Native:
                     <MudItem Class="d-flex align-content-center">
@@ -52,7 +92,7 @@
                                     @if (Settings.LocalModelsList.Count > 0)
                                     {
                                         <MudText>Model:</MudText>
-                                        <MudSelect  @bind-Value=Settings.User.SelfInferenceConfig.ModelPath ToStringFunc="converter">
+                                        <MudSelect @bind-Value=Settings.User.SelfInferenceConfig.ModelPath ToStringFunc="converter">
                                             @foreach (var item in Settings.LocalModelsList)
                                             {
                                                 <MudSelectItem Value="item">@Path.GetFileName(item)</MudSelectItem>
@@ -140,28 +180,28 @@
                 case ProviderService.APIType.Cloud:
                     <MudItem Class="d-flex align-content-center" md="6">
                         <MudForm Class="w-100">
-                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl"  HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
-                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey"  Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
-                        </MudForm>                 
+                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
+                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey" Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
+                        </MudForm>
                     </MudItem>
-                    <MudItem  Class="px-5" md="6">
+                    <MudItem Class="px-5" md="6">
                         <MudText Typo="Typo.h5">Configuration</MudText>
-                        <MudPaper Outlined  Class="pa-4">
+                        <MudPaper Outlined Class="pa-4">
                             <MudText>Selected model: @(Service.Status ? Service.SelectModel : "Not connected")</MudText>
                             <MudTooltip Text="Parameter that determines whether Cloud services will use Chat completions or Text completions. The latter may be better.">
-                                <MudSwitch  Size=Size.Medium Label="Use chat completions" Color="Color.Info" @bind-Value=Settings.User.CloudBasedConfig.UseChatCompletions></MudSwitch>
+                                <MudSwitch Size=Size.Medium Label="Use chat completions" Color="Color.Info" @bind-Value=Settings.User.CloudBasedConfig.UseChatCompletions></MudSwitch>
                             </MudTooltip>
                         </MudPaper>
 
                     </MudItem>
-                    <MudItem md="6"  Class="d-flex align-center">
+                    <MudItem md="6" Class="d-flex align-center">
                         <MudTooltip Text="Get models">
                             <MudFab OnClick="GetModelList" Disabled="string.IsNullOrEmpty(Settings.User.CloudBasedConfig.BaseUrl)" StartIcon="@Icons.Material.Filled.CloudDownload" Color="Color.Primary">Get models</MudFab>
                         </MudTooltip>
-                        <MudDivider Vertical FlexItem Class="mx-3" ></MudDivider>
-                        <MudAutocomplete  MaxItems="int.MaxValue" SearchFunc="@AutocompleteSearch" Clearable Label="Select model" HelperText="Enter URL, click get models and select" Variant="Variant.Outlined" @bind-Value="Service.SelectModel" />
+                        <MudDivider Vertical FlexItem Class="mx-3"></MudDivider>
+                        <MudAutocomplete MaxItems="int.MaxValue" SearchFunc="@AutocompleteSearch" Clearable Label="Select model" HelperText="Enter URL, click get models and select" Variant="Variant.Outlined" @bind-Value="Service.SelectModel" />
                     </MudItem>
-              
+
                     break;
                 default:
                     break;

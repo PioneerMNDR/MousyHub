@@ -41,19 +41,45 @@ namespace MousyHub.Models.Services
         }
         public List<CharCard> LoadCards()
         {
-            string directory = Environment.CurrentDirectory + "/wwwroot/Cards/";
+            string userDirectory = Path.Combine(Environment.CurrentDirectory, "wwwroot", "Cards");
+            string defaultDirectory = Path.Combine(Environment.CurrentDirectory, "wwwroot", "default", "Cards");
             List<CharCard> charCards = new List<CharCard>();
+
+            // Сначала загружаем карты из директории по умолчанию
+            LoadCardsFromDirectory(defaultDirectory, charCards);
+
+            // Затем загружаем пользовательские карты, они могут перезаписать стандартные с тем же system_name
+            LoadCardsFromDirectory(userDirectory, charCards);
+
+            return charCards;
+        }
+
+        private void LoadCardsFromDirectory(string directory, List<CharCard> charCards)
+        {
             if (!Directory.Exists(directory))
             {
-                return charCards;
+                return;
             }
+
             foreach (string file in Directory.GetFiles(directory, "*.json"))
             {
                 string json = File.ReadAllText(file);
                 CharCard charCard = JsonConvert.DeserializeObject<CharCard>(json);
-                charCards.Add(charCard);
+
+                // Проверяем, существует ли уже карта с таким же system_name
+                int existingIndex = charCards.FindIndex(c => c.system_name == charCard.system_name);
+
+                if (existingIndex >= 0)
+                {
+                    // Заменяем существующую карту новой (предполагаем, что пользовательские карты имеют приоритет)
+                    charCards[existingIndex] = charCard;
+                }
+                else
+                {
+                    // Добавляем новую карту
+                    charCards.Add(charCard);
+                }
             }
-            return charCards;
         }
         public List<Instruct> LoadInstructs(bool Default = false)
         {

@@ -150,6 +150,7 @@
 .newCard {
     margin-right: 5px;
     margin-left: 5px;
+
 }
 
     .newCard:hover {
@@ -161,7 +162,7 @@
         content: "";
         width: 104%;
         height: 102%;
-        border-radius: 8px;
+        border-radius: 24px;
         background-image: linear-gradient(var(--rotate), var(--mud-palette-success),var(--mud-palette-primary));
         position: absolute;
         z-index: -1;

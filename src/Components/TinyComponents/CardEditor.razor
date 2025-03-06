@@ -13,7 +13,7 @@
                 <MudGrid Class="p-3" Justify="Justify.Center">
                     <MudItem md="10">
                         @{
-                            var imageSrc = Convert.ToBase64String(charCard.avatarPNG);
+                            var imageSrc = charCard.GetAvatar();
                         }
                         <MudImage Fluid Src="@($"data:image/png;base64,{imageSrc}")">
 

@@ -29,7 +29,7 @@ namespace MousyHub.Models
             CharacterCard = charCard;
             Name = charCard.data.name;
             Description = charCard.data.description;
-            Avatar = charCard.avatarPNG;
+            Avatar = charCard.GetAvatarBytes();
             Key = key;
             Id = CharacterCard.system_name;
         }

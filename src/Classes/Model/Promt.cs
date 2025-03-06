@@ -62,6 +62,7 @@ namespace MousyHub.Classes.Model
                         else
                             Elements.Add(new PromtElement(MessageRole.Assistant, $"{item.Owner.Name}: {item.Content}"));
             
+                      //если меняется istruct то здесь ничего не поменется требуется решение
                     FullDialogue += item.InstructContent;
                     FullDialogue += item.Content;
                 }
@@ -125,12 +126,13 @@ namespace MousyHub.Classes.Model
             if (!string.IsNullOrEmpty(chatHistory.MemoryFromChat))
             {
                 additionalpromt += "\n[Early Memories from Chat (Possibly for use): {" + chatHistory.MemoryFromChat + "}]";
-                chatHistory.MemoryFromChat = string.Empty;
+                //chatHistory.MemoryFromChat = string.Empty;
             }
             if (!string.IsNullOrEmpty(additionalpromt))
             {
                 Elements.Add(new PromtElement(MessageRole.System, additionalpromt));
             }
+            FullContent += additionalpromt;
 
         }
 
