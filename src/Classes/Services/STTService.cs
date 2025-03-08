@@ -16,6 +16,7 @@ namespace MousyHub.Models.Services
         public string Language { get { return settings.User.TranslatorOptions.SelectLanguage.Value; } private set { } }
 
         public bool isRecord { get; private set; } = false;
+        public bool isProcessing { get; private set; } = false;
         public async Task StartRecognition()
         {
             if (!isRecord)
@@ -34,11 +35,23 @@ namespace MousyHub.Models.Services
         }
         public async Task<string> StopRecognition()
         {
-
+            try
+            {
+                isRecord = false;
+                isProcessing = true;
                 string recognizedText = await _recognitionCompletionSource.Task;
-                await speechRecognition.CancelSpeechRecognitionAsync(false);
-            isRecord = false;
-            return recognizedText;
+                isProcessing = false;           
+                await speechRecognition.CancelSpeechRecognitionAsync(false);     
+                return recognizedText;
+            }
+            finally 
+            {
+                isProcessing = false;
+                isRecord = false;
+
+            }
+
+  
         }
         private async Task OnRecognized(string recognizedText)
         {
