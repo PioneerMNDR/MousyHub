@@ -23,7 +23,7 @@
             <MudButton StartIcon="@Icons.Material.Filled.Close" Color="Color.Primary" OnClick="@(()=> isCharEditMode = false)" Variant="Variant.Filled">Close</MudButton>
         </MudItem>
     </MudGrid>
-    <CardEditor charCard="EditingChar"></CardEditor>
+    <CardEditor charCard="EditingChar" DeleteCardEvent="@(()=>isCharEditMode=false)"></CardEditor>
 </MudCollapse>
 
 <MudCollapse @bind-Expanded="@isCharSelectMode" Class="FixedCollapsing ">

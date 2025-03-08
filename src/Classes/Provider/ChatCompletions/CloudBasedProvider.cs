@@ -8,7 +8,7 @@ public class ChatCompletionProvider : ILanguageModel
     private readonly ChatCompletionsClient _client;
     private readonly string _modelName;
     private bool _isBusy;
-
+    CancellationTokenSource _cts = new CancellationTokenSource();
     public bool isBusy
     {
         get => _isBusy;
@@ -33,9 +33,10 @@ public class ChatCompletionProvider : ILanguageModel
     public async Task<MessageResponse> GenerateTextAsync(Promt prompt, GenerationConfig config, int maxTokens = 100, int contextLength = 4096, string? stopSequence = null, string key = "main")
     {
         isBusy = true;
+        _cts = new CancellationTokenSource();
         try
         {
-            var response = await _client.GenerateTextAsync(_modelName, prompt, config, maxTokens, stopSequence);
+            var response = await _client.GenerateTextAsync(_modelName, prompt, config, maxTokens, stopSequence, _cts.Token);
 
             if (response.IsSuccess)
                 return new MessageResponse(response.Content, true, "");
@@ -55,11 +56,12 @@ public class ChatCompletionProvider : ILanguageModel
     public async Task GenerateStreamTextAsync(Promt prompt, GenerationConfig config, int maxTokens = 100, int contextLength = 4096, string stopSequence = "", string key = "main", Func<MessageResponse, Task> onTokenReceived = null)
     {
         isBusy = true;
+        _cts = new CancellationTokenSource();
         try
         {
             await _client.GenerateStreamTextAsync(_modelName, prompt, config, 
                 async messageResponse => await onTokenReceived(new MessageResponse { IsSuccess = messageResponse.IsSuccess, ErrorMessage = messageResponse.ErrorMessage, Content = messageResponse.Content }), 
-                maxTokens, stopSequence);
+                maxTokens, stopSequence,cancellationToken: _cts.Token);
         }
         finally
         {
@@ -69,8 +71,7 @@ public class ChatCompletionProvider : ILanguageModel
 
     public Task Abort()
     {
-        // Реализация отмены операций
-        return Task.CompletedTask;
+        return _cts.CancelAsync();
     }
 
     public void Dispose()

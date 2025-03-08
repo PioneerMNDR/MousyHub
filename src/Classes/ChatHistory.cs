@@ -298,14 +298,18 @@ namespace MousyHub.Models
             AlterativeFirstMessages.Clear();
             var InstructContent = StringHelperBuilder.BotMessageInstructed(instruct, person.Name);
             AlterativeFirstMessages.Add(Messages[0]);
-            foreach (var item in Alt_greetings)
+            if (Alt_greetings!=null)
             {
-                string content = item;
-                if (content == null) continue;
-                content = StringHelperBuilder.TagPlaceholder(content, MainUser.Name, MainCharacter.Name);
-                var newMes = new Message(content, InstructContent, person);
-                AlterativeFirstMessages.Add(newMes);
+                foreach (var item in Alt_greetings)
+                {
+                    string content = item;
+                    if (content == null) continue;
+                    content = StringHelperBuilder.TagPlaceholder(content, MainUser.Name, MainCharacter.Name);
+                    var newMes = new Message(content, InstructContent, person);
+                    AlterativeFirstMessages.Add(newMes);
+                }
             }
+        
        
 
         }

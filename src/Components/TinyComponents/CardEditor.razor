@@ -15,9 +15,17 @@
                         @{
                             var imageSrc = charCard.GetAvatar();
                         }
-                        <MudImage Fluid Src="@($"data:image/png;base64,{imageSrc}")">
+                        <MudStack Justify="Justify.Center" AlignItems="AlignItems.Center">
+                            <MudImage Fluid Src="@($"data:image/png;base64,{imageSrc}")">
 
-                         </MudImage>
+                            </MudImage>
+                            <MudFileUpload T="IBrowserFile" FilesChanged="UploadFile" Accept=".png, .jpg">
+                                <ActivatorContent>
+                                    <MudButton Color="Color.Primary" Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Image">Load avatar</MudButton>
+                                </ActivatorContent>
+                            </MudFileUpload>
+                        </MudStack>
+             
                      </MudItem>
                      <MudItem md="12">
                          <div class="d-flex mini-scroll" style="overflow:auto">
@@ -90,6 +98,10 @@ else
     public CharCard charCard { get; set; }
 
     bool isModelLoading = false;
+
+    [Parameter]
+    public EventCallback DeleteCardEvent { get; set; }
+
     public async Task GenerateShortDescription()
     {
         isModelLoading = true;
@@ -123,6 +135,26 @@ else
         isModelLoading = false;
 
     }
+    private async Task UploadFile(IBrowserFile file)
+    {
+        try
+        {
+            if (file != null && file.Size != 0)
+            {
+                var MemoryStream = new MemoryStream();
+                await file.OpenReadStream().CopyToAsync(MemoryStream);
+                charCard.SetAvatar(Util.CompressImage(MemoryStream.ToArray()));
+                StateHasChanged();
+            }
+
+        }
+        catch (Exception ex)
+        {
+            Alert.ErrorAlert(ex.Message);
+            Console.WriteLine(ex.Message);
+        }
+
+    }
     public void SaveCard()
     {
         Alert.SuccessAlert("Saved");
@@ -136,6 +168,7 @@ else
         charCard = null;
         StateHasChanged();
         Uploader.ReloadCards();
+        DeleteCardEvent.InvokeAsync();
     }
 
 

@@ -149,13 +149,13 @@
             {
                 case 0:
                     Steps[i].StepName = "Character name";
-                    Steps[i].StepDes = "Let's begin creation of the character";
+                    Steps[i].StepDes = "Let's begin creation of the character.";
                     Steps[i].Icon = Icons.Material.Rounded.OutlinedFlag;
                     break;
                 case 1:
                     Steps[i].HelperText = "Gender, appearance, social status, general character, exceptional characteristics, actions/personality of the character";
                     Steps[i].StepName = "Description of the character";
-                    Steps[i].StepDes = "Try to write a brief character description in your native language. Don't forget to specify if this will be an NSFW character or SWF. Additionally, you can make an analogy with a real-world character known to the LLM, allowing it to accurately depict your character.";
+                    Steps[i].StepDes = "Try to write a brief character description in your native language. Don't forget to specify if this will be an NSFW character or SFW. Additionally, you can make an analogy with a real-world character known to the LLM, allowing it to accurately depict your character.  If you have the translator enabled, all requests(wishes) will be translated from the selected language into English.";
                     Steps[i].Icon = Icons.Material.Rounded.Face;
                     Steps[i].PrePromt = "Fill in the 'character description' parameter only according to the {{user}}'s wishes. If there's no important information, come up with one yourself, but let the user know about it. Under no circumstances should you omit the facts given by the player. The description should be readable by LLM, not a human, so try to write everything as systematically as possible (e.g. Figure: Thin, Height: Tall, Character: Frowning, Funny, Individualistic).\nEACH paragraph must be rich in informations and avoid redundancy at all costs, we need to be efficient!";
                     break;
