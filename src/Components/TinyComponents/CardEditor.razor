@@ -1,9 +1,12 @@
-﻿@using MousyHub.Models
+﻿@using KokoroSharp.Core
+@using MousyHub.Classes.Services.TTS
+@using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Services
 @inject ProviderService Provider
 @inject UploaderService Uploader
 @inject AlertServices Alert
+
 @if (charCard != null)
 {
 
@@ -25,11 +28,11 @@
                                 </ActivatorContent>
                             </MudFileUpload>
                         </MudStack>
-             
-                     </MudItem>
-                     <MudItem md="12">
-                         <div class="d-flex mini-scroll" style="overflow:auto">
-                             @foreach (var item in charCard.data.tags.Take(4))
+
+                    </MudItem>
+                    <MudItem md="12">
+                        <div class="d-flex mini-scroll" style="overflow:auto">
+                            @foreach (var item in charCard.data.tags.Take(4))
                             {
                                 <MudChip T="string" Size="Size.Small">@item</MudChip>
                             }
@@ -37,34 +40,37 @@
                     </MudItem>
                     <MudItem md="12">
                         <MudStack Row Justify="Justify.Center">
-                             <MudButton Color="Color.Success" OnClick="SaveCard" Variant="Variant.Filled">Save</MudButton>
-                             <MudButton Color="Color.Error" OnClick="DeleteCard" Variant="Variant.Outlined">Delete</MudButton>
-                         </MudStack>
-                     </MudItem>
-                 </MudGrid>
-             </MudPaper>
+                            <MudButton Color="Color.Success" OnClick="SaveCard" Variant="Variant.Filled">Save</MudButton>
+                            <MudButton Color="Color.Error" OnClick="DeleteCard" Variant="Variant.Outlined">Delete</MudButton>
+                        </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
 
-         </MudItem>
-         <MudItem md="9">
-             <MudPaper>
-                 <MudGrid Class="p-3">
-                     <MudItem md="12">
-                         <MudTextField @bind-Value=charCard.data.name Label="Name" Variant="Variant.Filled"></MudTextField>
-                     </MudItem>
-                     <MudItem md="6">
-                         <MudTextField @bind-Value=charCard.data.description MaxLines="10" AutoGrow Label="Description" Variant="Variant.Filled"></MudTextField>
-                     </MudItem>
-                     <MudItem md="6">
-                         <MudTextField @bind-Value=charCard.data.first_mes Label="First Message" AutoGrow MaxLines="10" Variant="Variant.Filled"></MudTextField>
-                     </MudItem>
-                     <MudItem md="6">
-                         <MudTextField @bind-Value=charCard.data.scenario Label="Scenario" MaxLines="5" AutoGrow Variant="Variant.Filled"></MudTextField>
-                     </MudItem>
-                     <MudItem md="6">
-                         <MudTextField @bind-Value=charCard.data.mes_example Label="Message example" MaxLines="5" AutoGrow Variant="Variant.Filled"></MudTextField>
-                     </MudItem>
-                     <MudItem md="12">
-                         @if (!isModelLoading)
+        </MudItem>
+        <MudItem md="9">
+            <MudPaper>
+                <MudGrid Class="p-3">
+                    <MudItem md="6">
+                        <MudTextField @bind-Value=charCard.data.name Label="Name" Variant="Variant.Filled"></MudTextField>
+                    </MudItem>
+                    <MudItem md="6">
+                        <KokoroVoiceSelect Label="Character voice" @bind-Name="charCard.KokoroVoice"></KokoroVoiceSelect>
+                    </MudItem>
+                    <MudItem md="6">
+                        <MudTextField @bind-Value=charCard.data.description MaxLines="10" AutoGrow Label="Description"  Variant="Variant.Filled"></MudTextField>
+                    </MudItem>
+                    <MudItem md="6">
+                        <MudTextField @bind-Value=charCard.data.first_mes Label="First Message" AutoGrow MaxLines="10" Variant="Variant.Filled"></MudTextField>
+                    </MudItem>
+                    <MudItem md="6">
+                        <MudTextField @bind-Value=charCard.data.scenario Label="Scenario" MaxLines="5" AutoGrow Variant="Variant.Filled"></MudTextField>
+                    </MudItem>
+                    <MudItem md="6">
+                        <MudTextField @bind-Value=charCard.data.mes_example Label="Message example" MaxLines="5"  AutoGrow Variant="Variant.Filled"></MudTextField>
+                    </MudItem>
+                    <MudItem md="12">
+                        @if (!isModelLoading)
                         {
                             <MudTextField @bind-Value=charCard.data.short_description Label="Short description" Adornment="Adornment.End"
                                           AdornmentIcon="@Icons.Material.Filled.AutoAwesome" HelperText="Click to wizard generate" OnAdornmentClick="GenerateShortDescription" MaxLines="5" AutoGrow Variant="Variant.Filled"></MudTextField>
@@ -75,6 +81,7 @@
                         }
 
                     </MudItem>
+
                 </MudGrid>
             </MudPaper>
 
@@ -94,6 +101,18 @@ else
 
 @code {
 
+
+    protected override async Task OnInitializedAsync()
+    {
+      
+
+    }
+    protected override void OnParametersSet()
+    {
+   
+    }
+
+
     [Parameter]
     public CharCard charCard { get; set; }
 
@@ -101,6 +120,8 @@ else
 
     [Parameter]
     public EventCallback DeleteCardEvent { get; set; }
+
+
 
     public async Task GenerateShortDescription()
     {

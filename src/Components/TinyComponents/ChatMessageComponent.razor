@@ -1,9 +1,11 @@
-﻿@using MousyHub.Models
+﻿@using MousyHub.Classes.Services.TTS
+@using MousyHub.Models
 @using MousyHub.Models.Services
 @using MousyHub.Components.Pages
 @inject ChatState Chat
 @inject SettingsService Settings
 @inject TranslatorService Translator
+@inject TTSManagerService TTS
 @inject IJSRuntime JSRuntime
 @if (Message.Content != null && Message.Content != "")
 {
@@ -17,28 +19,32 @@
                     var imageSrc = Convert.ToBase64String(Message.Owner.Avatar);
                 }
                 <MudImage @onclick="@(()=>ClickAvatar.InvokeAsync(imageSrc))" Fluid Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
-             </MudAvatar>
-         </MudItem>
-         <MudItem md="11" xs="10">
-             <div class="d-flex align-center">
-                 <MudText Color="Color.Tertiary">@Message.Owner.Name</MudText>
-                    <span class="me-2"> </span>
-                    <MudText Typo="Typo.body2">@Message.dateTimeString</MudText>
-                    <span class="me-2"> </span>
-                    @if (Message.isSummarized)
+            </MudAvatar>
+        </MudItem>
+        <MudItem md="11" xs="10">
+            <div class="d-flex align-center">
+                <MudText Color="Color.Tertiary">@Message.Owner.Name</MudText>
+                <span class="me-2"> </span>
+                <MudText Typo="Typo.body2">@Message.dateTimeString</MudText>
+                <span class="me-2"> </span>
+                @if (Message.isSummarized)
                 {
                     <MudIcon Icon="@Icons.Material.Filled.CleaningServices" Color="Color.Default" Size="Size.Small" Title="This messages is optimized(summarized)"></MudIcon>
                 }
                 <div style="margin-left:auto">
                     <MudStack Row Justify="Justify.FlexEnd" Spacing="0">
-                         <MudIconButton Size="Size.Small" OnClick="@(()=>{isEditing=true;Oldmessage=Message;})" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
-                         <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(()=>{DeleteEvent.InvokeAsync(Message);})"></MudIconButton>
-                         @if (Chat.ChatHistory.Messages.First() == Message && Chat.ChatHistory.Alt_greetings != null && Chat.ChatHistory.Alt_greetings.Length > 0)
+                        <MudIconButton Size="Size.Small" OnClick="@(()=>{isEditing=true;Oldmessage=Message;})" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(()=>{DeleteEvent.InvokeAsync(Message);})"></MudIconButton>
+                        @if (TTS.ReadyToUse)
+                        {
+                           <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlayCircle" OnClick="PlayTTSMessage"></MudIconButton>
+                        }                     
+                        @if (Chat.ChatHistory.Messages.First() == Message && Chat.ChatHistory.Alt_greetings != null && Chat.ChatHistory.Alt_greetings.Length > 0)
                         {
                             <MudTooltip Text="@TextForAltMessagesTip()">
-                                <MudIconButton Size="Size.Small"   Icon="@Icons.Material.Filled.ArrowForwardIos" OnClick="@(()=>NextFirstMessageEvent.InvokeAsync())" ></MudIconButton>
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.ArrowForwardIos" OnClick="@(()=>NextFirstMessageEvent.InvokeAsync())"></MudIconButton>
                             </MudTooltip>
-                           
+
                         }
 
                     </MudStack>
@@ -53,15 +59,15 @@
                 }
             }
             <MudPaper Elevation="0" Outlined Class="@cssClass">
-                 @if (isEditing)
+                @if (isEditing)
                 {
                     <MudTextField Variant="Variant.Filled" Label="Editing message" AutoGrow Value="Message.Content" ValueChanged="@((string newContent)=>UpdateEditingMessage(Message,newContent))">
 
-                     </MudTextField>
+                    </MudTextField>
                     <MudStack Row Justify="Justify.FlexEnd" Spacing="0">
-                         <MudIconButton Size="Size.Small" Color="Color.Error" OnClick="@(()=>{isEditing=false;Message=Oldmessage;})" Icon="@Icons.Material.Outlined.Cancel"></MudIconButton>
-                         <MudIconButton Size="Size.Small" Color="Color.Success" OnClick="@(()=>{isEditing=false;_=SaveMessage();})" Icon="@Icons.Material.Filled.Save"></MudIconButton>
-                     </MudStack>
+                        <MudIconButton Size="Size.Small" Color="Color.Error" OnClick="@(()=>{isEditing=false;Message=Oldmessage;})" Icon="@Icons.Material.Outlined.Cancel"></MudIconButton>
+                        <MudIconButton Size="Size.Small" Color="Color.Success" OnClick="@(()=>{isEditing=false;_=SaveMessage();})" Icon="@Icons.Material.Filled.Save"></MudIconButton>
+                    </MudStack>
                 }
                 else
                 {
@@ -123,6 +129,23 @@
         string t = $"Alternative messages\n{Chat.ChatHistory.IndexAltMessage()}/{Chat.ChatHistory.AlterativeFirstMessages.Count - 1}";
         return t;
     }
+
+    async Task PlayTTSMessage()
+    {
+        if (TTS.ReadyToUse)
+        {
+            if (Message.Owner.IsUser)
+            {
+                _ = TTS.ProcessFullText(Message.Content, Settings.User.TTSOptions.UserKokoroVoice);
+            }
+            else
+            {
+                _ = TTS.ProcessFullText(Message.Content, Message.Owner.CharacterCard.KokoroVoice);
+            }
+
+        }      
+    }
+
     private async Task SaveMessage()
     {
 

@@ -233,6 +233,22 @@ namespace MousyHub.Models.Services
             return list.FirstOrDefault("");
 
         }
+        public string LoadFirstKokoroModelPath()
+        {
+            string directory = Environment.CurrentDirectory + "/wwwroot/LocalModels/KokoroModels/";
+            List<string> list = new List<string>();
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+                return "";
+            }
+            foreach (string file in Directory.GetFiles(directory, "*.onnx"))
+            {
+                list.Add(file);
+            }
+            return list.FirstOrDefault("");
+
+        }
 
         public string LoadGrammar(string FileNameWithExtension)
         {

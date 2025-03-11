@@ -9,7 +9,7 @@
 @inject AlertServices Alerts
 @inject TranslatorService Translator
 @inject STTService STTService
-
+@implements IDisposable
 
 
 @if (isLoaded == false)
@@ -247,23 +247,35 @@
     }
     async Task StartRec()
     {
-        await STTService.StartRecognition();
+        await STTService.StartRecognition(true);
         StateHasChanged();
     }
+
     async Task StopRec()
     {
-        string result = await STTService.StopRecognition();
-        CurrentMessage = result;
+       await STTService.StopRecognition();    
         StateHasChanged();
+    }
+    
+    private void OnSTTResultDetected(object? sender, string text)
+    {     
+        CurrentMessage = text;
+        InvokeAsync(StateHasChanged);
     }
     public void FillTextField(string textToField)
     {
         CurrentMessage += textToField;
         StateHasChanged();
     }
-
+    public void Dispose()
+    {
+        // Отписываемся от события
+        STTService.RecognitionCompleted -= OnSTTResultDetected;
+        STTService.Dispose();
+    }
     protected override async Task OnInitializedAsync()
     {
+        STTService.RecognitionCompleted += OnSTTResultDetected;
         await Task.Delay(1000);
         isLoaded = true;
     }

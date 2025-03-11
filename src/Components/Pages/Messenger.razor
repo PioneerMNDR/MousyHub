@@ -1,6 +1,7 @@
 ﻿@page "/messenger"
 @using MousyHub.Classes.Misc
 @using MousyHub.Classes.Model
+@using MousyHub.Classes.Services.TTS
 @using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Model
@@ -14,6 +15,8 @@
 @inject AlertServices Alert
 @inject TranslatorService Translator
 @inject RAGService RAGService
+@inject TTSManagerService TTS
+@inject AudioService Audio
 @inject IJSRuntime JS
 
 
@@ -93,6 +96,7 @@
         await State.ClearAndNewChatHistory();
         isPaused = false;
         Main.RefreshWizardPage();
+        await TTS.InterruptProcessingAsync();
     }
     async Task CloseChat()
     {
@@ -100,8 +104,10 @@
         isCharSelectMode = true;
         Main.CloseDrawer();
         StateHasChanged();
+        await TTS.InterruptProcessingAsync();
         if (Provider.Status && isGenerating)
             await StopGeneration();
+
     }
 
     async Task RAG_Searching()
@@ -205,6 +211,7 @@
                 {
                     message = await State.ChatHistory.StreamLLMEditingMessage(messageResponse.Content, messageGuid);
                     await JS.InvokeVoidAsync("scrollToBottom", "chat");
+                    _ = TTS.ProcessStreamingText(messageResponse.Content, person.CharacterCard.KokoroVoice);
                     StateHasChanged();
                 });
             });
@@ -213,6 +220,7 @@
         {
             try
             {
+                _ = TTS.EndSentenceThread(person.CharacterCard.KokoroVoice);
                 await message.TranslateMessage(Translator);
             }
             catch (Exception ex)
@@ -290,6 +298,7 @@
         await Provider.LLModel.Abort();
         isGenerating = false;
         await State.ChatHistory.ClearIsGenerationBorder();
+        await TTS.InterruptProcessingAsync();
     }
     public void ReRenderState()
     {

@@ -1,3 +1,22 @@
-﻿
+﻿@using MousyHub.Classes.Services.TTS
+@using MousyHub.Models.Services
+@inject IStringLocalizer<Resource> Loc
+@inject KokoroService Kokoro
+@inject AudioService Audio
+@inject UploaderService Uploader
+
+<MudButton OnClick="Test">FESt</MudButton>
+
+
+@code{
+
+
+    async Task Test()
+    {
+        Kokoro.TryRunModel(Uploader.LoadFirstKokoroModelPath());
+        var res = await Kokoro.GetSpeak("The bright sun rose over the distant hills, casting a golden glow across the sleepy village", "af_bella");
+        Console.Beep();
+        _ = Audio.EnqueueAudioAsync(res);
+    }
 
 }

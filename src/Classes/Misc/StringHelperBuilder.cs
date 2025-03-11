@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using MousyHub.Models;
 using MousyHub.Models.Model;
+using System.Text.RegularExpressions;
 
 namespace MousyHub.Classes.Misc
 {
@@ -123,6 +124,13 @@ namespace MousyHub.Classes.Misc
                 return instruct.input_suffix + instruct.input_sequence + separator + request + instruct.output_suffix + instruct.output_sequence + separator;
             else
                 return request;
+        }
+        public static string RemoveAsterisks(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+                return text;
+
+            return Regex.Replace(text, @"\*+", "");
         }
         public static string ToLiteral(string input)
         {

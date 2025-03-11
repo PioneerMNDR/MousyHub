@@ -1,6 +1,7 @@
 ﻿using LLama.Common;
 using Microsoft.Extensions.Logging.Abstractions;
 using MousyHub.Classes.Misc;
+using MousyHub.Classes.Services.TTS;
 using MousyHub.Models.Abstractions;
 using MousyHub.Models.Misc;
 using MousyHub.Models.Model;
@@ -43,14 +44,16 @@ namespace MousyHub.Models.Services
         public event TaskBoolDelegate ConnectionEvent;
         public event Action ConnectionChangeEvent;
         private UploaderService UploaderService;
+        private KokoroService KokoroService;
         private RAGService RAG;
         //Chat completions options...
         public List<string> ModelList = new List<string>();
         public string SelectModel;
-        public ProviderService(UploaderService uploaderService, RAGService RAG)
+        public ProviderService(UploaderService uploaderService, RAGService RAG, KokoroService kokoroService)
         {
             SelectType = ConnectionsTypes.First();
             UploaderService = uploaderService;
+            KokoroService = kokoroService;
             this.RAG = RAG;
         }
 
@@ -70,6 +73,7 @@ namespace MousyHub.Models.Services
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
                     await TryRAGConnect(Settings.User.RAGOptions);
                     await TrySetAutoChatTemplate(Settings);
+                    KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());    
                     return await LLModel.Model();
                 case APIType.Native:
                     bool IsSuccessL = await ConnectLocal(Settings);
@@ -78,6 +82,7 @@ namespace MousyHub.Models.Services
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
                     await TryRAGConnect(Settings.User.RAGOptions);
                     await TrySetAutoChatTemplate(Settings);
+                    KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
                     return await LLModel.Model();
                 case APIType.Cloud:
                     bool IsSuccessC = await ConnectChatCompl(Settings.User.CloudBasedConfig.BaseUrl, Settings.User.CloudBasedConfig.APIKey);
@@ -85,6 +90,7 @@ namespace MousyHub.Models.Services
                         return "";
                     await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
                     await TryRAGConnect(Settings.User.RAGOptions);
+                    KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
                     break;
                 default:
                     break;

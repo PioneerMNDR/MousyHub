@@ -1,4 +1,5 @@
-﻿@using MousyHub.Models
+﻿@using MousyHub.Classes.Services.TTS
+@using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Services
 @using MousyHub.Models.Services.URLHandle
@@ -6,7 +7,7 @@
 @inject ProviderService Service
 @inject SettingsService Settings
 @inject AlertServices Alert
-
+@inject KokoroService Kokoro
 <MudGrid id="select-api">
     <MudItem md="10" xs="7">
         <MudSelect Label="Select API" Variant="Variant.Outlined" Value="Service.SelectType" ValueChanged="@((KeyValuePair<ProviderService.APIType, string> newValue)=>ValueSelectConnectionChange(newValue))" OpenIcon="@Icons.Material.Filled.Api">

@@ -367,6 +367,7 @@ MigrationBackup/
 *.json
 
 *.gguf
+*.onnx
 
 # Исключить файлы .json в папке default
 !default/*.json
@@ -378,5 +379,4 @@ MigrationBackup/
 *.wav
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-
 
