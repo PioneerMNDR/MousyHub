@@ -1,4 +1,4 @@
-﻿
+﻿using KokoroSharp;
 using HuggingfaceHub;
 using Microsoft.AspNetCore.Components;
 using NRedisStack.Search;
@@ -56,6 +56,20 @@ namespace MousyHub.Models.Services.URLHandle
             _ = Tick();
             downloadProgress.FileName = GGUF_FileName;
             var path = await HFDownloader.DownloadFileAsync(id, GGUF_FileName, progress: downloadProgress, localDir: UploaderService.EmbeddingModelsPath);
+            isBusy = false;
+            if (EndDownloadEvent != null)
+                EndDownloadEvent.Invoke(path, EventArgs.Empty);
+        }
+        public async Task DownloadKokoroModel(KModel model)
+        {
+            if (isBusy)
+            {
+                return;
+            }
+            isBusy = true;
+            _ = Tick();
+            downloadProgress.FileName = model.ToString();
+            var path = await KokoroDownloader.DownloadModelToDirectoryAsync(model, customDirectory: UploaderService.KokoroModelsPath, progress: downloadProgress);
             isBusy = false;
             if (EndDownloadEvent != null)
                 EndDownloadEvent.Invoke(path, EventArgs.Empty);

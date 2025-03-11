@@ -14,12 +14,14 @@ namespace MousyHub.Models.Services
         private readonly IConfiguration Configuration;
         public readonly string ModelsPath;
         public readonly string EmbeddingModelsPath;
+        public readonly string KokoroModelsPath;
 
         public UploaderService(IConfiguration configuration)
         {
             Configuration = configuration;
             ModelsPath = "/wwwroot/LocalModels/";
             EmbeddingModelsPath = configuration["EmbeddingModelsPath"] ?? "/wwwroot/LocalModels/EmbeddingModel/";
+            KokoroModelsPath = configuration["KokoroModelsPath"] ?? "/wwwroot/LocalModels/KokoroModels/";
             if (!Directory.Exists(ModelsPath))
             {
                 ModelsPath = Environment.CurrentDirectory + ModelsPath;
@@ -27,6 +29,10 @@ namespace MousyHub.Models.Services
             if (!Directory.Exists(EmbeddingModelsPath))
             {
                 EmbeddingModelsPath = Environment.CurrentDirectory + EmbeddingModelsPath;
+            }
+            if (!Directory.Exists(KokoroModelsPath))
+            {
+                KokoroModelsPath = Environment.CurrentDirectory + KokoroModelsPath;
             }
 
         }

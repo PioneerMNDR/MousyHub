@@ -32,13 +32,13 @@
 
     </MudStack>
     <MudDivider Class="my-3"></MudDivider>
-    <MudGrid >
-        <MudItem md="7">
+    <MudGrid>
+        <MudItem md="4">
             <MudGrid Justify="Justify.Center">
                 <MudItem md="12" Class="d-flex justify-center"><MudText Typo="Typo.h4"> Main LLM models</MudText></MudItem>
                 @foreach (var item in RecommendedModels)
                 {
-                    <MudItem md="6">
+                    <MudItem md="12">
                         <MudCard Class="ma-2 pa-1 rounded-xl" Outlined="true" Style="height: 240px; display: flex; flex-direction: column;">
                             <MudCardContent Style="flex: 1; overflow: hidden;">
                                 <MudText Typo="Typo.h5" GutterBottom>@item.Name</MudText>
@@ -57,10 +57,60 @@
                 }
             </MudGrid>
         </MudItem>
-        <MudItem md="5">
+        <MudItem md="4">
+            <MudGrid Justify="Justify.Center">
+                <MudItem md="12" Class="d-flex justify-center"> <MudText Typo="Typo.h4">Models for Kokoro TTS</MudText></MudItem>
+
+                @foreach (var item in KokoroDownloader.ModelFileNames)
+                {
+                    <MudItem md="12">
+                        <MudCard Class="ma-2 pa-1 rounded-xl" Outlined="true" Style="height: 240px; display: flex; flex-direction: column;">
+                            <MudCardContent Style="flex: 1; overflow: hidden;">
+                                <MudText Typo="Typo.h5" GutterBottom>@item.Value</MudText>
+
+                                @switch (item.Key)
+                                {
+                                    case KokoroSharp.KModel.float32:
+                                        <MudText Style="overflow-y: auto; height: 60px;">This model is used to voice characters. Precision: Full. Size: 310 MB</MudText>
+                                        <MudStack Row AlignItems="AlignItems.Baseline" Class="mt-3">
+                                            <MudText Typo="Typo.h6">Recommended RAM: </MudText>
+                                            <MudText Typo="Typo.h6" Color="Color.Success">0.5 Gb</MudText>
+                                        </MudStack>
+
+                                        break;
+                                    case KokoroSharp.KModel.float16:
+                                        <MudText Style="overflow-y: auto; height: 60px;">This model is used to voice characters. Precision: Half. Size: 169 MB</MudText>
+                                        <MudStack Row AlignItems="AlignItems.Baseline" Class="mt-3">
+
+                                            <MudText Typo="Typo.h6">Recommended RAM: </MudText>
+                                            <MudText Typo="Typo.h6" Color="Color.Success">0.3 Gb</MudText>
+                                        </MudStack>
+
+                                        break;
+                                    case KokoroSharp.KModel.int8:
+                                        <MudText Style="overflow-y: auto; height: 60px;">This model is used to voice characters. Precision: Low. Size: 88 MB</MudText>
+                                        <MudStack Row AlignItems="AlignItems.Baseline" Class="mt-3">
+
+                                            <MudText Typo="Typo.h6">Recommended RAM: </MudText>
+                                            <MudText Typo="Typo.h6" Color="Color.Success">0.1 Gb</MudText>
+                                        </MudStack>
+                                        break;
+                                }
+                            </MudCardContent>
+                            <MudCardActions Style="padding-top: 0;">
+                                <MudButton Class="rounded-xl" Variant="Variant.Outlined" Color="Color.Primary" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadKokoroModel(item.Key))">Download</MudButton>
+                            </MudCardActions>
+                        </MudCard>
+                    </MudItem>
+                }
+
+
+            </MudGrid>
+        </MudItem>
+        <MudItem md="4">
             <MudGrid Justify="Justify.Center">
                 <MudItem md="12" Class="d-flex justify-center"> <MudText Typo="Typo.h4">Models for RAG</MudText></MudItem>
-                <MudItem md="6">
+                <MudItem md="12">
                     <MudCard Class="ma-2 pa-1 rounded-xl" Outlined="true" Style="height: 240px; display: flex; flex-direction: column;">
                         <MudCardContent Style="flex: 1; overflow: hidden;">
                             <MudText Typo="Typo.h5" GutterBottom>nomic-embed-text</MudText>
@@ -72,13 +122,12 @@
                             </MudStack>
                         </MudCardContent>
                         <MudCardActions Style="padding-top: 0;">
-                            <MudButton Class="rounded-xl" Variant="Variant.Outlined" Color="Color.Info" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadEmbeddingModel("nomic-ai/nomic-embed-text-v1.5-GGUF","nomic-embed-text-v1.5.f32.gguf"))">Download</MudButton>
+                            <MudButton Class="rounded-xl" Variant="Variant.Outlined" Color="Color.Primary" Disabled="@HFService.isBusy" OnClick="@(()=>HFService.DownloadEmbeddingModel("nomic-ai/nomic-embed-text-v1.5-GGUF","nomic-embed-text-v1.5.f32.gguf"))">Download</MudButton>
                         </MudCardActions>
                     </MudCard>
                 </MudItem>
             </MudGrid>
-  
-    </MudItem>
+        </MudItem>
 
     </MudGrid>
 
@@ -97,6 +146,8 @@
         BestGPU = Diagnostic.GPUs.OrderByDescending(a => a.VRAM_GB).FirstOrDefault();
         HFService.DownloadTickEvent += ReRenderProgressBar;
     }
+
+
 
     private void ReRenderProgressBar(object? o, EventArgs e)
     {
