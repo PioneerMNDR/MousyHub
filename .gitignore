@@ -374,9 +374,10 @@ MigrationBackup/
 # Исключить файлы .json в любых поддиректориях внутри default
 !default/**/**/*.json
 
-
+*.onnx
 *.wav
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
 
 
