@@ -22,22 +22,24 @@ namespace MousyHub.Classes.Services.TTS
         private KokoroWavSynthesizer? TTS { get; set; }
         public bool IsRun { get; private set; }
 
-        public void TryRunModel(string modelPath)
+        public bool TryRunModel(string modelPath)
         {
             try
             {
                 if (IsRun && TTS!=null)
                 {
-                    return;
+                    return false;
                 }
                 TTS = new KokoroWavSynthesizer(modelPath);
        
                 IsRun = true;
+                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Failed run kokoro model: " + ex.Message);
                 IsRun = false;
+                return false;
             }
         }
 

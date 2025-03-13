@@ -1,5 +1,4 @@
 ﻿using LLama.Common;
-using Microsoft.Extensions.Logging.Abstractions;
 using MousyHub.Classes.Misc;
 using MousyHub.Classes.Services.TTS;
 using MousyHub.Models.Abstractions;
@@ -7,10 +6,8 @@ using MousyHub.Models.Misc;
 using MousyHub.Models.Model;
 using MousyHub.Models.Provider.KoboldCPP;
 using MousyHub.Models.Provider.LLama;
-using MousyHub.Models.Services.URLHandle;
 using MousyHub.Models.User;
-using SharpCompress.Common;
-using UglyToad.PdfPig.Graphics.Operations.SpecialGraphicsState;
+
 
 namespace MousyHub.Models.Services
 {
@@ -35,7 +32,7 @@ namespace MousyHub.Models.Services
         public ILanguageModel? LLModel;
         public Wizard Wizard { get; set; } = new Wizard();
 
- 
+
         public bool Status = false;
         private bool isLocalRun = false;
         public string MaxContextSize = "?";
@@ -57,47 +54,63 @@ namespace MousyHub.Models.Services
             this.RAG = RAG;
         }
 
-        public async Task<string> NewConnect(SettingsService Settings)
+        public async Task<string> NewConnect(SettingsService Settings, StepUserHintManager hintManager)
         {
             if (Status && LLModel != null)
             {
                 LLModel.Dispose();
             }
-
+            bool WizardStatus = false;
+            bool RAGStatus = false;
+            bool KokoroStatus = false;
+            bool LLMStatus = false;
+            string ModelName = string.Empty;
+            hintManager.ShowModules();
             switch (SelectType.Key)
             {
                 case APIType.KoboldCPP:
-                    bool IsSuccessK = await ConnectKoboldCPP(Settings.User.KoboldURL);
-                    if (!IsSuccessK)
+                    LLMStatus = await ConnectKoboldCPP(Settings.User.KoboldURL);
+                    if (!LLMStatus)
                         return "";
-                    await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
-                    await TryRAGConnect(Settings.User.RAGOptions);
+                    WizardStatus = await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
+                    RAGStatus = await TryRAGConnect(Settings.User.RAGOptions);
                     await TrySetAutoChatTemplate(Settings);
-                    KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());    
-                    return await LLModel.Model();
+                    KokoroStatus = KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
+                    ModelName = LLModel != null ? await LLModel.Model() : "";
+                    break;
                 case APIType.Native:
-                    bool IsSuccessL = await ConnectLocal(Settings);
-                    if (!IsSuccessL)
+                    LLMStatus = await ConnectLocal(Settings);
+                    if (!LLMStatus)
                         return "";
-                    await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
-                    await TryRAGConnect(Settings.User.RAGOptions);
+                    WizardStatus = await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
+                    RAGStatus = await TryRAGConnect(Settings.User.RAGOptions);
                     await TrySetAutoChatTemplate(Settings);
-                    KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
-                    return await LLModel.Model();
+                    KokoroStatus = KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
+                    ModelName = LLModel != null ? await LLModel.Model() : "";
+                    break;
                 case APIType.Cloud:
-                    bool IsSuccessC = await ConnectChatCompl(Settings.User.CloudBasedConfig.BaseUrl, Settings.User.CloudBasedConfig.APIKey);
-                    if (!IsSuccessC)
+                    LLMStatus = await ConnectCloud(Settings.User.CloudBasedConfig.BaseUrl, Settings.User.CloudBasedConfig.APIKey);
+                    if (!LLMStatus)
                         return "";
-                    await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
-                    await TryRAGConnect(Settings.User.RAGOptions);
-                    KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
+                    WizardStatus = await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
+                    RAGStatus = await TryRAGConnect(Settings.User.RAGOptions);
+                    KokoroStatus = KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
                     break;
                 default:
                     break;
             }
             await ConnectionEvent.Invoke(Status);
-        
-            return "";
+            hintManager.SwitchModule(StepUserHintManager.AIModuleType.LLM, LLMStatus);
+            hintManager.SwitchModule(StepUserHintManager.AIModuleType.RAG, RAGStatus);
+            hintManager.SwitchModule(StepUserHintManager.AIModuleType.KokoroTTS, KokoroStatus);
+            hintManager.SwitchModule(StepUserHintManager.AIModuleType.Wizard, WizardStatus);
+            if (LLMStatus)
+            {
+                hintManager.CloseGuide();
+                _ = hintManager.CloseAll();
+            }
+            
+            return ModelName;
         }
 
         public async Task CheckMainAPIStatus()
@@ -146,11 +159,11 @@ namespace MousyHub.Models.Services
                 {
                     settings.CurrentInstruct = bestChatTemplate;
                 }
-                if (settings.InstructList.Any(x=>x.LinkedModels!=null && x.LinkedModels.Contains(modelname)))
+                if (settings.InstructList.Any(x => x.LinkedModels != null && x.LinkedModels.Contains(modelname)))
                 {
-                    var linkedInstruct =  settings.InstructList.FirstOrDefault(x => x.LinkedModels!=null && x.LinkedModels.Contains(modelname));
+                    var linkedInstruct = settings.InstructList.FirstOrDefault(x => x.LinkedModels != null && x.LinkedModels.Contains(modelname));
                     if (linkedInstruct != null)
-                    settings.CurrentInstruct = linkedInstruct; Console.WriteLine("Choose linked chat template " + linkedInstruct.name);
+                        settings.CurrentInstruct = linkedInstruct; Console.WriteLine("Choose linked chat template " + linkedInstruct.name);
 
                 }
                 return true;
@@ -171,10 +184,10 @@ namespace MousyHub.Models.Services
             MaxContextSize = await MaxTokenCount();
             return Status;
         }
-        private async Task<bool> ConnectChatCompl(string URL, string APIKey)
+        private async Task<bool> ConnectCloud(string URL, string APIKey)
         {
             if (string.IsNullOrEmpty(URL) || string.IsNullOrEmpty(SelectModel))
-            {               
+            {
                 return false;
             }
             LLModel = new ChatCompletionProvider(URL, APIKey, SelectModel);
@@ -225,25 +238,26 @@ namespace MousyHub.Models.Services
 
 
         }
-      
-        public async Task<string> NewWizardConnect(Instruct instruct, UserState userState)
+
+        public async Task<bool> NewWizardConnect(Instruct instruct, UserState userState)
         {
             if (Status)
             {
                 Wizard.UpdateInstructions(LLModel, instruct, userState, UploaderService, (SelectType.Key is APIType.Cloud && userState.CloudBasedConfig.UseChatCompletions) ? true : false);
                 WizardStatus = true;
-                return "";
+                return true;
             }
-            return "";
+            return false;
         }
-        public async Task TryRAGConnect(RAGOptions options)
+        public async Task<bool> TryRAGConnect(RAGOptions options)
         {
             if (options.Enabled)
             {
                 string modelpath = UploaderService.LoadFirstEmbeddingModelPath();
-                RAG.TryRun(modelpath);
+                bool status = RAG.TryRun(modelpath);
+                return status;
             }
-
+            return false;
         }
 
 

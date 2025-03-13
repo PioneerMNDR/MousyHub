@@ -1,4 +1,5 @@
 ﻿@page "/"
+@using MousyHub.Classes.Misc
 @using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Model
@@ -14,13 +15,7 @@
 @inject ScreenSize SC;
 @inject SettingsService Settings
 @inject IStringLocalizer<Resource> Loc
-
-
 @implements IDisposable
-
-
-
-
 <CascadingValue Value="MainClass">
     @if (isTutorialMode)
     {
@@ -29,55 +24,59 @@
     @if (Settings.CurrentUserProfile == null)
     {
         <RegisterPage></RegisterPage>
-    }   
+    }
     else
     {
-    <MudTabs  @ref=Tabs Class="mainTab background-main" KeepPanelsAlive MinimumTabWidth="5vw" Centered Position="PositionTabs" PanelClass="mainPanels">
-        @if (Settings.User.HideDownloadPage==false)
-        {
+        <MudTabs @ref=Tabs Class="mainTab background-main" KeepPanelsAlive MinimumTabWidth="5vw" Centered Position="PositionTabs" PanelClass="mainPanels">
+            @if (Settings.User.HideDownloadPage == false)
+            {
                 <MudTabPanel Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Download" Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
                     <ModelDownloader></ModelDownloader>
                 </MudTabPanel>
-        }
-        <MudTabPanel Disabled="isTutorialMode" Text="@(!isMobile ? Loc["Provider"] : string.Empty)" Icon="@Icons.Material.Filled.Usb" BadgeDot BadgeColor="colorBagde" Style="width:30vw" OnClick="@(()=>isChatPageClick(false))" Class="provider-page-button">
-            <ChildContent>
-                <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab ">
-                    <ProviderPage></ProviderPage>
-                </MudContainer>
-            </ChildContent>
-        </MudTabPanel>
-            <MudTabPanel Text="@(!isMobile ? Loc["Messenger"] : string.Empty)" Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Message" Style="width:30vw" OnClick="@(()=>isChatPageClick(true))" UserAttributes="@(new Dictionary<string, object> { { "id", "messenger-page-button" } })">
-            <MudDrawerContainer>
-                @if (isFocusOnChatPage)
-                {
-
-                    <MudDrawer @bind-Open="@DrawerOpen" Anchor="Anchor" Width="@drawerWidth" Variant="drawerVariant" Elevation="1">
-                        <WizardPage @ref=wizardPage></WizardPage>
-                    </MudDrawer>
-                }
-
-                <div>
-                    <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
-                        <Messenger @ref=messengerPage></Messenger>
+            }
+            <MudTabPanel Disabled="isTutorialMode" Text="@(!isMobile ? Loc["Provider"] : string.Empty)" Icon="@Icons.Material.Filled.Usb" BadgeDot BadgeColor="colorBagde" Style="width:30vw" OnClick="@(()=>isChatPageClick(false))" Class="provider-page-button">
+                <ChildContent>
+                    <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab ">
+                        <ProviderPage></ProviderPage>
                     </MudContainer>
-                </div>
+                </ChildContent>
+            </MudTabPanel>
+            <MudTabPanel Text="@(!isMobile ? Loc["Messenger"] : string.Empty)" Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Message" Style="width:30vw" OnClick="@(()=>isChatPageClick(true))" UserAttributes="@(new Dictionary<string, object> { { "id", "messenger-page-button" } })">
+                <MudDrawerContainer>
+                    @if (isFocusOnChatPage)
+                    {
+                        <MudDrawer @bind-Open="@DrawerOpen" Anchor="Anchor" Width="@drawerWidth" Variant="drawerVariant" Elevation="1">
+                            <WizardPage @ref=wizardPage></WizardPage>
+                        </MudDrawer>
+                    }
 
-            </MudDrawerContainer>
-        </MudTabPanel>
+                    <div>
+                        <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
+                            <Messenger @ref=messengerPage></Messenger>
+                        </MudContainer>
+                    </div>
 
-            <MudTabPanel Text="@(!isMobile ? Loc["Settings"] : string.Empty)" Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Settings" Style="width:25vw" OnClick="@(()=>isChatPageClick(false))" UserAttributes="@(new Dictionary<string, object> { { "id", "settings-page-button" } })" >
-            <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
-                <SettingsPage></SettingsPage>
-            </MudContainer>
-        </MudTabPanel>
-       @* vvvv TUTORIAL PAGE vvvv *@
-@*         <MudTabPanel Icon="@Icons.Material.Filled.LocalLibrary"  Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
-            <TutorialPage isDebug></TutorialPage>
+                </MudDrawerContainer>
+            </MudTabPanel>
+
+            <MudTabPanel Text="@(!isMobile ? Loc["Settings"] : string.Empty)" Disabled="isTutorialMode" Icon="@Icons.Material.Filled.Settings" Style="width:25vw" OnClick="@(()=>isChatPageClick(false))" UserAttributes="@(new Dictionary<string, object> { { "id", "settings-page-button" } })">
+                <MudContainer MaxWidth=MaxWidth.Large Class="pt-5 pb-5 childTab">
+                    <SettingsPage></SettingsPage>
+                </MudContainer>
+            </MudTabPanel>
+            @* vvvv TUTORIAL PAGE vvvv *@
+            @*         <MudTabPanel Icon="@Icons.Material.Filled.LocalLibrary"  Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
+        <TutorialPage isDebug></TutorialPage>
         </MudTabPanel> *@
-        <MudTabPanel Icon="@Icons.Material.Filled.Category" Disabled="isTutorialMode" Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
-            <MainExtraPage></MainExtraPage>
-        </MudTabPanel>
-    </MudTabs>
+            <MudTabPanel Icon="@Icons.Material.Filled.Category" Disabled="isTutorialMode" Style="width:5vw" OnClick="@(()=>isChatPageClick(false))">
+                <MainExtraPage></MainExtraPage>
+            </MudTabPanel>
+        </MudTabs>
+
+        @if (UserHintManager!=null && UserHintManager.HideComponent == false)
+        {
+            <StepUserHintComponent Manager="UserHintManager"></StepUserHintComponent>
+        }
     }
 </CascadingValue>
 
@@ -108,7 +107,7 @@
     public bool isMobile { get; private set; } = false;
     public bool isFocusOnChatPage = false;
     public bool isTutorialMode { get; set; } = false;
-
+    public StepUserHintManager? UserHintManager { get; set; }
     public WizardPage wizardPage { get; set; }
     public Messenger messengerPage { get; set; }
     string BodyStyle = "radial-gradient(ellipse 100% 30% at bottom, color-mix(in oklab,var(--mud-palette-error) 20%,var(--mud-palette-background)) 0%,var(--mud-palette-background) 80%);";
@@ -119,15 +118,14 @@
     {
         MainClass = this;
         StateHasChanged();
-        var sc = await SC.GetScreenSize();
-        if (sc.Width <= 600)
+        isMobile = await SC.IsMobileAsync();
+        if (isMobile)
         {
-            isMobile = true;
             PositionTabs = Position.Bottom;
             drawerWidth = "70vw";
             drawerVariant = DrawerVariant.Responsive;
         }
-     
+        UserHintManager = new StepUserHintManager(Provider, Settings, isMobile);
         Provider.ConnectionEvent += new ProviderService.TaskBoolDelegate(ConnectChanged);
         await Provider.CheckMainAPIStatus();
     }
@@ -135,10 +133,10 @@
 
     public void ActivateTab(int index)
     {
-        Tabs.ActivatePanel(index,ignoreDisabledState:true);
+        Tabs.ActivatePanel(index, ignoreDisabledState: true);
     }
 
-  
+
     public void ToggleDrawer()
     {
         DrawerOpen = !DrawerOpen;

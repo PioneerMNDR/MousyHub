@@ -93,7 +93,7 @@
                                     @if (Settings.LocalModelsList.Count > 0)
                                     {
                                         <MudText>Model:</MudText>
-                                        <MudSelect @bind-Value=Settings.User.SelfInferenceConfig.ModelPath ToStringFunc="converter">
+                                        <MudSelect @bind-Value=Settings.User.SelfInferenceConfig.ModelPath TextChanged="RefreshStepGuide" ToStringFunc="converter">
                                             @foreach (var item in Settings.LocalModelsList)
                                             {
                                                 <MudSelectItem Value="item">@Path.GetFileName(item)</MudSelectItem>
@@ -180,9 +180,9 @@
                     break;
                 case ProviderService.APIType.Cloud:
                     <MudItem Class="d-flex align-content-center" md="6">
-                        <MudForm Class="w-100">
-                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
-                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey" Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
+                        <MudForm Class="w-100" >
+                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" TextChanged="RefreshStepGuide" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
+                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey" TextChanged="RefreshStepGuide" Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
                         </MudForm>
                     </MudItem>
                     <MudItem Class="px-5" md="6">
@@ -200,7 +200,7 @@
                             <MudFab OnClick="GetModelList" Disabled="string.IsNullOrEmpty(Settings.User.CloudBasedConfig.BaseUrl)" StartIcon="@Icons.Material.Filled.CloudDownload" Color="Color.Primary">Get models</MudFab>
                         </MudTooltip>
                         <MudDivider Vertical FlexItem Class="mx-3"></MudDivider>
-                        <MudAutocomplete MaxItems="int.MaxValue" SearchFunc="@AutocompleteSearch" Clearable Label="Select model" HelperText="Enter URL, click get models and select" Variant="Variant.Outlined" @bind-Value="Service.SelectModel" />
+                        <MudAutocomplete MaxItems="int.MaxValue" SearchFunc="@AutocompleteSearch" TextChanged="RefreshStepGuide" Clearable Label="Select model" HelperText="Enter URL, click get models and select" Variant="Variant.Outlined" @bind-Value="Service.SelectModel" />
                     </MudItem>
 
                     break;
@@ -236,24 +236,28 @@
     Func<string, string> converter = p => Path.GetFileName(p);
     InstructEditor InstructEditor;
 
+    private void RefreshStepGuide() => Main.UserHintManager?.RefreshStepGuide();
+
     private bool shouldShowInstructEditor =>
     !(Service.SelectType.Key is ProviderService.APIType.Cloud && Settings.User.CloudBasedConfig.UseChatCompletions);
 
     private async Task ConnectionChanged()
     {
         isLoading = true;
-        ModelName = await Service.NewConnect(Settings);
+        ModelName = await Service.NewConnect(Settings,Main.UserHintManager);
         isLoading = false;
         if (InstructEditor != null && Service.SelectType.Key is not ProviderService.APIType.Cloud)
         {
             InstructEditor.ReRenderState();
         }
+        RefreshStepGuide();
 
     }
     private void ValueSelectConnectionChange(KeyValuePair<ProviderService.APIType, string> newValue)
     {
         Service.SelectType = newValue;
         Service.ChangeConnectionType();
+        RefreshStepGuide();
     }
 
     bool isShowPassword = false;
@@ -295,6 +299,7 @@
         {
             Alert.SuccessAlert("Models loaded!");
         }
+        RefreshStepGuide();
         StateHasChanged();
     }
 
