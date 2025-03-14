@@ -208,10 +208,10 @@
                 }
 
                 await InvokeAsync(async () =>
-                {
+                {       
                     message = await State.ChatHistory.StreamLLMEditingMessage(messageResponse.Content, messageGuid);
-                    await JS.InvokeVoidAsync("scrollToBottom", "chat");
                     _ = TTS.ProcessStreamingText(messageResponse.Content, person.CharacterCard.KokoroVoice);
+                    await JS.InvokeVoidAsync("scrollToBottom", "chat");
                     StateHasChanged();
                 });
             });
@@ -220,7 +220,7 @@
         {
             try
             {
-                _ = TTS.EndSentenceThread(person.CharacterCard.KokoroVoice);
+                TTS.EndSentenceThread();
                 await message.TranslateMessage(Translator);
             }
             catch (Exception ex)

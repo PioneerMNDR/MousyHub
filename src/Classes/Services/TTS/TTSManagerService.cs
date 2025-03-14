@@ -29,8 +29,9 @@ namespace MousyHub.Classes.Services.TTS
 
 
         private CancellationTokenSource _processingCts = new CancellationTokenSource();
-        private List<KokoroSentence> Sentences = new List<KokoroSentence>();
+        private List<KokoroSentence> BufferSentences = new List<KokoroSentence>();
         private string Buffer { get; set; }
+
         bool NarratorSequence = false;
         public async Task InterruptProcessingAsync()
         {
@@ -68,13 +69,15 @@ namespace MousyHub.Classes.Services.TTS
             try
             {
                 CancellationToken token = _processingCts.Token;
+          
                 Buffer += newText;
-
+             
                 // Parse the text and get only new sentences
-                var newSentences = await ParseTextAndGetNewSentences(Buffer, token);
+                var newSentences =  ParseTextAndGetNewSentences(Buffer, token);
 
                 // Only speak these new sentences
                 await SpeakSentencesList(newSentences, char_voice_name, token);
+              
             }
             catch (OperationCanceledException)
             {
@@ -86,7 +89,7 @@ namespace MousyHub.Classes.Services.TTS
             }
         }
 
-        private async Task<List<KokoroSentence>> ParseTextAndGetNewSentences(string text, CancellationToken token)
+        private List<KokoroSentence> ParseTextAndGetNewSentences(string text, CancellationToken token)
         {
             text = text.Replace("\r\n", " ").Replace("\n", " ");
             string[] parts = text.SplitWithDefaultSeparators();
@@ -95,7 +98,7 @@ namespace MousyHub.Classes.Services.TTS
             foreach (string part in parts)
             {
                 // Use a more robust way to check if this sentence already exists
-                if (!Sentences.Any(x => x.Text.Equals(part, StringComparison.Ordinal)))
+                if (!BufferSentences.Any(x => x.Text.Equals(part, StringComparison.Ordinal)))
                 {
                     var newSent = new KokoroSentence(part, false);
                     if (newSent.textMarkerType is KokoroSentence.TextMarkerType.StartOnly)
@@ -105,7 +108,7 @@ namespace MousyHub.Classes.Services.TTS
                     if (NarratorSequence && newSent.textMarkerType is KokoroSentence.TextMarkerType.EndOnly)
                         NarratorSequence = false;
 
-                    Sentences.Add(newSent);
+                    BufferSentences.Add(newSent);
                     newSentences.Add(newSent);
                 }
             }
@@ -152,10 +155,10 @@ namespace MousyHub.Classes.Services.TTS
             {
                 CancellationToken token = _processingCts.Token;
                 NarratorSequence = false;
-                Sentences.Clear();
+                BufferSentences.Clear();
 
                 // Parse the full text and get all sentences (they're all new since we cleared the collection)
-                var allSentences = await ParseTextAndGetNewSentences(fullText, token);
+                var allSentences = ParseTextAndGetNewSentences(fullText, token);
 
                 // Speak all sentences using our new method
                 await SpeakSentencesList(allSentences, char_voice_name, token);
@@ -170,28 +173,23 @@ namespace MousyHub.Classes.Services.TTS
             }
         }
 
-        public async Task EndSentenceThread(string char_voice_name)
+        public void EndSentenceThread()
         {
             if (_settingsService.User.TTSOptions.Enabled == false)
                 return;
 
             try
-            {
-                // Parse any remaining text in buffer that might not have been processed yet
-                var finalSentences = await ParseTextAndGetNewSentences(Buffer, _processingCts.Token);
-
-                // Only process these new sentences that were just parsed
-                if (finalSentences.Any())
+            {          
+                // Очищаем всё
+                NarratorSequence = false;
+                if (BufferSentences.Count > 30)
                 {
-                    await SpeakSentencesList(finalSentences, char_voice_name, _processingCts.Token);
+                    BufferSentences.Clear();
                 }
 
-                // Clean up everything
-                NarratorSequence = false;
-                Sentences.Clear();
                 Buffer = string.Empty;
 
-                Console.WriteLine("Поток предложений завершен");
+                Console.WriteLine("Поток предложений успешно завершен");
             }
             catch (Exception ex)
             {

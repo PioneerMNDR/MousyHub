@@ -44,7 +44,8 @@ namespace MousyHub.Models.Services
             LoadDefault();
             uploaderService.settingsService = this;
             this.alertServices = alertServices;
-            _providerServices = providerServices;     
+            _providerServices = providerServices;
+            Console.Beep();
         }
 
 

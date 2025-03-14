@@ -23,17 +23,19 @@ namespace MousyHub.Classes.Services.TTS
         private KokoroWavSynthesizer? TTS { get; set; }
         public bool IsRun { get; private set; }
 
-        public bool TryRunModel(string modelPath)
+        public async Task<bool> TryRunModel(string modelPath)
         {
             try
             {
-                if (IsRun && TTS!=null)
+                if (IsRun && TTS != null)
                 {
                     return false;
                 }
-                TTS = new KokoroWavSynthesizer(modelPath);
+
+     
+                TTS = await Task.Run(() => new KokoroWavSynthesizer(modelPath));
                 Debug.WriteLine("Kokoro loaded: " + modelPath);
-       
+
                 IsRun = true;
                 return true;
             }

@@ -60,12 +60,14 @@ namespace MousyHub.Models.Services
             {
                 LLModel.Dispose();
             }
+    
             bool WizardStatus = false;
             bool RAGStatus = false;
             bool KokoroStatus = false;
             bool LLMStatus = false;
             string ModelName = string.Empty;
             hintManager.ShowModules();
+
             switch (SelectType.Key)
             {
                 case APIType.KoboldCPP:
@@ -75,7 +77,7 @@ namespace MousyHub.Models.Services
                     WizardStatus = await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
                     RAGStatus = await TryRAGConnect(Settings.User.RAGOptions);
                     await TrySetAutoChatTemplate(Settings);
-                    KokoroStatus = KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
+                    KokoroStatus = await KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
                     ModelName = LLModel != null ? await LLModel.Model() : "";
                     break;
                 case APIType.Native:
@@ -85,7 +87,7 @@ namespace MousyHub.Models.Services
                     WizardStatus = await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
                     RAGStatus = await TryRAGConnect(Settings.User.RAGOptions);
                     await TrySetAutoChatTemplate(Settings);
-                    KokoroStatus = KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
+                    KokoroStatus = await KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
                     ModelName = LLModel != null ? await LLModel.Model() : "";
                     break;
                 case APIType.Cloud:
@@ -94,7 +96,7 @@ namespace MousyHub.Models.Services
                         return "";
                     WizardStatus = await NewWizardConnect(Settings.CurrentInstruct, Settings.User);
                     RAGStatus = await TryRAGConnect(Settings.User.RAGOptions);
-                    KokoroStatus = KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
+                    KokoroStatus = await KokoroService.TryRunModel(UploaderService.LoadFirstKokoroModelPath());
                     break;
                 default:
                     break;
@@ -254,7 +256,7 @@ namespace MousyHub.Models.Services
             if (options.Enabled)
             {
                 string modelpath = UploaderService.LoadFirstEmbeddingModelPath();
-                bool status = RAG.TryRun(modelpath);
+                bool status = await RAG.TryRunAsync(modelpath);
                 return status;
             }
             return false;
