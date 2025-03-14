@@ -1,4 +1,4 @@
-﻿@using MousyHub.Models
+﻿ @using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Model
 @using MousyHub.Models.Services
@@ -138,7 +138,7 @@
                 </MudItem>
                 <MudItem md="4">
                     <MudTooltip Text="Will the voice be divided into the character's voice and the narrator's voice if the speech is in the third person">
-                        <MudSwitch @bind-Value=Settings.User.TTSOptions.SplitVoice Color="Color.Primary" Label="Split voice"></MudSwitch>
+                        <MudSwitch @bind-Value=Settings.User.TTSOptions.SplitVoice Color="Color.Primary" Label="Split voice (beta)"></MudSwitch>
                     </MudTooltip>
                 </MudItem>
                 @if (Settings.User.TTSOptions.SplitVoice)

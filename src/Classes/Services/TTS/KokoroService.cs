@@ -3,6 +3,7 @@ using KokoroSharp.Core;
 using KokoroSharp.Processing;
 using KokoroSharp.Utilities;
 using MousyHub.Classes.Misc;
+using System.Diagnostics;
 using static MousyHub.Models.Services.URLHandle.HFDownloaderService;
 
 namespace MousyHub.Classes.Services.TTS
@@ -31,6 +32,7 @@ namespace MousyHub.Classes.Services.TTS
                     return false;
                 }
                 TTS = new KokoroWavSynthesizer(modelPath);
+                Debug.WriteLine("Kokoro loaded: " + modelPath);
        
                 IsRun = true;
                 return true;
@@ -48,9 +50,15 @@ namespace MousyHub.Classes.Services.TTS
             if (IsRun) 
             {
                 text = StringHelperBuilder.RemoveAsterisks(text);
+                if (!IsValidForTTS(text))
+                {
+                    Console.WriteLine("Skip kokoro text: " + text);
+                    return Array.Empty<byte>();
+                }
+
                 var voice = KokoroVoiceManager.GetVoice(KokoroVoice);
                 var bytes = await TTS.SynthesizeAsync(text, voice);
-              
+
                 return bytes;
             }
             return Array.Empty<byte>();       
@@ -59,6 +67,23 @@ namespace MousyHub.Classes.Services.TTS
         public List<KokoroVoice> GetVoices()
         {
             return KokoroVoiceManager.Voices;
+        }
+
+
+        private bool IsValidForTTS(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return false;
+
+            // Проверка на одиночный символ
+            if (text.Trim().Length <= 1)
+                return false;
+
+            // Проверка, что текст не состоит только из специальных символов
+            if (text.All(c => !char.IsLetterOrDigit(c)))
+                return false;
+
+            return true;
         }
 
     }

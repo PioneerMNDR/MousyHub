@@ -83,7 +83,6 @@
     <Folder Include="wwwroot\Cards\" />
     <Folder Include="wwwroot\chatHistory\" />
     <Folder Include="wwwroot\LocalModels\EmbeddingModel\" />
-    <Folder Include="wwwroot\LocalModels\KokoroModels\" />
     <Folder Include="wwwroot\MudThemes\" />
     <Folder Include="wwwroot\default\Grammar\" />
   </ItemGroup>

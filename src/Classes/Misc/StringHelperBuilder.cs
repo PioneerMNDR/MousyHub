@@ -5,6 +5,94 @@ using System.Text.RegularExpressions;
 
 namespace MousyHub.Classes.Misc
 {
+    static class StringExtensions
+    {
+        public static string[] SplitWithDefaultSeparators(this string text)
+        {
+            string[] separators = GenerateSeparatorVariations();
+            return text.SplitKeepSeparators(separators);
+        }
+        public static string[] GenerateSeparatorVariations(params string[] baseSeparators)
+        {
+            // Базовые символы, которые будут использоваться как основа
+            char[] baseChars = { '.', '!', '?', ':' };
+
+            // Дополнительные элементы, которые могут следовать за базовым символом
+            string[] additions = { " ", "\" ", "*", "'" };
+
+            string[] specChars = { ",* " };
+
+            // Специальные комбинации для многоточия
+            string[] ellipsisAdditions = { " ", "*", "\"" };
+
+            List<string> allVariations = new List<string>();
+
+            // Обрабатываем базовые символы
+            foreach (char baseChar in baseChars)
+            {
+                // Добавляем стандартные комбинации для каждого базового символа
+                foreach (string addition in additions)
+                {
+                    allVariations.Add(baseChar + addition);
+                }
+
+                // Добавляем специальную обработку для многоточия, если базовый символ - точка
+                if (baseChar == '.')
+                {
+                    foreach (string addition in ellipsisAdditions)
+                    {
+                        allVariations.Add("..." + addition);
+                    }
+                }
+            }
+            foreach (var item in specChars)
+            {
+                allVariations.Add(item);
+            }
+
+            return allVariations.ToArray();
+        }
+        public static string[] SplitKeepSeparators(this string s, params string[] separators)
+        {
+            if (s == null) throw new ArgumentNullException("s");
+            if (s.Length == 0) return new string[0];
+
+            var result = new List<string>();
+            int startIndex = 0;
+
+            while (startIndex < s.Length)
+            {
+                int earliestIndex = -1;
+                string earliestSeparator = null;
+
+                foreach (var separator in separators)
+                {
+                    int index = s.IndexOf(separator, startIndex);
+                    if (index != -1 && (earliestIndex == -1 || index < earliestIndex))
+                    {
+                        earliestIndex = index;
+                        earliestSeparator = separator;
+                    }
+                }
+
+                if (earliestIndex == -1)
+                {
+                    // Нет больше разделителей - текст не заканчивается разделителем,
+                    // поэтому мы не добавляем оставшуюся часть
+                    break;
+                }
+
+                // Добавляем предложение вместе с разделителем
+                string currentSentence = s.Substring(startIndex, earliestIndex - startIndex + earliestSeparator.Length).Trim();
+                result.Add(currentSentence);
+
+                startIndex = earliestIndex + earliestSeparator.Length;
+            }
+    
+            return result.ToArray();
+        }
+
+    }
     public static class StringHelperBuilder
     {
 
