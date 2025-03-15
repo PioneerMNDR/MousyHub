@@ -38,6 +38,7 @@ namespace MousyHub.Models.Services
         public string MaxContextSize = "?";
         public bool WizardStatus = false;
         public delegate Task TaskBoolDelegate(bool status);
+
         public event TaskBoolDelegate ConnectionEvent;
         public event Action ConnectionChangeEvent;
         private UploaderService UploaderService;

@@ -22,7 +22,7 @@ namespace MousyHub.Models.User
         public RAGOptions RAGOptions { get; set; } =  new RAGOptions();
         public CloudBasedConfig CloudBasedConfig { get; set; } = new CloudBasedConfig();
         public TTSOptions TTSOptions { get; set; } = new TTSOptions();
-        public int CurrentMaxToken { get; set; } = 250;
+        public int CurrentMaxToken { get; set; } = 300;
         public int CurrentContextLength { get; set; } = 4096;
         public bool PauseBeforeGenerating { get; set; } = false;
         public bool AutoSummarize { get; set; } = true;
@@ -32,7 +32,7 @@ namespace MousyHub.Models.User
         public bool AnswerAssistant { get; set; } = false;
         public bool SquareAvatars { get; set; } = false;
         public bool HideNSFWPicture { get; set; } = false;
-
+        public bool VoiceMode { get; set; } = false;
         public bool HideDownloadPage { get; set; } = false;
         private bool AttemptHideDownloadPage { get; set; } = false;
         public bool GenerateShortDesOnImport { get; set; } = true;

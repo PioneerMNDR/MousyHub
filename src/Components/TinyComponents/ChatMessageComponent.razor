@@ -136,11 +136,11 @@
         {
             if (Message.Owner.IsUser)
             {
-                _ = TTS.ProcessFullText(Message.Content, Settings.User.TTSOptions.UserKokoroVoice);
+                 await TTS.ProcessFullText(Message.Content, Settings.User.TTSOptions.UserKokoroVoice);
             }
             else
             {
-                _ = TTS.ProcessFullText(Message.Content, Message.Owner.CharacterCard.KokoroVoice);
+                await TTS.ProcessFullText(Message.Content, Message.Owner.CharacterCard.KokoroVoice);
             }
 
         }      

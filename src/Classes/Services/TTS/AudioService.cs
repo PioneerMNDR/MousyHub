@@ -10,10 +10,11 @@
     using System.Diagnostics;
     using System.Threading;
     using System.Threading.Tasks;
-
+    using static MousyHub.Models.ChatState;
 
     public class AudioService : IAsyncDisposable
     {
+        public event TaskDelegate QueueEmptyEvent;
         private readonly IJSRuntime _jsRuntime;
         private readonly Queue<AudioQueueItem> _audioQueue = new Queue<AudioQueueItem>();
         private bool _isPlaying = false;
@@ -22,20 +23,33 @@
         private readonly SemaphoreSlim _queueSemaphore = new SemaphoreSlim(1, 1);
         private bool _isProcessingQueue = false;
         private readonly object _processingLock = new object();
+
+        private Timer _silenceDetectionTimer;
+        private readonly object _timerLock = new object();
+        private const int SILENCE_THRESHOLD_MS = 500; // Порог тишины (настройте по необходимости)
+
         SettingsService _settings;
         public AudioService(IJSRuntime jsRuntime, SettingsService settings)
         {
             _jsRuntime = jsRuntime;
             _settings = settings;
+            InitializeTimer();
         }
 
         public ValueTask DisposeAsync()
         {
             _queueSemaphore.Dispose();
             _currentPlaybackCts?.Dispose();
+            _silenceDetectionTimer?.Dispose();
             return ValueTask.CompletedTask;
         }
-
+        private void InitializeTimer()
+        {
+            _silenceDetectionTimer = new Timer(_ =>
+            {
+                QueueEmptyEvent?.Invoke();
+            }, null, Timeout.Infinite, Timeout.Infinite);
+        }
         public async Task EnqueueAudioAsync(byte[] rawAudioData, string mimeType = "audio/wav")
         {
             if (rawAudioData == null || rawAudioData.Length == 0)
@@ -50,6 +64,10 @@
             await _queueSemaphore.WaitAsync();
             try
             {
+                lock (_timerLock)
+                {
+                    _silenceDetectionTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                }
                 var queueItem = new AudioQueueItem(wavData, "audio/wav");
                 _audioQueue.Enqueue(queueItem);
 
@@ -129,6 +147,14 @@
                                 if (_audioQueue.Count > 0 && _audioQueue.Peek() == currentItem)
                                 {
                                     _audioQueue.Dequeue();
+                                    if (_audioQueue.Count == 0)
+                                    {
+                                        lock (_timerLock)
+                                        {
+                                            _silenceDetectionTimer.Change(SILENCE_THRESHOLD_MS, Timeout.Infinite);
+                                        }
+                                    }
+
                                 }
                             }
                             finally
@@ -155,7 +181,7 @@
             {
                 lock (_processingLock)
                 {
-                    _isProcessingQueue = false;
+                    _isProcessingQueue = false;                   
                 }
             }
         }
@@ -192,7 +218,7 @@
                 Debug.WriteLine($"Аудио размер: {audioData.Length} байт, MIME: {mimeType}, Скорость воспроизведения: {playbackRate}, Громкость: {volume}"); // Audio size: {audioData.Length} bytes, MIME: {mimeType}, Playback speed: {playbackRate}, Volume: {volume}
 
                 // Передаем playbackRate и volume в JavaScript // Pass playbackRate and volume to JavaScript
-                var audioId = await _jsRuntime.InvokeAsync<int>("playAudio", cancellationToken, base64String, mimeType, playbackRate, volume);
+                var audioId = await _jsRuntime.InvokeAsync<int>("playAudio", cancellationToken, base64String, mimeType, playbackRate, volume, _settings.User.VoiceMode);
 
                 // Ожидаем завершения воспроизведения или отмены // Wait for playback completion or cancellation
                 var completionSource = new TaskCompletionSource<bool>();
@@ -272,15 +298,21 @@
             await _queueSemaphore.WaitAsync();
             try
             {
+                bool Elements_Existed = false;
                 // Оставляем текущий элемент, удаляем остальные // Keep the current item, remove the rest
                 if (_audioQueue.Count > 0)
                 {
-                    var currentItem = _audioQueue.Dequeue();
+                    Elements_Existed = true;
+                     var currentItem = _audioQueue.Dequeue();
                     _audioQueue.Clear();
                     if (_isPlaying && !_isPaused)
                     {
                         _audioQueue.Enqueue(currentItem);
                     }
+                }
+                if (_audioQueue.Count == 0 && Elements_Existed)
+                {
+                    QueueEmptyEvent?.Invoke();
                 }
             }
             finally

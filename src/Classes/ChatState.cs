@@ -17,6 +17,10 @@ namespace MousyHub.Models
         public List<Person> AllPersons { get; set; } = new List<Person>();
 
         public Person NextPerson;
+        public delegate Task TaskDelegate();
+
+        public event TaskDelegate StartGenerationEvent;
+        public event TaskDelegate EndGenerationEvent;
 
 
 
@@ -178,6 +182,14 @@ namespace MousyHub.Models
             }
         }
         
+        public async Task StartGenerationEventRun()
+        {
+            StartGenerationEvent?.Invoke();
+        }
+        public async Task EndGenerationEventRun()
+        {
+            EndGenerationEvent?.Invoke();
+        }
         public void AddPerson(Person person)
         {
             if (AllPersons.Contains(person) == false)

@@ -1,4 +1,5 @@
-﻿using MousyHub.Classes.Misc;
+﻿using Microsoft.KernelMemory.Pipeline.Queue;
+using MousyHub.Classes.Misc;
 using MousyHub.Models.Services;
 using System;
 using System.Diagnostics;
@@ -30,6 +31,7 @@ namespace MousyHub.Classes.Services.TTS
 
         private CancellationTokenSource _processingCts = new CancellationTokenSource();
         private List<KokoroSentence> BufferSentences = new List<KokoroSentence>();
+        public bool IsQueued=false;
         private string Buffer { get; set; }
 
         bool NarratorSequence = false;
@@ -55,7 +57,7 @@ namespace MousyHub.Classes.Services.TTS
                 // Очистка очереди аудио
                 await _audioService.StopAllAsync();
                 await _audioService.ClearQueueAsync();
-
+                    IsQueued = false;
                 Debug.WriteLine("Обработка текста прервана");
             }
         }
@@ -74,7 +76,7 @@ namespace MousyHub.Classes.Services.TTS
              
                 // Parse the text and get only new sentences
                 var newSentences =  ParseTextAndGetNewSentences(Buffer, token);
-
+                IsQueued = true;
                 // Only speak these new sentences
                 await SpeakSentencesList(newSentences, char_voice_name, token);
               
@@ -156,12 +158,13 @@ namespace MousyHub.Classes.Services.TTS
                 CancellationToken token = _processingCts.Token;
                 NarratorSequence = false;
                 BufferSentences.Clear();
-
+                IsQueued = true;
                 // Parse the full text and get all sentences (they're all new since we cleared the collection)
                 var allSentences = ParseTextAndGetNewSentences(fullText, token);
 
                 // Speak all sentences using our new method
                 await SpeakSentencesList(allSentences, char_voice_name, token);
+                IsQueued = false;
             }
             catch (OperationCanceledException)
             {
@@ -186,7 +189,7 @@ namespace MousyHub.Classes.Services.TTS
                 {
                     BufferSentences.Clear();
                 }
-
+                IsQueued = false;
                 Buffer = string.Empty;
 
                 Console.WriteLine("Поток предложений успешно завершен");

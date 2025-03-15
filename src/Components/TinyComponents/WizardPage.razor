@@ -220,7 +220,8 @@
 
     <MudPaper Class="ma-3">
         <MudStack Wrap="Wrap.Wrap" Row>
-            <MudSwitch Class="ma-2" @bind-Value=Settings.User.PauseBeforeGenerating Color="Color.Info" Label="Pause before generation" title="Bot, will wait for your confirmation after the answer of other bot."></MudSwitch> 
+            <MudSwitch Class="ma-2" @bind-Value=Settings.User.PauseBeforeGenerating Color="Color.Info" Label="Pause before generation" title="Bot, will wait for your confirmation after the answer of other bot."></MudSwitch>
+            <MudSwitch Class="ma-2" @bind-Value=Settings.User.VoiceMode Color="Color.Info" Label="Voice mod" ></MudSwitch>
         </MudStack>
     </MudPaper>
 
@@ -251,7 +252,7 @@
     public void ReRender()
     {
 
-        StateHasChanged();
+       InvokeAsync(StateHasChanged);
         if (_container != null)
         {
             _container.Refresh();

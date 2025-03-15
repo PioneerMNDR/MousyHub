@@ -27,7 +27,8 @@ namespace MousyHub.Models.Model
         public string last_system_sequence { get; set; }
         public string name { get; set; }
 
-        public bool forWizard { get; set; } = false;
+        public string jailbreak_promt { get; set; } 
+
         public List<string> LinkedModels { get; set; }
         public void CloneInList(List<Instruct> instructs)
         {

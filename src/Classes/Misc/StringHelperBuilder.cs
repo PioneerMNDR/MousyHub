@@ -222,7 +222,10 @@ namespace MousyHub.Classes.Misc
         }
         public static string ToLiteral(string input)
         {
-
+            if (input is null)
+            {
+                return input;
+            }
             return Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(input, false);
         }
 

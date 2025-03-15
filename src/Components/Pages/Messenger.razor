@@ -55,6 +55,7 @@
     public Main Main { get; set; }
     public CharCard EditingChar = null;
     private Chat ChatPage;
+
     protected override async Task OnInitializedAsync()
     {
         Uploader.ReloadCardEvent += LoadCards;
@@ -129,7 +130,7 @@
     public async Task StartGeneration(Person person, bool Force = false)
     {
         Main.RefreshWizardPage();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
         if (person.IsUser)
         {
             return;
@@ -161,7 +162,7 @@
             else
                 Alert.SuccessAlert("Summarized!");
 
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
 
         if (State.NextPerson != null && State.NextPerson.IsUser == false && State.NextPerson != person)
@@ -179,9 +180,9 @@
         {
             var stringResp = await State.AnswerAssistant();
             ChatPage.FastAnswers = Util.ExtractFastAnswers(stringResp).ToList();
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
 
@@ -192,9 +193,10 @@
         await JS.InvokeVoidAsync("initializeScrollTracker", "chat");
         await JS.InvokeVoidAsync("resetUserScroll");
         isGenerating = true;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
         Message? message = null;
         string stop_seq = Settings.CurrentInstruct.stop_sequence + StringHelperBuilder.TagPlaceholder(",{{user}}:,{{char}}:", State.ChatHistory.MainUser.Name, State.ChatHistory.MainCharacter.Name);
+        await State.StartGenerationEventRun();
         await Task.Run(async () =>
         {
             await Provider.LLModel.GenerateStreamTextAsync(promt, Settings.CurrentGenerationConfig, Settings.User.CurrentMaxToken, Settings.User.CurrentContextLength, stop_seq, person.Key, onTokenReceived: async messageResponse =>
@@ -212,7 +214,7 @@
                     message = await State.ChatHistory.StreamLLMEditingMessage(messageResponse.Content, messageGuid);
                     _ = TTS.ProcessStreamingText(messageResponse.Content, person.CharacterCard.KokoroVoice);
                     await JS.InvokeVoidAsync("scrollToBottom", "chat");
-                    StateHasChanged();
+                    await InvokeAsync(StateHasChanged);
                 });
             });
         });
@@ -226,6 +228,10 @@
             catch (Exception ex)
             {
                 Alert.ErrorAlert("A translator error occurred, try changing your translation provider");
+            }
+            finally
+            {
+                await State.EndGenerationEventRun();
             }
 
         }

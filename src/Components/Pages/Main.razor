@@ -140,7 +140,7 @@
     public void ToggleDrawer()
     {
         DrawerOpen = !DrawerOpen;
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
         wizardPage.ReRender();
 
     }
@@ -148,13 +148,13 @@
     public void RefreshWizardPage()
     {
         wizardPage?.ReRender();
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
 
     }
     public void CloseDrawer()
     {
         DrawerOpen = false;
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
 
     }
     public void ReRenderState(object sender, EventArgs e)
