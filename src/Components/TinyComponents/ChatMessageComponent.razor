@@ -13,14 +13,18 @@
 
     </MudAnimate>
     <MudGrid Class="mt-1 mes1" Spacing="0">
-        <MudItem md="1" xs="2">
-            <MudAvatar Class="mt-2 cursor-pointer" Size="@(Main.isMobile ? Size.Medium :Size.Large)" Elevation="2" Rounded="Settings.User.SquareAvatars">
-                @{
-                    var imageSrc = Convert.ToBase64String(Message.Owner.Avatar);
-                }
-                <MudImage @onclick="@(()=>ClickAvatar.InvokeAsync(imageSrc))" Fluid Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
-            </MudAvatar>
-        </MudItem>
+        @if (!NoAvatar)
+    {
+            <MudItem md="1" xs="2">
+                <MudAvatar Class="mt-2 cursor-pointer" Size="@(Main.isMobile ? Size.Medium :Size.Large)" Elevation="2" Rounded="Settings.User.SquareAvatars">
+                    @{
+                        var imageSrc = Convert.ToBase64String(Message.Owner.Avatar);
+                    }
+                    <MudImage @onclick="@(()=>ClickAvatar.InvokeAsync(imageSrc))" Fluid Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
+                </MudAvatar>
+            </MudItem>
+    }
+   
         <MudItem md="11" xs="10">
             <div class="d-flex align-center">
                 <MudText Color="Color.Tertiary">@Message.Owner.Name</MudText>
@@ -31,24 +35,28 @@
                 {
                     <MudIcon Icon="@Icons.Material.Filled.CleaningServices" Color="Color.Default" Size="Size.Small" Title="This messages is optimized(summarized)"></MudIcon>
                 }
-                <div style="margin-left:auto">
-                    <MudStack Row Justify="Justify.FlexEnd" Spacing="0">
-                        <MudIconButton Size="Size.Small" OnClick="@(()=>{isEditing=true;Oldmessage=Message;})" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
-                        <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(()=>{DeleteEvent.InvokeAsync(Message);})"></MudIconButton>
-                        @if (TTS.ReadyToUse)
-                        {
-                           <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlayCircle" OnClick="PlayTTSMessage"></MudIconButton>
-                        }                     
-                        @if (Chat.ChatHistory.Messages.First() == Message && Chat.ChatHistory.Alt_greetings != null && Chat.ChatHistory.Alt_greetings.Length > 0)
-                        {
-                            <MudTooltip Text="@TextForAltMessagesTip()">
-                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.ArrowForwardIos" OnClick="@(()=>NextFirstMessageEvent.InvokeAsync())"></MudIconButton>
-                            </MudTooltip>
+                @if (!NoButtons)
+                {
+                    <div style="margin-left:auto">
+                        <MudStack Row Justify="Justify.FlexEnd" Spacing="0">
+                            <MudIconButton Size="Size.Small" OnClick="@(()=>{isEditing=true;Oldmessage=Message;})" Icon="@Icons.Material.Filled.Edit"></MudIconButton>
+                            <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.Delete" OnClick="@(()=>{DeleteEvent.InvokeAsync(Message);})"></MudIconButton>
+                            @if (TTS.ReadyToUse)
+                            {
+                                <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.PlayCircle" OnClick="PlayTTSMessage"></MudIconButton>
+                            }
+                            @if (Chat.ChatHistory.Messages.First() == Message && Chat.ChatHistory.Alt_greetings != null && Chat.ChatHistory.Alt_greetings.Length > 0)
+                            {
+                                <MudTooltip Text="@TextForAltMessagesTip()">
+                                    <MudIconButton Size="Size.Small" Icon="@Icons.Material.Filled.ArrowForwardIos" OnClick="@(()=>NextFirstMessageEvent.InvokeAsync())"></MudIconButton>
+                                </MudTooltip>
 
-                        }
+                            }
 
-                    </MudStack>
-                </div>
+                        </MudStack>
+                    </div>
+                }
+
             </div>
 
             @{
@@ -111,6 +119,10 @@
     public EventCallback<string> ClickAvatar { get; set; }
     [Parameter]
     public EventCallback NextFirstMessageEvent { get; set; }
+    [Parameter]
+    public bool NoAvatar { get; set; }
+    [Parameter]
+    public bool NoButtons { get; set; }
 
     private bool isEdited = false;
 
@@ -136,14 +148,14 @@
         {
             if (Message.Owner.IsUser)
             {
-                 await TTS.ProcessFullText(Message.Content, Settings.User.TTSOptions.UserKokoroVoice);
+                await TTS.ProcessFullText(Message.Content, Settings.User.TTSOptions.UserKokoroVoice);
             }
             else
             {
-                await TTS.ProcessFullText(Message.Content, Message.Owner.CharacterCard.KokoroVoice);
+                await TTS.ProcessFullText(Message.Content, Message.Owner.KokoroVoice);
             }
 
-        }      
+        }
     }
 
     private async Task SaveMessage()

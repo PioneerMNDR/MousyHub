@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using System.Diagnostics;
+using static MousyHub.Models.ChatState;
 
 namespace MousyHub.Models.Services
 {
@@ -16,12 +17,12 @@ namespace MousyHub.Models.Services
         private TaskCompletionSource<string>? _recognitionCompletionSource;
         // Таймер для отслеживания тишины // Timer for tracking silence
         private System.Timers.Timer? _silenceTimer;
-        private const int SILENCE_TIMEOUT = 2000;
+        private const int SILENCE_TIMEOUT = 1500;
         private string _lastRecognizedText = string.Empty;
 
         // Событие для всех случаев завершения распознавания (тишина или ручная остановка) // Event for all cases of recognition completion (silence or manual stop)
         public event EventHandler<string>? RecognitionCompleted;
-
+        public event TaskDelegate? ErrorRecognition;
 
         public string Language { get { return settings.User.TranslatorOptions.SelectLanguage.Value; } private set { } }
 
@@ -32,15 +33,16 @@ namespace MousyHub.Models.Services
         public bool AccumulateText { get; set; } = true;
 
         // Добавлен опциональный параметр для включения таймера тишины // Added an optional parameter for enabling the silence timer
-        public async Task StartRecognition(bool useSilenceTimer = false)
+        public async Task StartRecognition(bool useSilenceTimer = false, bool ResetAccumulatedText = true)
         {
             if (!isRecord)
             {
                 isRecord = true;
                 _recognitionSubscription?.Dispose();
                 _recognitionCompletionSource = new TaskCompletionSource<string>();
+                if(ResetAccumulatedText)
                 _lastRecognizedText = string.Empty; // Сбрасываем накопленный текст при старте // Reset accumulated text at start
-
+                Debug.WriteLine($"Starting recognition with silence timer: {useSilenceTimer}");
                 // Инициализируем таймер только если он включен // Initialize timer only if it's enabled
                 if (useSilenceTimer)
                 {
@@ -66,12 +68,18 @@ namespace MousyHub.Models.Services
             // Создаем новый таймер // Create a new timer
             _silenceTimer = new System.Timers.Timer(SILENCE_TIMEOUT);
             _silenceTimer.AutoReset = false; // Одноразовый таймер // One-time timer
+          
             _silenceTimer.Elapsed += async (sender, e) =>
             {
+             
                 if (isRecord)
                 {
-                    // Если таймер сработал, значит была тишина в течение указанного времени // If the timer triggered, it means there was silence for the specified time
+                   
                     await HandleSilenceDetected();
+                }
+                else
+                {
+                    Debug.WriteLine("isRecord is false, ignoring silence");
                 }
             };
 
@@ -81,6 +89,7 @@ namespace MousyHub.Models.Services
 
         private async Task HandleSilenceDetected()
         {
+          
             // Выполняем на UI потоке // Execute on the UI thread
             await Task.Run(async () =>
             {
@@ -105,9 +114,9 @@ namespace MousyHub.Models.Services
             });
         }
 
-        public async Task StopRecognition()
+        public async Task StopRecognition(bool WithoutResult=false)
         {
-            if (!isRecord)
+            if (!isRecord && WithoutResult==false)
             {
                 // Если запись уже остановлена, просто генерируем событие с текущим результатом // If recording is already stopped, just generate an event with the current result
                 RecognitionCompleted?.Invoke(this, _lastRecognizedText);
@@ -129,9 +138,12 @@ namespace MousyHub.Models.Services
 
                 // После задержки устанавливаем флаг остановки записи // After the delay, set the recording stop flag
                 isRecord = false;
-
-                // Генерируем событие с текущим результатом // Generate an event with the current result
-                RecognitionCompleted?.Invoke(this, _lastRecognizedText);
+                if (WithoutResult==false)
+                {
+                    // Генерируем событие с текущим результатом // Generate an event with the current result
+                    RecognitionCompleted?.Invoke(this, _lastRecognizedText);
+                }
+        
             }
             finally
             {
@@ -163,7 +175,7 @@ namespace MousyHub.Models.Services
                 // Просто заменяем текст (старое поведение) // Just replace the text (old behavior)
                 _lastRecognizedText = recognizedText;
             }
-
+     
             // Сбрасываем таймер тишины если он используется // Reset the silence timer if it's being used
             if (_silenceTimer != null)
             {
@@ -175,15 +187,23 @@ namespace MousyHub.Models.Services
 
         private void ResetSilenceTimer()
         {
-            // Перезапускаем таймер тишины // Restart the silence timer
-            _silenceTimer?.Stop();
-            _silenceTimer?.Start();
+           
+            _silenceTimer.Stop();
+            _silenceTimer.Start(); 
         }
 
         private async Task OnError(SpeechRecognitionErrorEvent errorEvent)
         {
-            // Обработка ошибки // Error handling
             Console.WriteLine($"Error: {errorEvent.Error}");
+            isRecord = false;
+
+            _lastRecognizedText = string.Empty;
+            _silenceTimer?.Stop();
+            _silenceTimer?.Dispose();
+            _silenceTimer = null;
+            _recognitionSubscription?.Dispose();
+            _recognitionSubscription = null;
+            ErrorRecognition?.Invoke();
         }
 
         private async Task OnStarted()
@@ -193,8 +213,6 @@ namespace MousyHub.Models.Services
 
         private async Task OnEnded()
         {
-            //Console.WriteLine("Speech recognition ended.");
-            isRecord = false;
 
             // Остановка таймера при завершении распознавания // Stop the timer when recognition ends
             _silenceTimer?.Stop();

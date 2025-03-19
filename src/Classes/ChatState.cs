@@ -219,6 +219,15 @@ namespace MousyHub.Models
             return person;
 
         }
+        public void RemovePerson(CharCard card)
+        {
+            Person? person = AllPersons.Where(x => x.CharacterCard != null && x.CharacterCard.data.name == card.data.name).FirstOrDefault();
+            if (person != null) 
+            {
+                AllPersons.Remove(person);  
+            }
+           
+        }
 
         public void SaveChatHistory(object? sender, EventArgs e)
         {

@@ -141,6 +141,11 @@
                         <MudSwitch @bind-Value=Settings.User.TTSOptions.SplitVoice Color="Color.Primary" Label="Split voice (beta)"></MudSwitch>
                     </MudTooltip>
                 </MudItem>
+          @*       <MudItem md="4">
+                    <MudTooltip Text="Will voice 2 sentences at a time. It is optimal if the sentences are very short">
+                        <MudSwitch @bind-Value=Settings.User.TTSOptions.TwoSentencesMode Color="Color.Primary" Label="Two sentences mode"></MudSwitch>
+                    </MudTooltip>
+                </MudItem> *@
                 @if (Settings.User.TTSOptions.SplitVoice)
                 {
                     <MudItem md="12">

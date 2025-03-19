@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using MousyHub.Models;
 using MousyHub.Models.Model;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace MousyHub.Classes.Misc
@@ -15,22 +16,27 @@ namespace MousyHub.Classes.Misc
         public static string[] GenerateSeparatorVariations(params string[] baseSeparators)
         {
             // Базовые символы, которые будут использоваться как основа
+            // Base characters that will be used as foundation
             char[] baseChars = { '.', '!', '?', ':' };
 
             // Дополнительные элементы, которые могут следовать за базовым символом
-            string[] additions = { " ", "\" ", "*", "'" };
+            // Additional elements that can follow the base character
+            string[] additions = { " ", "\" ", "*", "'","" };
 
-            string[] specChars = { ",* " };
+            // Special character combinations
+            string[] specChars = { ",* ", "* \"" };
 
             // Специальные комбинации для многоточия
-            string[] ellipsisAdditions = { " ", "*", "\"" };
+            string[] ellipsisAdditions = { " ", "*", "\"", "*\"" };
 
             List<string> allVariations = new List<string>();
 
             // Обрабатываем базовые символы
+            // Process base characters
             foreach (char baseChar in baseChars)
             {
                 // Добавляем стандартные комбинации для каждого базового символа
+                // Add standard combinations for each base character
                 foreach (string addition in additions)
                 {
                     allVariations.Add(baseChar + addition);
@@ -52,6 +58,7 @@ namespace MousyHub.Classes.Misc
 
             return allVariations.ToArray();
         }
+
         public static string[] SplitKeepSeparators(this string s, params string[] separators)
         {
             if (s == null) throw new ArgumentNullException("s");
@@ -79,18 +86,29 @@ namespace MousyHub.Classes.Misc
                 {
                     // Нет больше разделителей - текст не заканчивается разделителем,
                     // поэтому мы не добавляем оставшуюся часть
+                    // No more separators - text doesn't end with a separator,
+                    // so we don't add the remaining part
                     break;
                 }
 
                 // Добавляем предложение вместе с разделителем
+                // Add the sentence along with the separator
                 string currentSentence = s.Substring(startIndex, earliestIndex - startIndex + earliestSeparator.Length).Trim();
                 result.Add(currentSentence);
 
                 startIndex = earliestIndex + earliestSeparator.Length;
             }
-    
+            Debug.WriteLine("---");
+            Debug.WriteLine(s);
+            Debug.WriteLine("---");
+            foreach (var item in result)
+            {
+                Debug.WriteLine(result.IndexOf(item) +". " + item);
+            }
+            Debug.WriteLine("---");
             return result.ToArray();
         }
+     
 
     }
     public static class StringHelperBuilder

@@ -14,13 +14,13 @@
 
 @if (isLoaded == false)
 {
-    <MudAnimate Selector=".anim1" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" Paused=isLoaded ValueSecondary=1000 Duration="0.6" Infinite=false>
+    <MudAnimate Selector="#anim1" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" Paused=isLoaded ValueSecondary=1000 Duration="0.6" Infinite=false>
     </MudAnimate>
 
 }
-<MudAnimate Selector=".micanim" AnimationType="AnimationType.Scale" AnimationTiming=AnimationTiming.Linear Value="1" ValueSecondary=0.7 AnimationDirection="AnimationDirection.Alternate" Duration="0.5" Infinite=true>
+<MudAnimate Selector="#micanim" AnimationType="AnimationType.Scale" AnimationTiming=AnimationTiming.Linear Value="1" ValueSecondary=0.7 AnimationDirection="AnimationDirection.Alternate" Duration="0.5" Infinite=true>
 </MudAnimate>
-<MudAnimate Selector=".menuAnim" AnimationType="AnimationType.Scale" AnimationFillMode="AnimationFillMode.Forwards" Hover AnimationTiming=AnimationTiming.Linear Value="1.2" ValueSecondary=1 AnimationDirection="AnimationDirection.Alternate" Duration="0.2" Infinite=false>
+<MudAnimate Selector="#menuAnim" AnimationType="AnimationType.Scale" AnimationFillMode="AnimationFillMode.Forwards" Hover AnimationTiming=AnimationTiming.Linear Value="1.2" ValueSecondary=1 AnimationDirection="AnimationDirection.Alternate" Duration="0.2" Infinite=false>
 </MudAnimate>
 
 <MudPopover Open="isOpenAvatar" OverflowBehavior="OverflowBehavior.FlipNever" Fixed AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.CenterRight">
@@ -31,7 +31,7 @@
 
 @if (ChatHistory != null)
 {
-    <MudPaper Style="display:flex;flex-direction:column;height:86vh;" Class="anim1">
+    <MudPaper Style="display:flex;flex-direction:column;height:86vh;" Class="@(Settings.User.VoiceMode ? "rounded-xl" : "")"  id="anim1">
 
         @if (Settings.User.VoiceMode==false)
         {
@@ -39,7 +39,6 @@
                 <div>
                     @foreach (var message in ChatHistory.Messages)
                     {
-
                         <ChatMessageComponent ClickAvatar="ToggleAvatar" DeleteEvent=DeleteMessage Message="message" isChatPageLoaded=isLoaded NextFirstMessageEvent="NextFirstMessage"></ChatMessageComponent>
                     }
 
@@ -64,7 +63,7 @@
             {
                 <MudTextFieldExtended OnKeyUp="EnterEvent" OnKeyDown="DeleteNewlineOnEnterEvent" @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
                     <AdornmentStart>
-                        <MudMenu AnchorOrigin="Origin.TopLeft" Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu" Class="menuAnim">
+                        <MudMenu AnchorOrigin="Origin.TopLeft" Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu"  id="menuAnim">
                             <MudMenuItem Icon="@Icons.Material.Filled.Quickreply" OnClick="QuickReplyGenerate" title="Generate quick reply on the last message">Quick reply</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Sync" OnClick="()=>ClickRegenerate.InvokeAsync(State.ChatHistory.GetLastMessage().Owner)">Regenerate</MudMenuItem>
                             <MudMenuItem Icon="@Icons.Material.Filled.Block" OnClick="()=>SkipUserTurn.InvokeAsync()">Skip your message</MudMenuItem>
@@ -75,11 +74,11 @@
                         <div class="me-3">
                             @if (isBusy || isRAGing)
                             {
-                                <MudAnimate Selector=".animbusy" AnimationTiming=AnimationTiming.Linear Value="0" Paused=false ValueSecondary=1000 Duration="2" AnimationType="AnimationType.Rotate" Infinite>
+                                <MudAnimate Selector="#animbusy" AnimationTiming=AnimationTiming.Linear Value="0" Paused=false ValueSecondary=1000 Duration="2" AnimationType="AnimationType.Rotate" Infinite>
                                 </MudAnimate>
 
                                 <MudTooltip Text="The model is occupied with other process">
-                                    <MudIcon Class="animbusy" Color=Color.Error Icon="@Icons.Material.Filled.Cyclone"></MudIcon>
+                                    <MudIcon  id="animbusy" Color=Color.Error Icon="@Icons.Material.Filled.Cyclone"></MudIcon>
                                 </MudTooltip>
 
 
@@ -105,7 +104,7 @@
                                 }
                                 if (STTService.isRecord)
                                 {
-                                    <MudIconButton Class="micanim" OnClick="StopRec" Variant="Variant.Filled" Color=Color.Error Icon="@Icons.Material.Filled.MicOff"></MudIconButton>
+                                    <MudIconButton id="micanim" OnClick="StopRec" Variant="Variant.Filled" Color=Color.Error Icon="@Icons.Material.Filled.MicOff"></MudIconButton>
                                 }
                             }
                         </div>
@@ -115,7 +114,7 @@
             else
             {
                 <CascadingValue Value="ChatClass">
-                    <VoiceModeComponent></VoiceModeComponent>
+                    <VoiceModeComponent ></VoiceModeComponent>
                 </CascadingValue>
                 
             }
@@ -296,7 +295,7 @@
     }
     public void Dispose()
     {
-        // Отписываемся от события
+       
         STTService.RecognitionCompleted -= OnSTTResultDetected;
         STTService.Dispose();
     }

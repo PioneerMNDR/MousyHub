@@ -1,8 +1,7 @@
 ﻿namespace MousyHub.Classes.Services.TTS
 {
-    using Elastic.Clients.Elasticsearch.QueryDsl;
-    using Humanizer;
     using Microsoft.JSInterop;
+    using MousyHub.Models;
     using MousyHub.Models.Services;
     using NAudio.Wave;
     using System;
@@ -14,7 +13,9 @@
 
     public class AudioService : IAsyncDisposable
     {
-        public event TaskDelegate QueueEmptyEvent;
+        public delegate Task PersonDelegate(Person? person);
+        public event PersonDelegate QueueEmptyEvent;
+        public event PersonDelegate StartAudioEvent;
         private readonly IJSRuntime _jsRuntime;
         private readonly Queue<AudioQueueItem> _audioQueue = new Queue<AudioQueueItem>();
         private bool _isPlaying = false;
@@ -28,6 +29,7 @@
         private readonly object _timerLock = new object();
         private const int SILENCE_THRESHOLD_MS = 500; // Порог тишины (настройте по необходимости)
 
+        Person? LastPerson = null;
         SettingsService _settings;
         public AudioService(IJSRuntime jsRuntime, SettingsService settings)
         {
@@ -47,10 +49,11 @@
         {
             _silenceDetectionTimer = new Timer(_ =>
             {
-                QueueEmptyEvent?.Invoke();
+                QueueEmptyEvent?.Invoke(LastPerson);
             }, null, Timeout.Infinite, Timeout.Infinite);
         }
-        public async Task EnqueueAudioAsync(byte[] rawAudioData, string mimeType = "audio/wav")
+
+        public async Task EnqueueAudioAsync(byte[] rawAudioData, string mimeType = "audio/wav", Person? person = null)
         {
             if (rawAudioData == null || rawAudioData.Length == 0)
             {
@@ -60,7 +63,7 @@
 
             // Преобразуем raw PCM данные в полноценный WAV // Convert raw PCM data to full WAV
             byte[] wavData = ConvertToWavWithHeader(rawAudioData);
-
+            LastPerson = person;
             await _queueSemaphore.WaitAsync();
             try
             {
@@ -74,7 +77,7 @@
                 if (!_isPlaying && !_isPaused)
                 {
                     _isPlaying = true;
-                    _ = ProcessQueueAsync();
+                    _ = ProcessQueueAsync(person);
                 }
             }
             finally
@@ -83,7 +86,7 @@
             }
         }
 
-        private async Task ProcessQueueAsync()
+        private async Task ProcessQueueAsync(Person? person)
         {
             // Защита от одновременного запуска нескольких экземпляров // Protection against simultaneous launch of multiple instances
             lock (_processingLock)
@@ -136,7 +139,7 @@
                                 currentItem.MimeType,
                                 _settings.User.TTSOptions.PlaybackSpeed,
                                 _settings.User.TTSOptions.VolumeValue,
-                                _currentPlaybackCts.Token);
+                                _currentPlaybackCts.Token, person);
 
                             shouldReleaseSemaphore = false;
                             await _queueSemaphore.WaitAsync();
@@ -200,7 +203,8 @@
             return memoryStream.ToArray();
         }
 
-        private async Task PlayAudioInternalAsync(byte[] audioData, string mimeType, float playbackRate, float volume, CancellationToken cancellationToken)
+
+        private async Task PlayAudioInternalAsync(byte[] audioData, string mimeType, float playbackRate, float volume, CancellationToken cancellationToken, Person? person)
         {
             try
             {
@@ -216,7 +220,7 @@
 
                 string base64String = Convert.ToBase64String(audioData);
                 Debug.WriteLine($"Аудио размер: {audioData.Length} байт, MIME: {mimeType}, Скорость воспроизведения: {playbackRate}, Громкость: {volume}"); // Audio size: {audioData.Length} bytes, MIME: {mimeType}, Playback speed: {playbackRate}, Volume: {volume}
-
+                StartAudioEvent?.Invoke(person);
                 // Передаем playbackRate и volume в JavaScript // Pass playbackRate and volume to JavaScript
                 var audioId = await _jsRuntime.InvokeAsync<int>("playAudio", cancellationToken, base64String, mimeType, playbackRate, volume, _settings.User.VoiceMode);
 
@@ -237,18 +241,13 @@
                     // Регистрируем отмену // Register cancellation
                     using var registration = cancellationToken.Register(() =>
                     {
-                        completionSource.TrySetCanceled();
+                        completionSource.TrySetResult(false);
                         _jsRuntime.InvokeVoidAsync("stopAudio", audioId);
                     });
-
-                    try
+                    bool completed = await completionSource.Task;
+                    if (!completed)
                     {
-                        await completionSource.Task;
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        // Воспроизведение аудио было намеренно отменено, подавляем исключение // Audio playback was intentionally canceled, suppressing the exception
-                        Debug.WriteLine("Воспроизведение аудио было отменено"); // Audio playback was canceled
+                        Debug.WriteLine("Audio playback was canceled"); 
                     }
                 }
                 finally
@@ -261,7 +260,6 @@
                 Console.WriteLine($"Error in PlayAudioInternalAsync: {ex.Message}");
             }
         }
-
         public async Task PauseAsync()
         {
             if (!_isPaused && _isPlaying)
@@ -282,7 +280,7 @@
                 if (_audioQueue.Count > 0)
                 {
                     _isPlaying = true;
-                    _ = ProcessQueueAsync();
+                    _ = ProcessQueueAsync(LastPerson);
                 }
             }
         }
@@ -312,7 +310,7 @@
                 }
                 if (_audioQueue.Count == 0 && Elements_Existed)
                 {
-                    QueueEmptyEvent?.Invoke();
+                    QueueEmptyEvent?.Invoke(null);
                 }
             }
             finally

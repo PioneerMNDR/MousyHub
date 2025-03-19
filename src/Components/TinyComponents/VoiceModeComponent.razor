@@ -7,34 +7,99 @@
 @inject AlertServices Alerts
 @inject TranslatorService Translator
 @inject STTService STTService
-@inject TTSManagerService TTS;
-@inject AudioService Audio;
+@inject TTSManagerService TTS
+@inject AudioService Audio
 @implements IDisposable
 
+<MudAnimate Selector="#generateicon" AnimationType="AnimationType.Fade" Value="1" Duration="0.5" Infinite AnimationDirection="AnimationDirection.Alternate"></MudAnimate>
+<MudAnimate Selector="#audioVisualizer" AnimationType="AnimationType.Fade" AnimationFillMode="AnimationFillMode.Both" Value="1" Delay="0.5" Duration="1"></MudAnimate>
+<style>
+    .transition-item {
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .chat-container {
+        transition: all 0.3s ease-in-out;
+        overflow: hidden;
+    }
+
+        .chat-container.hidden {
+            opacity: 0;
+            max-width: 0;
+            padding: 0;
+            margin: 0;
+        }
+        .chat-container.visible {
+            opacity: 1;
+            max-width: 100%;
+        }
+</style>
 <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" style="height:100%">
     <MudGrid Justify="Justify.Center">
-        <MudItem md="6" Class="d-flex">
+        <MudItem md="4" Class="d-flex flex-column align-center">
             @{
-                var imageSrc = Convert.ToBase64String(ChatClass.ChatHistory.MainCharacter.Avatar);
+                var imageSrc = Convert.ToBase64String(SpeakPerson.Avatar);
             }
             <MudImage Elevation="6" Height="400" Width="300" ObjectFit="ObjectFit.Cover" Class="rounded-pill mx-auto" Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
+            <MudTooltip Text="@(MiniChatVisible ? "Close chat" : "Show chat")" RootClass=ma-1 >
+                <MudIconButton Icon="@(MiniChatVisible ? @Icons.Material.Filled.CloseFullscreen : @Icons.Material.Filled.OpenInFull)" OnClick="@(()=>MiniChatVisible=!MiniChatVisible)"></MudIconButton>
+            </MudTooltip>
         </MudItem>
+        @{
+            string MiniChatHiddenClass  = "chat-container " + (MiniChatVisible ? "visible" : "hidden");           
+        }
+        <MudItem md="8" Class="@MiniChatHiddenClass">
+        <MudPaper Elevation="0" Class="ps-4 rounded-xl" id="chat" Style="flex-grow:1;overflow-y:scroll; max-height:400px">
+            <div>
+                @foreach (var message in ChatClass.ChatHistory.Messages)
+                {
+                    <ChatMessageComponent Message="message" isChatPageLoaded=ChatClass.isLoaded NoAvatar NoButtons></ChatMessageComponent>
+                }
+            </div>
+        </MudPaper>
+    </MudItem>
+  
+
         <MudItem md="12">
-            <MudStack Row Justify="Justify.Center">
+            <MudStack Row Justify="Justify.Center" AlignItems="AlignItems.Baseline">
+                @if (ChatClass.isGenerating)
+                {
+                    <MudTooltip Text="Generating">
+                        <MudIcon id="generateicon" Style="vertical-align:middle" Icon="@Icons.Material.Filled.Psychology" Color="Color.Info"></MudIcon>
+                    </MudTooltip>
+                }
+                @if (!ChatClass.isGenerating && !IsAudioEnded && IsGenerationEnded && DialogueIsStarted)
+                {
+                    <MudTooltip Text="Interrupt / Speak now">
+                        <MudIconButton Icon="@Icons.Material.Filled.PanTool" OnClick="InterruptBot" Variant="Variant.Filled" Color="Color.Dark" Size="Size.Small" />
+                    </MudTooltip>
+                }
                 <MudTooltip Text="Your queue status">
-                    <MudIcon Icon="@(STTService.isRecord ? Icons.Material.Filled.Mic : Icons.Material.Filled.MicOff)" Color="@(STTService.isRecord ? Color.Success : Color.Default)"></MudIcon>
+                    <MudIcon id="@(STTService.isRecord ? "micanim" : "")" Style="vertical-align:middle" Icon="@(STTService.isRecord ? Icons.Material.Filled.Mic : Icons.Material.Filled.MicOff)" Color="@(STTService.isRecord ? Color.Success : Color.Default)"></MudIcon>
                 </MudTooltip>
+                @if (!ChatClass.isGenerating && !IsAudioEnded && IsGenerationEnded && !STTService.isRecord && IsUserPaused)
+                {
+                    <MudTooltip Text="Resume your speak">
+                        <MudIconButton Icon="@Icons.Material.Filled.PlayCircle" OnClick=ResumeUserSpeak Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" />
+                    </MudTooltip>
+                }
+                @if (!ChatClass.isGenerating && IsAudioEnded && IsGenerationEnded && STTService.isRecord)
+                {
+                    <MudTooltip Text="Pause your speak">
+                        <MudIconButton Icon="@Icons.Material.Filled.PauseCircle" OnClick="PauseUserSpeak" Variant="Variant.Filled" Color="Color.Dark" Size="Size.Small" />
+                    </MudTooltip>
+                }
             </MudStack>
         </MudItem>
         <MudFlexBreak />
         <MudItem md="10" Class="d-flex">
             @if (DialogueIsStarted)
             {
-                <canvas id="audioVisualizer" class="border-2 mud-border-white rounded-pill mud-elevation-6  mx-auto"></canvas>
+                <canvas id="audioVisualizer" class="border-2 mud-border-white rounded-pill mud-elevation-6 mx-auto"></canvas>
             }
             else
             {
-                <MudButton Variant="Variant.Filled" Class=" rounded-pill mud-elevation-6  mx-auto" Size="Size.Large" Color="Color.Primary" OnClick="StartVoiceChat">Let's go!</MudButton>
+                <MudButton Variant="Variant.Filled" Class="rounded-pill mud-elevation-6  mx-auto" Size="Size.Large" Color="Color.Primary" OnClick="StartVoiceChat">Let's go!</MudButton>
             }
         </MudItem>
     </MudGrid>
@@ -48,24 +113,56 @@
     public Main Main { get; set; }
     [CascadingParameter]
     public Chat ChatClass { get; set; }
-    bool DialogueIsStarted = false;
+
+    public Person SpeakPerson { get; set; }
 
     private bool IsGenerationEnded = true;
     private bool IsAudioEnded = false;
-
+    private bool IsUserPaused = false;
+    private bool MiniChatVisible = false;
+    private bool DialogueIsStarted = false;
     protected override void OnInitialized()
     {
+        SpeakPerson = ChatClass.ChatHistory.MainCharacter;
         State.StartGenerationEvent += StartGenerationHandler;
         State.EndGenerationEvent += EndGenerationHandler;
         Audio.QueueEmptyEvent += EndAudioQueueHandler;
+        Audio.StartAudioEvent += StartAudioPlayHandler;
+        STTService.ErrorRecognition += RecognitionError;
     }
 
     private async Task StartGenerationHandler()
-    {    
+    {
         IsGenerationEnded = false;
         IsAudioEnded = false;
         Console.WriteLine("StartGenerationHandler");
         await InvokeAsync(StateHasChanged);
+    }
+    private async Task StartAudioPlayHandler(Person? person)
+    {
+        if (person is not null)
+        {
+            SpeakPerson = person;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task PauseUserSpeak()
+    {
+        IsUserPaused = true;
+        await STTService.StopRecognition(WithoutResult: true);
+    }
+    private async Task InterruptBot()
+    {
+        await TTS.InterruptProcessingAsync();    
+        IsAudioEnded = true;
+        await TryAutoRec();
+
+    }
+    private async Task ResumeUserSpeak()
+    {
+        IsUserPaused = false;
+        await STTService.StartRecognition(true, false);
     }
 
     private async Task EndGenerationHandler()
@@ -75,9 +172,17 @@
         await InvokeAsync(StateHasChanged);
         await TryAutoRec();
     }
-    private async Task EndAudioQueueHandler()
+
+
+    private async Task RecognitionError()
     {
-        @if (TTS.IsQueued==false)
+        await TryAutoRec();
+    }
+
+
+    private async Task EndAudioQueueHandler(Person? person)
+    {
+        @if (TTS.IsQueued == false)
         {
             IsAudioEnded = true;
             Console.WriteLine("EndAudioQueueHandler");
@@ -85,7 +190,7 @@
             await TryAutoRec();
         }
 
-    
+
     }
 
     async Task PlayTTSMessage(Message message)
@@ -99,7 +204,7 @@
             }
             else
             {
-                await TTS.ProcessFullText(message.Content, message.Owner.CharacterCard.KokoroVoice);
+                await TTS.ProcessFullText(message.Content, message.Owner.KokoroVoice, message.Owner);
             }
 
         }
@@ -109,17 +214,19 @@
     {
         if (IsGenerationEnded && IsAudioEnded)
         {
-
+            Console.WriteLine("AutoRecStart");
+            await InvokeAsync(StateHasChanged);
             await ChatClass.StartRec();
             await InvokeAsync(StateHasChanged);
         }
-    
+
     }
     public async Task StartVoiceChat()
     {
         DialogueIsStarted = true;
         @if (State.ChatHistory.Messages.Count > 0)
         {
+
             var lastMessage = State.ChatHistory.GetLastMessage();
             await PlayTTSMessage(lastMessage);
             if (lastMessage.Owner.IsUser)
@@ -131,6 +238,7 @@
                 // await TryRec();
             }
         }
+        StateHasChanged();
 
     }
     public void Dispose()
@@ -138,5 +246,7 @@
         State.StartGenerationEvent -= StartGenerationHandler;
         State.EndGenerationEvent -= EndGenerationHandler;
         Audio.QueueEmptyEvent -= EndAudioQueueHandler;
+        Audio.StartAudioEvent -= StartAudioPlayHandler;
+        STTService.ErrorRecognition -= RecognitionError;
     }
 }

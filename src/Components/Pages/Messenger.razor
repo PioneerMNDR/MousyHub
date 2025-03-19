@@ -16,6 +16,7 @@
 @inject TranslatorService Translator
 @inject RAGService RAGService
 @inject TTSManagerService TTS
+@inject STTService STT
 @inject AudioService Audio
 @inject IJSRuntime JS
 
@@ -98,6 +99,7 @@
         isPaused = false;
         Main.RefreshWizardPage();
         await TTS.InterruptProcessingAsync();
+        await STT.StopRecognition(true);
     }
     async Task CloseChat()
     {
@@ -106,6 +108,7 @@
         Main.CloseDrawer();
         StateHasChanged();
         await TTS.InterruptProcessingAsync();
+        await STT.StopRecognition(true);
         if (Provider.Status && isGenerating)
             await StopGeneration();
 
@@ -152,7 +155,7 @@
         }
 
         //Check new messages for summarize (auto summarize)
-        if (Settings.User.AutoSummarize && State.ChatHistory.Messages.Count(x => x.isSummarized == false) > Settings.User.SummarizeMessageCount)
+        if (Settings.User.AutoSummarize && State.ChatHistory.Messages.Count(x => x.isSummarized == false) > Settings.User.SummarizeMessageCount && Settings.User.VoiceMode==false)
         {
             Alert.InfoAlert("Summarizing... please, wait.");
             bool isSuccess = await State.ChatSummarize();
@@ -176,7 +179,7 @@
                 isPaused = true;
             }
         }
-        else if (Settings.User.AnswerAssistant)
+        else if (Settings.User.AnswerAssistant && Settings.User.VoiceMode == false)
         {
             var stringResp = await State.AnswerAssistant();
             ChatPage.FastAnswers = Util.ExtractFastAnswers(stringResp).ToList();
@@ -212,7 +215,7 @@
                 await InvokeAsync(async () =>
                 {       
                     message = await State.ChatHistory.StreamLLMEditingMessage(messageResponse.Content, messageGuid);
-                    _ = TTS.ProcessStreamingText(messageResponse.Content, person.CharacterCard.KokoroVoice);
+                    _ = TTS.ProcessStreamingText(messageResponse.Content, person.KokoroVoice, person);
                     await JS.InvokeVoidAsync("scrollToBottom", "chat");
                     await InvokeAsync(StateHasChanged);
                 });
@@ -222,7 +225,7 @@
         {
             try
             {
-                TTS.EndSentenceThread();
+                 TTS.EndSentenceThread();
                 await message.TranslateMessage(Translator);
             }
             catch (Exception ex)
@@ -234,6 +237,10 @@
                 await State.EndGenerationEventRun();
             }
 
+        }
+        else
+        {
+            Alert.ErrorAlert("Response message is null. There may be problems with the provider.");
         }
 
         await State.SetContextSize();

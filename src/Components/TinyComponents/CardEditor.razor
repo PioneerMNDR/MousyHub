@@ -6,6 +6,7 @@
 @inject ProviderService Provider
 @inject UploaderService Uploader
 @inject AlertServices Alert
+@inject ChatState State
 
 @if (charCard != null)
 {
@@ -104,12 +105,12 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-      
+
 
     }
     protected override void OnParametersSet()
     {
-   
+
     }
 
 
@@ -178,6 +179,8 @@ else
     }
     public void SaveCard()
     {
+        var person = State.TakePerson(charCard);
+        person.KokoroVoice = charCard.KokoroVoice;
         Alert.SuccessAlert("Saved");
         Saver.SaveToJson(charCard, charCard.system_name);
     }
@@ -186,6 +189,7 @@ else
 
         Alert.SuccessAlert("Deleted");
         Saver.Delete(charCard, charCard.system_name);
+        State.RemovePerson(charCard);
         charCard = null;
         StateHasChanged();
         Uploader.ReloadCards();
