@@ -363,20 +363,19 @@ MigrationBackup/
 
 
 
-# Игнорировать все файлы .json
+# Г€ГЈГ­Г®Г°ГЁГ°Г®ГўГ ГІГј ГўГ±ГҐ ГґГ Г©Г«Г» .json
 *.json
 
 *.gguf
 *.onnx
 
-# Исключить файлы .json в папке default
+# Г€Г±ГЄГ«ГѕГ·ГЁГІГј ГґГ Г©Г«Г» .json Гў ГЇГ ГЇГЄГҐ default
 !default/*.json
 
-# Исключить файлы .json в любых поддиректориях внутри default
+# Г€Г±ГЄГ«ГѕГ·ГЁГІГј ГґГ Г©Г«Г» .json Гў Г«ГѕГЎГ»Гµ ГЇГ®Г¤Г¤ГЁГ°ГҐГЄГІГ®Г°ГЁГїГµ ГўГ­ГіГІГ°ГЁ default
 !default/**/**/*.json
 
-
+*.onnx
 *.wav
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-
