@@ -34,6 +34,7 @@ namespace MousyHub.Models
             Key = key;
             Id = CharacterCard.system_name;
             KokoroVoice = CharacterCard.KokoroVoice;
+            OverrideSystemPromt = charCard.data.system_prompt;
         }
 
 

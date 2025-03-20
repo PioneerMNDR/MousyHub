@@ -1,4 +1,5 @@
-﻿@using MousyHub.Models
+﻿@using MousyHub.Classes.Services.TTS
+@using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Services
 @using MousyHub.Models.User
@@ -9,6 +10,7 @@
 @inject AlertServices Alerts
 @inject TranslatorService Translator
 @inject STTService STTService
+@inject KokoroService Kokoro
 @implements IDisposable
 
 

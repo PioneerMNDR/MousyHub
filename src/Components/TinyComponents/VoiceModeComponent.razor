@@ -9,6 +9,7 @@
 @inject STTService STTService
 @inject TTSManagerService TTS
 @inject AudioService Audio
+@inject KokoroService Kokoro
 @implements IDisposable
 
 <MudAnimate Selector="#generateicon" AnimationType="AnimationType.Fade" Value="1" Duration="0.5" Infinite AnimationDirection="AnimationDirection.Alternate"></MudAnimate>
@@ -77,7 +78,7 @@
                 <MudTooltip Text="Your queue status">
                     <MudIcon id="@(STTService.isRecord ? "micanim" : "")" Style="vertical-align:middle" Icon="@(STTService.isRecord ? Icons.Material.Filled.Mic : Icons.Material.Filled.MicOff)" Color="@(STTService.isRecord ? Color.Success : Color.Default)"></MudIcon>
                 </MudTooltip>
-                @if (!ChatClass.isGenerating && !IsAudioEnded && IsGenerationEnded && !STTService.isRecord && IsUserPaused)
+                @if (!ChatClass.isGenerating && IsAudioEnded && IsGenerationEnded && !STTService.isRecord && IsUserPaused)
                 {
                     <MudTooltip Text="Resume your speak">
                         <MudIconButton Icon="@Icons.Material.Filled.PlayCircle" OnClick=ResumeUserSpeak Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" />
@@ -97,9 +98,13 @@
             {
                 <canvas id="audioVisualizer" class="border-2 mud-border-white rounded-pill mud-elevation-6 mx-auto"></canvas>
             }
+            else if (Kokoro.IsRun)
+            {
+                <MudButton Variant="Variant.Filled" Disabled="!Kokoro.IsRun" Class="rounded-pill mud-elevation-6  mx-auto" Size="Size.Large" Color="Color.Primary" OnClick="StartVoiceChat">Let's go!</MudButton>
+            }
             else
             {
-                <MudButton Variant="Variant.Filled" Class="rounded-pill mud-elevation-6  mx-auto" Size="Size.Large" Color="Color.Primary" OnClick="StartVoiceChat">Let's go!</MudButton>
+                <MudAlert Class="rounded-pill mud-elevation-2  mx-auto" Severity="Severity.Error">Kokoro model is not loaded</MudAlert>
             }
         </MudItem>
     </MudGrid>
@@ -189,8 +194,6 @@
             await InvokeAsync(StateHasChanged);
             await TryAutoRec();
         }
-
-
     }
 
     async Task PlayTTSMessage(Message message)

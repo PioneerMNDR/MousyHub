@@ -216,7 +216,7 @@ namespace MousyHub.Classes.Services.TTS
             Text = text;
             IsNarrator = isNarrator;
             textMarkerType = DetectMarkerType(text);
-            Debug.WriteLine("|Sentence: " + Text);
+            //Debug.WriteLine("|Sentence: " + Text);
             if (textMarkerType is TextMarkerType.BothEnds || textMarkerType is TextMarkerType.StartOnly || textMarkerType is TextMarkerType.EndOnly)
             {
                 IsNarrator = true;

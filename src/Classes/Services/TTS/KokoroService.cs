@@ -27,7 +27,7 @@ namespace MousyHub.Classes.Services.TTS
         {
             try
             {
-                if (IsRun && TTS != null)
+                if ((IsRun && TTS != null) || string.IsNullOrEmpty(modelPath))
                 {
                     return false;
                 }

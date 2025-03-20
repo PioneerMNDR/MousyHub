@@ -98,14 +98,15 @@ namespace MousyHub.Classes.Misc
 
                 startIndex = earliestIndex + earliestSeparator.Length;
             }
-            Debug.WriteLine("---");
-            Debug.WriteLine(s);
-            Debug.WriteLine("---");
-            foreach (var item in result)
-            {
-                Debug.WriteLine(result.IndexOf(item) +". " + item);
-            }
-            Debug.WriteLine("---");
+
+            //Debug.WriteLine("---");
+            //Debug.WriteLine(s);
+            //Debug.WriteLine("---");
+            //foreach (var item in result)
+            //{
+            //    Debug.WriteLine(result.IndexOf(item) +". " + item);
+            //}
+            //Debug.WriteLine("---");
             return result.ToArray();
         }
      
