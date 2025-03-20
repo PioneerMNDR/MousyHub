@@ -1,4 +1,5 @@
-﻿using MousyHub.Models;
+﻿using MousyHub.Classes.Misc;
+using MousyHub.Models;
 using MousyHub.Models.Model;
 using MousyHub.Models.User;
 using System.Linq;
@@ -11,15 +12,12 @@ namespace MousyHub.Models.Services
     {
         public List<GenerationConfig> PresetsList { get; set; }
         public List<Instruct> InstructList { get; set; }
-
         public List<Theme> ThemeList { get; set; }
-
         public List<string> LocalModelsList { get; set; }
-
         public List<Person> ProfileList { get; set; }
 
         public AlertServices alertServices;
-
+        //This class is responsible for user settings, which is serialized and stored in memory.
         public UserState User;
         private readonly ProviderService _providerServices;
 
@@ -47,6 +45,7 @@ namespace MousyHub.Models.Services
             uploaderService.settingsService = this;
             this.alertServices = alertServices;
             _providerServices = providerServices;
+
         }
 
 

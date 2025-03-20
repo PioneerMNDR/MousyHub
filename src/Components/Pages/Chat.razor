@@ -1,4 +1,5 @@
-﻿@using MousyHub.Models
+﻿@using MousyHub.Classes.Services.TTS
+@using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Services
 @using MousyHub.Models.User
@@ -9,18 +10,19 @@
 @inject AlertServices Alerts
 @inject TranslatorService Translator
 @inject STTService STTService
-
+@inject KokoroService Kokoro
+@implements IDisposable
 
 
 @if (isLoaded == false)
 {
-    <MudAnimate Selector=".anim1" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" Paused=isLoaded ValueSecondary=1000 Duration="0.6" Infinite=false>
+    <MudAnimate Selector="#anim1" AnimationType="AnimationType.SlideY" AnimationTiming=AnimationTiming.Ease Value="0" Paused=isLoaded ValueSecondary=1000 Duration="0.6" Infinite=false>
     </MudAnimate>
 
 }
-<MudAnimate Selector=".micanim" AnimationType="AnimationType.Scale" AnimationTiming=AnimationTiming.Linear Value="1" ValueSecondary=0.7 AnimationDirection="AnimationDirection.Alternate" Duration="0.5" Infinite=true>
+<MudAnimate Selector="#micanim" AnimationType="AnimationType.Scale" AnimationTiming=AnimationTiming.Linear Value="1" ValueSecondary=0.7 AnimationDirection="AnimationDirection.Alternate" Duration="0.5" Infinite=true>
 </MudAnimate>
-<MudAnimate Selector=".menuAnim" AnimationType="AnimationType.Scale" AnimationFillMode="AnimationFillMode.Forwards" Hover AnimationTiming=AnimationTiming.Linear Value="1.2" ValueSecondary=1 AnimationDirection="AnimationDirection.Alternate" Duration="0.2" Infinite=false>
+<MudAnimate Selector="#menuAnim" AnimationType="AnimationType.Scale" AnimationFillMode="AnimationFillMode.Forwards" Hover AnimationTiming=AnimationTiming.Linear Value="1.2" ValueSecondary=1 AnimationDirection="AnimationDirection.Alternate" Duration="0.2" Infinite=false>
 </MudAnimate>
 
 <MudPopover Open="isOpenAvatar" OverflowBehavior="OverflowBehavior.FlipNever" Fixed AnchorOrigin="Origin.CenterLeft" TransformOrigin="Origin.CenterRight">
@@ -31,17 +33,20 @@
 
 @if (ChatHistory != null)
 {
-    <MudPaper Style="display:flex;flex-direction:column;height:86vh;" Class="anim1">
-        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-2 pb-2" id="chat" Style="flex-grow:1;overflow-y:auto;">
-            <div>
-                @foreach (var message in ChatHistory.Messages)
-                {
+    <MudPaper Style="display:flex;flex-direction:column;height:86vh;" Class="@(Settings.User.VoiceMode ? "rounded-xl" : "")"  id="anim1">
 
-                    <ChatMessageComponent ClickAvatar="ToggleAvatar" DeleteEvent=DeleteMessage Message="message" isChatPageLoaded=isLoaded NextFirstMessageEvent="NextFirstMessage"></ChatMessageComponent>
-                }
+        @if (Settings.User.VoiceMode==false)
+        {
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pt-2 pb-2" id="chat" Style="flex-grow:1;overflow-y:auto;">       
+                <div>
+                    @foreach (var message in ChatHistory.Messages)
+                    {
+                        <ChatMessageComponent ClickAvatar="ToggleAvatar" DeleteEvent=DeleteMessage Message="message" isChatPageLoaded=isLoaded NextFirstMessageEvent="NextFirstMessage"></ChatMessageComponent>
+                    }
 
-            </div>
+                </div>           
         </MudContainer>
+        }
         @if (Provider.Status)
         {
             @if (FastAnswers.Count > 0)
@@ -56,56 +61,65 @@
 
             }
 
-
-            <MudTextFieldExtended OnKeyUp="EnterEvent" OnKeyDown="DeleteNewlineOnEnterEvent" @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
-                <AdornmentStart>
-                    <MudMenu AnchorOrigin="Origin.TopLeft" Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu" Class="menuAnim">
-                        <MudMenuItem Icon="@Icons.Material.Filled.Quickreply" OnClick="QuickReplyGenerate" title="Generate quick reply on the last message">Quick reply</MudMenuItem>
-                        <MudMenuItem Icon="@Icons.Material.Filled.Sync" OnClick="()=>ClickRegenerate.InvokeAsync(State.ChatHistory.GetLastMessage().Owner)">Regenerate</MudMenuItem>
-                        <MudMenuItem Icon="@Icons.Material.Filled.Block" OnClick="()=>SkipUserTurn.InvokeAsync()">Skip your message</MudMenuItem>
-                        <MudMenuItem Icon="@Icons.Material.Filled.AddComment" OnClick="()=>ClickContinueGenerate.InvokeAsync(State.ChatHistory.GetLastMessage())">Continue</MudMenuItem>
-                    </MudMenu>
-                </AdornmentStart>
-                <AdornmentEnd>
-                    <div class="me-3">
-                        @if (isBusy || isRAGing)
-                        {
-                            <MudAnimate Selector=".animbusy" AnimationTiming=AnimationTiming.Linear Value="0" Paused=false ValueSecondary=1000 Duration="2" AnimationType="AnimationType.Rotate" Infinite>
-                            </MudAnimate>
-
-                            <MudTooltip Text="The model is occupied with other process">
-                                <MudIcon Class="animbusy" Color=Color.Error Icon="@Icons.Material.Filled.Cyclone"></MudIcon>
-                            </MudTooltip>
-
-
-                        }
-                        else if (isVisibleUnpauseButton)
-                        {
-                            <MudIconButton OnClick="@(()=>{ClickSend.InvokeAsync(State.NextPerson);isVisibleUnpauseButtonChanged.InvokeAsync(false);})" Title="Next generation" Color=Color.Info Icon="@Icons.Material.Filled.PlayCircle"></MudIconButton>
-                        }
-                        else if (isGenerating)
-                        {
-                            <MudIconButton OnClick="@(async()=>await AbortCallback.InvokeAsync())" Color=Color.Error Icon="@Icons.Material.Filled.Stop"></MudIconButton>
-                        }
-                        else
-                        {
-                            <MudIconButton OnClick="SendMessage" Color=Color.Info Icon="@Icons.Material.Filled.Send"></MudIconButton>
-                            if (STTService.isRecord == false && STTService.isProcessing == false)
+            @if (!Settings.User.VoiceMode)
+            {
+                <MudTextFieldExtended OnKeyUp="EnterEvent" OnKeyDown="DeleteNewlineOnEnterEvent" @ref=mudText Clearable @bind-Value="CurrentMessage" Immediate Variant="Variant.Outlined" Lines="2" Class="chatEnterTab">
+                    <AdornmentStart>
+                        <MudMenu AnchorOrigin="Origin.TopLeft" Disabled=@(isGenerating || isBusy) Icon="@Icons.Material.Filled.Menu"  id="menuAnim">
+                            <MudMenuItem Icon="@Icons.Material.Filled.Quickreply" OnClick="QuickReplyGenerate" title="Generate quick reply on the last message">Quick reply</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Sync" OnClick="()=>ClickRegenerate.InvokeAsync(State.ChatHistory.GetLastMessage().Owner)">Regenerate</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.Block" OnClick="()=>SkipUserTurn.InvokeAsync()">Skip your message</MudMenuItem>
+                            <MudMenuItem Icon="@Icons.Material.Filled.AddComment" OnClick="()=>ClickContinueGenerate.InvokeAsync(State.ChatHistory.GetLastMessage())">Continue</MudMenuItem>
+                        </MudMenu>
+                    </AdornmentStart>
+                    <AdornmentEnd>
+                        <div class="me-3">
+                            @if (isBusy || isRAGing)
                             {
-                                <MudIconButton OnClick="StartRec" Color=Color.Info Icon="@Icons.Material.Filled.Mic"></MudIconButton>
+                                <MudAnimate Selector="#animbusy" AnimationTiming=AnimationTiming.Linear Value="0" Paused=false ValueSecondary=1000 Duration="2" AnimationType="AnimationType.Rotate" Infinite>
+                                </MudAnimate>
+
+                                <MudTooltip Text="The model is occupied with other process">
+                                    <MudIcon  id="animbusy" Color=Color.Error Icon="@Icons.Material.Filled.Cyclone"></MudIcon>
+                                </MudTooltip>
+
+
                             }
-                            if (STTService.isProcessing)
+                            else if (isVisibleUnpauseButton)
                             {
-                                <MudProgressCircular Size="Size.Small" Indeterminate Color="Color.Success"></MudProgressCircular>
+                                <MudIconButton OnClick="@(()=>{ClickSend.InvokeAsync(State.NextPerson);isVisibleUnpauseButtonChanged.InvokeAsync(false);})" Title="Next generation" Color=Color.Info Icon="@Icons.Material.Filled.PlayCircle"></MudIconButton>
                             }
-                            if (STTService.isRecord)
+                            else if (isGenerating)
                             {
-                                <MudIconButton Class="micanim" OnClick="StopRec" Variant="Variant.Filled" Color=Color.Error Icon="@Icons.Material.Filled.MicOff"></MudIconButton>
+                                <MudIconButton OnClick="@(async()=>await AbortCallback.InvokeAsync())" Color=Color.Error Icon="@Icons.Material.Filled.Stop"></MudIconButton>
                             }
-                        }
-                    </div>
-                </AdornmentEnd>
-            </MudTextFieldExtended>
+                            else
+                            {
+                                <MudIconButton OnClick="SendMessage" Color=Color.Info Icon="@Icons.Material.Filled.Send"></MudIconButton>
+                                if (STTService.isRecord == false && STTService.isProcessing == false)
+                                {
+                                    <MudIconButton OnClick="StartRec" Color=Color.Info Icon="@Icons.Material.Filled.Mic"></MudIconButton>
+                                }
+                                if (STTService.isProcessing)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate Color="Color.Success"></MudProgressCircular>
+                                }
+                                if (STTService.isRecord)
+                                {
+                                    <MudIconButton id="micanim" OnClick="StopRec" Variant="Variant.Filled" Color=Color.Error Icon="@Icons.Material.Filled.MicOff"></MudIconButton>
+                                }
+                            }
+                        </div>
+                    </AdornmentEnd>
+                </MudTextFieldExtended>
+            }
+            else
+            {
+                <CascadingValue Value="ChatClass">
+                    <VoiceModeComponent ></VoiceModeComponent>
+                </CascadingValue>
+                
+            }
         }
         else
         {
@@ -161,6 +175,8 @@
     [CascadingParameter]
     public Main Main { get; set; }
 
+    public Chat ChatClass { get; set; }
+
     MudTextFieldExtended<string> mudText;
     private async Task SendMessage()
     {
@@ -178,10 +194,13 @@
             if (Translator.isEnabled)
                 llmContent = await Translator.TranslateForLLM(llmContent);
             var mes = await ChatHistory.AddMessage(llmContent, CurrentPerson, Settings.CurrentInstruct, nativeLangContent);
-            StateHasChanged();
-            _ = ClickSend.InvokeAsync(NextPerson);
+            await InvokeAsync(StateHasChanged);
+            _ =  InvokeAsync(() => ClickSend.InvokeAsync(NextPerson));
             FastAnswers.Clear();
-
+            if (Settings.User.VoiceMode)
+            {
+                CurrentMessage = string.Empty;   
+            }
         }
 
     }
@@ -195,8 +214,12 @@
 
     async Task ClearMessage()
     {
-        await mudText.Clear();
-        StateHasChanged();
+        @if (mudText!=null)
+        {
+            await InvokeAsync(mudText.Clear); 
+            await InvokeAsync(StateHasChanged);
+        }
+
     }
     async Task NextFirstMessage()
     {
@@ -245,25 +268,43 @@
         CurrentMessage = answer;
         StateHasChanged();
     }
-    async Task StartRec()
+    public async Task StartRec()
     {
-        await STTService.StartRecognition();
-        StateHasChanged();
-    }
-    async Task StopRec()
-    {
-        string result = await STTService.StopRecognition();
-        CurrentMessage = result;
-        StateHasChanged();
-    }
-    public void FillTextField(string textToField)
-    {
-        CurrentMessage += textToField;
-        StateHasChanged();
+        await STTService.StartRecognition(true);
+       await InvokeAsync(StateHasChanged);
     }
 
+    public  async Task StopRec()
+    {
+        await STTService.StopRecognition();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void OnSTTResultDetected(object? sender, string text)
+    {
+        CurrentMessage += text;
+        InvokeAsync(StateHasChanged);
+        if (Settings.User.VoiceMode)
+        {
+            _ = SendMessage();
+        }
+    }
+    public async void FillTextField(string textToField)
+    {
+        CurrentMessage += textToField;
+     
+        StateHasChanged();
+    }
+    public void Dispose()
+    {
+       
+        STTService.RecognitionCompleted -= OnSTTResultDetected;
+        STTService.Dispose();
+    }
     protected override async Task OnInitializedAsync()
     {
+        ChatClass = this;
+        STTService.RecognitionCompleted += OnSTTResultDetected;
         await Task.Delay(1000);
         isLoaded = true;
     }

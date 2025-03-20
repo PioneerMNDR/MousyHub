@@ -1,0 +1,84 @@
+﻿@using MousyHub.Classes.Misc
+@implements IDisposable
+
+<MudAnimate @ref=_animate Selector="#id1" AnimationType="AnimationType.SlideX" Value="0" ValueSecondary="-360" Duration="1" Delay="1" AnimationFillMode="AnimationFillMode.Both"></MudAnimate>
+
+<div class="bottom-left-block">
+
+    <MudPaper Elevation="3" MaxWidth="250px" Class="rounded-lg " id="id1">
+        <MudStack Justify="Justify.Center">
+
+            <div  class="d-flex flex-column justify-center">
+                <MudButton OnClick="@(()=> Manager.AIModulesVisible = !Manager.AIModulesVisible)" Variant="Variant.Filled">AI Modules<MudSpacer></MudSpacer><MudIcon Icon="@Icons.Material.Filled.Memory"></MudIcon></MudButton>
+                <MudCollapse Expanded="Manager.AIModulesVisible" Class="pe-3">
+                    <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Start">
+                        @foreach (var item in Manager.AIModulesStatus)
+                        {
+                            <MudTimelineItem Variant="Variant.Filled" Color="item.Value ? Color.Success : Color.Error" >
+                                <MudText Typo="Typo.body2">@item.Key.ToString()</MudText>
+                            </MudTimelineItem>
+                        }
+                    </MudTimeline>
+                </MudCollapse>
+            </div>
+
+
+            <div  class="d-flex flex-column justify-center">
+                <MudButton OnClick="@(()=> Manager.GuideVisible = !Manager.GuideVisible)" Variant="Variant.Filled">Guide<MudSpacer></MudSpacer><MudIcon Icon="@Icons.Material.Filled.MenuBook"></MudIcon></MudButton>
+                <MudCollapse Expanded="Manager.GuideVisible" Class="pe-3">
+                    <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Start">
+                        @foreach (var item in Manager.StepGuide)
+                        {
+                            <MudTimelineItem Variant="Variant.Filled" Color="item.Value ? Color.Success : Color.Default">
+                                <MudText Typo="Typo.body2" Inline="false" HtmlTag="@(item.Value ? "s" : "span")">@item.Key</MudText>
+                            </MudTimelineItem>
+                        }
+                    </MudTimeline>
+                </MudCollapse>
+
+            </div>
+
+
+        </MudStack>
+    </MudPaper>
+@*     <MudButton OnClick="CloseWindowWithAnimation">Close</MudButton> *@
+</div>
+
+
+
+
+
+@code {
+
+    [Parameter]
+    public required StepUserHintManager Manager { get; set; }
+    MudAnimate? _animate = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Manager.ChangeListEvent += ReRenderState;
+    }
+
+    async Task CloseWindowWithAnimation()
+    {
+        _animate.Value = -360;
+        _animate.ValueSecondary = 0;
+        await _animate.Refresh();
+    }
+
+    public void ReRenderState()
+    {
+        InvokeAsync(StateHasChanged);
+        if (Manager.CloseWindow)
+        {
+            _ = CloseWindowWithAnimation();
+        }
+
+    }
+    public void Dispose()
+    {
+        Manager.ChangeListEvent -= ReRenderState;
+    }
+
+
+}

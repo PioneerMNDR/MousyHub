@@ -8,10 +8,10 @@
     "RecommendedVRAM": 12
   },
   {
-    "Name": "MN-12B-Starcannon-v2",
-    "Description": "Magnum-esque, but still is very creative, and writing style is pretty nice, even if some slop words appear time to time. Might be a good fit for people wanting more variety than Magnum has, and more verbose prose than Celeste v1.9 has.",
-    "RepoName": "mradermacher/MN-12B-Starcannon-v2-GGUF",
-    "FileNameInRepo": "MN-12B-Starcannon-v2.Q6_K.gguf",
+    "Name": "Wayfarer-12B",
+    "Description": "Wayfarer is an adventure role-play model specifically trained to give players a challenging and dangerous experience. It is well suited for serious RP wagering, where the model will be more neutral towards the player.",
+    "RepoName": "LatitudeGames/Wayfarer-12B-GGUF",
+    "FileNameInRepo": "Wayfarer-12B-Q6_K.gguf",
     "MaxVRAM": 16,
     "RecommendedVRAM": 12
   },

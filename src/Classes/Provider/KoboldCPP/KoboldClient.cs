@@ -151,7 +151,7 @@ namespace MousyHub.Models.Provider.KoboldCPP
             try
             {
                 var response = await _client.GetAsync($"{_baseUri}/api/v1/info/version");
-                if (response.IsSuccessStatusCode)
+                if (response !=null && response.IsSuccessStatusCode)
                 {
                     return true;
                 }
@@ -163,7 +163,7 @@ namespace MousyHub.Models.Provider.KoboldCPP
             catch (Exception)
             {
                 return false;
-                throw;
+
             }
         }
 

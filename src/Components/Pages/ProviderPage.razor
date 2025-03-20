@@ -1,12 +1,14 @@
-﻿@using MousyHub.Models
+﻿@using MousyHub.Classes.Services.TTS
+@using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Services
 @using MousyHub.Models.Services.URLHandle
 @using MousyHub.Models.User
+@using static MousyHub.Models.Misc.Util
 @inject ProviderService Service
 @inject SettingsService Settings
 @inject AlertServices Alert
-
+@inject KokoroService Kokoro
 <MudGrid id="select-api">
     <MudItem md="10" xs="7">
         <MudSelect Label="Select API" Variant="Variant.Outlined" Value="Service.SelectType" ValueChanged="@((KeyValuePair<ProviderService.APIType, string> newValue)=>ValueSelectConnectionChange(newValue))" OpenIcon="@Icons.Material.Filled.Api">
@@ -78,11 +80,11 @@
                     <MudItem Class="d-flex align-content-center" md="4">
                         <MudTextField @bind-Value="@Settings.User.KoboldURL" Label="URL"></MudTextField>
                     </MudItem>
-                 
+
                     <MudItem Class="d-flex align-content-center align-end" md="4">
                         <MudText>@ModelName</MudText>
                     </MudItem>
-           
+
                     break;
                 case ProviderService.APIType.Native:
                     <MudItem Class="d-flex align-content-center">
@@ -92,7 +94,7 @@
                                     @if (Settings.LocalModelsList.Count > 0)
                                     {
                                         <MudText>Model:</MudText>
-                                        <MudSelect @bind-Value=Settings.User.SelfInferenceConfig.ModelPath ToStringFunc="converter">
+                                        <MudSelect @bind-Value=Settings.User.SelfInferenceConfig.ModelPath TextChanged="RefreshStepGuide" ToStringFunc="converter">
                                             @foreach (var item in Settings.LocalModelsList)
                                             {
                                                 <MudSelectItem Value="item">@Path.GetFileName(item)</MudSelectItem>
@@ -180,8 +182,8 @@
                 case ProviderService.APIType.Cloud:
                     <MudItem Class="d-flex align-content-center" md="6">
                         <MudForm Class="w-100">
-                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
-                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey" Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
+                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" TextChanged="RefreshStepGuide" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
+                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey" TextChanged="RefreshStepGuide" Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
                         </MudForm>
                     </MudItem>
                     <MudItem Class="px-5" md="6">
@@ -189,7 +191,7 @@
                         <MudPaper Outlined Class="pa-4">
                             <MudText>Selected model: @(Service.Status ? Service.SelectModel : "Not connected")</MudText>
                             <MudTooltip Text="Parameter that determines whether Cloud services will use Chat completions or Text completions. The latter may be better.">
-                                <MudSwitch Size=Size.Medium Label="Use chat completions" Color="Color.Info" @bind-Value=Settings.User.CloudBasedConfig.UseChatCompletions></MudSwitch>
+                                <MudSwitch Size=Size.Medium Label="Use chat completions" Color="Color.Info" ValueChanged="@((bool val)=>{Settings.User.CloudBasedConfig.UseChatCompletions=val;InstructEditor.ReRenderState();})" Value="Settings.User.CloudBasedConfig.UseChatCompletions"></MudSwitch>
                             </MudTooltip>
                         </MudPaper>
 
@@ -199,7 +201,7 @@
                             <MudFab OnClick="GetModelList" Disabled="string.IsNullOrEmpty(Settings.User.CloudBasedConfig.BaseUrl)" StartIcon="@Icons.Material.Filled.CloudDownload" Color="Color.Primary">Get models</MudFab>
                         </MudTooltip>
                         <MudDivider Vertical FlexItem Class="mx-3"></MudDivider>
-                        <MudAutocomplete MaxItems="int.MaxValue" SearchFunc="@AutocompleteSearch" Clearable Label="Select model" HelperText="Enter URL, click get models and select" Variant="Variant.Outlined" @bind-Value="Service.SelectModel" />
+                        <MudAutocomplete MaxItems="int.MaxValue" SearchFunc="@AutocompleteSearch" TextChanged="RefreshStepGuide" Clearable Label="Select model" HelperText="Enter URL, click get models and select" Variant="Variant.Outlined" @bind-Value="Service.SelectModel" />
                     </MudItem>
 
                     break;
@@ -211,15 +213,12 @@
 </MudPaper>
 <MudPaper Class="mt-5 pa-4">
     <MudGrid Spacing="2">
-        <MudItem md="@(shouldShowInstructEditor ? 6 : 12)">
+        <MudItem md="6">
             <TextGenParamEditor></TextGenParamEditor>
         </MudItem>
-        @if (shouldShowInstructEditor)
-        {
-            <MudItem md="6">
-                <InstructEditor @ref=InstructEditor></InstructEditor>
-            </MudItem>
-        }
+        <MudItem md="6">
+            <InstructEditor @ref=InstructEditor></InstructEditor>
+        </MudItem>
     </MudGrid>
 </MudPaper>
 
@@ -235,24 +234,27 @@
     Func<string, string> converter = p => Path.GetFileName(p);
     InstructEditor InstructEditor;
 
-    private bool shouldShowInstructEditor =>
-    !(Service.SelectType.Key is ProviderService.APIType.Cloud && Settings.User.CloudBasedConfig.UseChatCompletions);
+    private void RefreshStepGuide() => Main.UserHintManager?.RefreshStepGuide();
+
+
 
     private async Task ConnectionChanged()
     {
         isLoading = true;
-        ModelName = await Service.NewConnect(Settings);
+        ModelName = await Service.NewConnect(Settings, Main.UserHintManager);
         isLoading = false;
         if (InstructEditor != null && Service.SelectType.Key is not ProviderService.APIType.Cloud)
         {
             InstructEditor.ReRenderState();
         }
+        RefreshStepGuide();
 
     }
     private void ValueSelectConnectionChange(KeyValuePair<ProviderService.APIType, string> newValue)
     {
         Service.SelectType = newValue;
         Service.ChangeConnectionType();
+        RefreshStepGuide();
     }
 
     bool isShowPassword = false;
@@ -294,6 +296,7 @@
         {
             Alert.SuccessAlert("Models loaded!");
         }
+        RefreshStepGuide();
         StateHasChanged();
     }
 

@@ -23,6 +23,7 @@ namespace MousyHub.Models
             {
                 Id = Guid.NewGuid().ToString();
             }
+            KokoroVoice = "am_michael";
         }
         public Person(CharCard charCard, string key)
         {
@@ -32,6 +33,8 @@ namespace MousyHub.Models
             Avatar = charCard.GetAvatarBytes();
             Key = key;
             Id = CharacterCard.system_name;
+            KokoroVoice = CharacterCard.KokoroVoice;
+            OverrideSystemPromt = charCard.data.system_prompt;
         }
 
 
@@ -48,6 +51,8 @@ namespace MousyHub.Models
         public string? OverrideSystemPromt { get; set; }
 
         public CharCard? CharacterCard { get; set; }
+
+        public string KokoroVoice { get; set; } = "af_heart";
 
     }
 }

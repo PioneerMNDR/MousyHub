@@ -9,6 +9,7 @@ using MousyHub.Models.Services;
 using MousyHub.Models.Services.URLHandle;
 using MudExtensions.Services;
 using Microsoft.KernelMemory;
+using MousyHub.Classes.Services.TTS;
 
 
 
@@ -41,6 +42,8 @@ builder.Services.AddScoped<AlertServices>();
 builder.Services.AddScoped<TranslatorService>();
 builder.Services.AddScoped<URLImporterService>();
 builder.Services.AddScoped<STTService>();
+builder.Services.AddScoped<AudioService>();
+builder.Services.AddScoped<TTSManagerService>();
 builder.Services.AddSingleton<HFDownloaderService>();
 builder.Services.AddSingleton<ProviderService>();
 builder.Services.AddSingleton<UpdaterService>();
@@ -48,6 +51,7 @@ builder.Services.AddSingleton<DiagnosticsService>();
 builder.Services.AddSingleton<UploaderService>();
 builder.Services.AddSingleton<RAGService>();
 builder.Services.AddSingleton<AdvancedQueryService>();
+builder.Services.AddSingleton<KokoroService>();
 string[] supportedCul = ["en-US", "ru-RU"];
 var localizationOptions = new RequestLocalizationOptions().SetDefaultCulture(supportedCul[0])
     .AddSupportedCultures(supportedCul).AddSupportedUICultures(supportedCul);

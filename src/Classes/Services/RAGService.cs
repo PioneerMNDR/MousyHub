@@ -14,7 +14,7 @@ namespace MousyHub.Models.Services
        
         }
 
-        public bool TryRun(string model_path)
+        public async Task<bool> TryRunAsync(string model_path)
         {
             try
             {
@@ -39,23 +39,28 @@ namespace MousyHub.Models.Services
                     OverlappingTokens = 20,
                 };
 
-                Kernel = new KernelMemoryBuilder()
-            .WithSearchClientConfig(searchClientConfig)
-            .WithCustomTextPartitioningOptions(textPartOptions)
-            .WithoutTextGenerator()
-            .WithLlamaTextEmbeddingGeneration(llamaConfig)
-            .Build(); 
+      
+                Kernel = await Task.Run(() =>
+                {
+                    return new KernelMemoryBuilder()
+                        .WithSearchClientConfig(searchClientConfig)
+                        .WithCustomTextPartitioningOptions(textPartOptions)
+                        .WithoutTextGenerator()
+                        .WithLlamaTextEmbeddingGeneration(llamaConfig)
+                        .Build();
+                });
+
                 Console.WriteLine("Embedding model is run");
                 IsAvailable = true;
                 return true;
-
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"Error running embedding model: {ex.Message}"); 
+                                                                                   
                 IsAvailable = false;
                 return false;
             }
-     
         }
         public async Task ImportMemory(string dialog, string chatId)
         {

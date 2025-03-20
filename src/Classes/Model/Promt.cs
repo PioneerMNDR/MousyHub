@@ -68,6 +68,11 @@ namespace MousyHub.Classes.Model
                 }
                
             }
+            if (!string.IsNullOrEmpty(instruct.jailbreak_promt))
+            {
+                Elements.Add(new PromtElement(MessageRole.System, instruct.jailbreak_promt));
+            }
+          
             FullContent += FullDialogue;
         }
 

@@ -6,6 +6,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Processing;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace MousyHub.Models.Misc
 {
@@ -134,8 +135,6 @@ namespace MousyHub.Models.Misc
             }
         }
 
-
-
         public static string FindFileRecursive(string rootDirectory, string fileName, int maxDepth = -1, int currentDepth = 0)
         {
             if (maxDepth != -1 && currentDepth > maxDepth)
@@ -177,7 +176,6 @@ namespace MousyHub.Models.Misc
             return string.Empty;  // Файл не найден
         }
 
-
         public static object CloneObject<T>(T source)
         {
             Type objtype = typeof(T);
@@ -202,7 +200,7 @@ namespace MousyHub.Models.Misc
             myArray[98] = "Max";
             return myArray;
         }
-
+    
     }
 }
 

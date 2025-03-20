@@ -13,6 +13,8 @@ namespace MousyHub.Models
         public byte[] avatarPNG { get; set; }
         public bool isNew { get; set; }
         public int Rating { get; set; }
+
+        public string KokoroVoice { get; set; } = "af_heart";
         public string system_name
         {
             get

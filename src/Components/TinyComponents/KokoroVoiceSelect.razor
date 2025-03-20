@@ -1,0 +1,62 @@
+﻿@using KokoroSharp.Core
+@using MousyHub.Classes.Services.TTS
+@using MousyHub.Models.Services
+@inject AlertServices Alert
+@inject KokoroService Kokoro
+@inject AudioService Audio
+
+
+<MudStack Row>
+    <MudSelect Label="@Label" Variant="Variant" Value="selected_voice" ValueChanged="@((KokoroVoice newVoice)=>{selected_voice = newVoice;Name=selected_voice.Name;NameChanged.InvokeAsync(Name);StateHasChanged();})">
+        @foreach (var item in KokoroVoices)
+        {
+            <MudSelectItem Value="@item">
+                <MudStack Row AlignItems="AlignItems.Center">
+                    <MudText Color="Color.Info">@item.Language.ToString()</MudText>
+                    <MudText Color="@(item.Gender==KokoroGender.Male ? Color.Primary : Color.Secondary)">@item.Gender.ToString()</MudText>
+                    <MudText>@item.Name</MudText>
+                    <MudSpacer></MudSpacer>
+
+                </MudStack>
+            </MudSelectItem>
+        }
+    </MudSelect>
+    <MudTooltip Disabled="Kokoro.IsRun" Text="Connect to any provider with the downloaded Kokoro model">
+        <MudIconButton Disabled="!Kokoro.IsRun" Icon="@Icons.Material.Filled.PlayCircle" Size="Size.Large" OnClick="TestPlay"></MudIconButton>
+    </MudTooltip>
+
+</MudStack>
+
+
+@code {
+
+    public List<KokoroVoice> KokoroVoices = new List<KokoroVoice>();
+    KokoroVoice selected_voice;
+
+    [Parameter]
+    public string Name {get;set;}
+    [Parameter]
+    public string Label { get; set; }
+    [Parameter]
+    public Variant Variant { get; set; } = Variant.Filled;
+    [Parameter]
+    public EventCallback<string> NameChanged { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        KokoroVoices = Kokoro.GetVoices();
+
+    }
+    protected override void OnParametersSet()
+    {
+        if (Name != null && KokoroVoices != null)
+        {
+            selected_voice = KokoroVoices.Where(x => x.Name == Name).FirstOrDefault(KokoroVoices.First());
+        } 
+    }
+    public async Task TestPlay()
+    {
+        var bytes = await Kokoro.GetSpeak("The bright sun rose over the distant hills, casting a golden glow across the sleepy village", Name);
+        _ = Audio.EnqueueAudioAsync(bytes);
+    }
+}

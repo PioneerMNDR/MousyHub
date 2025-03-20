@@ -1,4 +1,4 @@
-﻿@using MousyHub.Models
+﻿ @using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Model
 @using MousyHub.Models.Services
@@ -121,21 +121,42 @@
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
             <MudStack Row>
-                <MudText Typo="Typo.h4">Check update</MudText>
+                <MudText Typo="Typo.h4">Kokoro TTS Model</MudText>
+                <MudSpacer></MudSpacer>
+                <MudSwitch @bind-Value=Settings.User.TTSOptions.Enabled Color="Color.Primary" Label="Enabled"></MudSwitch>
             </MudStack>
             <MudDivider Class="mb-4"></MudDivider>
-            <MudStack>
-                <MudText>Current version: @AppVersion._version</MudText>
-                <MudText>Last version: @Updater.lastVersion</MudText>
-                @if (Updater.ReadyToUpdate && Updater.isUpdating == false)
+            <MudGrid Class="pe-2">
+             
+                <MudItem Class="d-flex flex-column" md="6">
+                    <MudText>Playback speed: </MudText>
+                    <MudSlider @bind-Value=Settings.User.TTSOptions.PlaybackSpeed Size="Size.Large" Variant="Variant.Filled" ValueLabel Max="3" Min="0" Step="(float)0.1"></MudSlider>
+                </MudItem>
+                <MudItem Class="d-flex flex-column" md="6">
+                    <MudText>Volume: </MudText>
+                    <MudSlider @bind-Value=Settings.User.TTSOptions.VolumeValue Size="Size.Large" Variant="Variant.Filled"  ValueLabel Color="Color.Warning" Max="1" Min="0" Step="(float)0.1"></MudSlider>
+                </MudItem>
+                <MudItem md="4">
+                    <MudTooltip Text="Will the voice be divided into the character's voice and the narrator's voice if the speech is in the third person">
+                        <MudSwitch @bind-Value=Settings.User.TTSOptions.SplitVoice Color="Color.Primary" Label="Split voice (beta)"></MudSwitch>
+                    </MudTooltip>
+                </MudItem>
+          @*       <MudItem md="4">
+                    <MudTooltip Text="Will voice 2 sentences at a time. It is optimal if the sentences are very short">
+                        <MudSwitch @bind-Value=Settings.User.TTSOptions.TwoSentencesMode Color="Color.Primary" Label="Two sentences mode"></MudSwitch>
+                    </MudTooltip>
+                </MudItem> *@
+                @if (Settings.User.TTSOptions.SplitVoice)
                 {
-                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Updater.LaunchUpdater">Update</MudButton>
+                    <MudItem md="12">
+                        <KokoroVoiceSelect Label="Narrator voice" @bind-Name=Settings.User.TTSOptions.NarratorKokoroVoice Variant="Variant.Text"></KokoroVoiceSelect>
+                    </MudItem>
                 }
-                else if (Updater.isUpdating)
-                {
-                    <MudProgressCircular Indeterminate Color="Color.Success"></MudProgressCircular>
-                }
-            </MudStack>
+             
+            @*     <MudItem md="6">
+                    <KokoroVoiceSelect Label="User voice" @bind-Name=Settings.User.TTSOptions.UserKokoroVoice></KokoroVoiceSelect>
+                </MudItem> *@
+            </MudGrid>
         </MudPaper>
     </MudItem>
     <MudItem xs="12" md="6">
@@ -195,7 +216,26 @@
             </MudGrid>
         </MudPaper>
     </MudItem>
-
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-3">
+            <MudStack Row>
+                <MudText Typo="Typo.h4">Check update</MudText>
+            </MudStack>
+            <MudDivider Class="mb-4"></MudDivider>
+            <MudStack>
+                <MudText>Current version: @AppVersion._version</MudText>
+                <MudText>Last version: @Updater.lastVersion</MudText>
+                @if (Updater.ReadyToUpdate && Updater.isUpdating == false)
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Updater.LaunchUpdater">Update</MudButton>
+                }
+                else if (Updater.isUpdating)
+                {
+                    <MudProgressCircular Indeterminate Color="Color.Success"></MudProgressCircular>
+                }
+            </MudStack>
+        </MudPaper>
+    </MudItem>
 
 </MudGrid>
 

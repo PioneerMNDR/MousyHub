@@ -1,6 +1,7 @@
 ﻿@page "/messenger"
 @using MousyHub.Classes.Misc
 @using MousyHub.Classes.Model
+@using MousyHub.Classes.Services.TTS
 @using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Model
@@ -14,6 +15,9 @@
 @inject AlertServices Alert
 @inject TranslatorService Translator
 @inject RAGService RAGService
+@inject TTSManagerService TTS
+@inject STTService STT
+@inject AudioService Audio
 @inject IJSRuntime JS
 
 
@@ -52,6 +56,7 @@
     public Main Main { get; set; }
     public CharCard EditingChar = null;
     private Chat ChatPage;
+
     protected override async Task OnInitializedAsync()
     {
         Uploader.ReloadCardEvent += LoadCards;
@@ -93,6 +98,8 @@
         await State.ClearAndNewChatHistory();
         isPaused = false;
         Main.RefreshWizardPage();
+        await TTS.InterruptProcessingAsync();
+        await STT.StopRecognition(true);
     }
     async Task CloseChat()
     {
@@ -100,8 +107,11 @@
         isCharSelectMode = true;
         Main.CloseDrawer();
         StateHasChanged();
+        await TTS.InterruptProcessingAsync();
+        await STT.StopRecognition(true);
         if (Provider.Status && isGenerating)
             await StopGeneration();
+
     }
 
     async Task RAG_Searching()
@@ -123,7 +133,7 @@
     public async Task StartGeneration(Person person, bool Force = false)
     {
         Main.RefreshWizardPage();
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
         if (person.IsUser)
         {
             return;
@@ -145,7 +155,7 @@
         }
 
         //Check new messages for summarize (auto summarize)
-        if (Settings.User.AutoSummarize && State.ChatHistory.Messages.Count(x => x.isSummarized == false) > Settings.User.SummarizeMessageCount)
+        if (Settings.User.AutoSummarize && State.ChatHistory.Messages.Count(x => x.isSummarized == false) > Settings.User.SummarizeMessageCount && Settings.User.VoiceMode==false)
         {
             Alert.InfoAlert("Summarizing... please, wait.");
             bool isSuccess = await State.ChatSummarize();
@@ -155,7 +165,7 @@
             else
                 Alert.SuccessAlert("Summarized!");
 
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
 
         if (State.NextPerson != null && State.NextPerson.IsUser == false && State.NextPerson != person)
@@ -169,13 +179,13 @@
                 isPaused = true;
             }
         }
-        else if (Settings.User.AnswerAssistant)
+        else if (Settings.User.AnswerAssistant && Settings.User.VoiceMode == false)
         {
             var stringResp = await State.AnswerAssistant();
             ChatPage.FastAnswers = Util.ExtractFastAnswers(stringResp).ToList();
-            StateHasChanged();
+            await InvokeAsync(StateHasChanged);
         }
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
     }
 
 
@@ -186,9 +196,10 @@
         await JS.InvokeVoidAsync("initializeScrollTracker", "chat");
         await JS.InvokeVoidAsync("resetUserScroll");
         isGenerating = true;
-        StateHasChanged();
+        await InvokeAsync(StateHasChanged);
         Message? message = null;
         string stop_seq = Settings.CurrentInstruct.stop_sequence + StringHelperBuilder.TagPlaceholder(",{{user}}:,{{char}}:", State.ChatHistory.MainUser.Name, State.ChatHistory.MainCharacter.Name);
+        await State.StartGenerationEventRun();
         await Task.Run(async () =>
         {
             await Provider.LLModel.GenerateStreamTextAsync(promt, Settings.CurrentGenerationConfig, Settings.User.CurrentMaxToken, Settings.User.CurrentContextLength, stop_seq, person.Key, onTokenReceived: async messageResponse =>
@@ -202,10 +213,11 @@
                 }
 
                 await InvokeAsync(async () =>
-                {
+                {       
                     message = await State.ChatHistory.StreamLLMEditingMessage(messageResponse.Content, messageGuid);
+                    _ = TTS.ProcessStreamingText(messageResponse.Content, person.KokoroVoice, person);
                     await JS.InvokeVoidAsync("scrollToBottom", "chat");
-                    StateHasChanged();
+                    await InvokeAsync(StateHasChanged);
                 });
             });
         });
@@ -213,13 +225,22 @@
         {
             try
             {
+                 TTS.EndSentenceThread();
                 await message.TranslateMessage(Translator);
             }
             catch (Exception ex)
             {
                 Alert.ErrorAlert("A translator error occurred, try changing your translation provider");
             }
+            finally
+            {
+                await State.EndGenerationEventRun();
+            }
 
+        }
+        else
+        {
+            Alert.ErrorAlert("Response message is null. There may be problems with the provider.");
         }
 
         await State.SetContextSize();
@@ -290,6 +311,7 @@
         await Provider.LLModel.Abort();
         isGenerating = false;
         await State.ChatHistory.ClearIsGenerationBorder();
+        await TTS.InterruptProcessingAsync();
     }
     public void ReRenderState()
     {

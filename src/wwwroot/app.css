@@ -336,6 +336,14 @@ body {
 }
 
 
+.bottom-left-block {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 100;
+}
+
+
 .inputNoMargin.mud-input-control > .mud-input-control-input-container > div.mud-input.mud-input-text {
     margin-top: 5px !important;
 }
