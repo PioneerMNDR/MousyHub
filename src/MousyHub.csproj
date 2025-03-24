@@ -49,14 +49,14 @@
     <PackageReference Include="Figgle" Version="0.5.1" />
     <PackageReference Include="GTranslate" Version="2.2.8" />
     <PackageReference Include="KokoroSharp" Version="0.5.5" />
-    <PackageReference Include="LLamaSharp" Version="0.19.0" />
-    <PackageReference Include="LLamaSharp.Backend.Cpu" Version="0.19.0" />
-    <PackageReference Include="LLamaSharp.Backend.Cuda12" Version="0.19.0" />
-    <PackageReference Include="LLamaSharp.Backend.Vulkan" Version="0.19.0" />
-    <PackageReference Include="LLamaSharp.kernel-memory" Version="0.19.0" />
+    <PackageReference Include="LLamaSharp" Version="0.23.0" />
+    <PackageReference Include="LLamaSharp.Backend.Cpu" Version="0.23.0" />
+    <PackageReference Include="LLamaSharp.Backend.Cuda12" Version="0.23.0" />
+    <PackageReference Include="LLamaSharp.Backend.Vulkan" Version="0.23.0" />
+    <PackageReference Include="LLamaSharp.kernel-memory" Version="0.23.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
     <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.2" />
-    <PackageReference Include="Microsoft.KernelMemory" Version="0.95.241216.2" />
+    <PackageReference Include="Microsoft.KernelMemory" Version="0.97.250211.1" />
     <PackageReference Include="MudBlazor" Version="8.3.0" />
     <PackageReference Include="MudBlazor.Markdown" Version="8.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

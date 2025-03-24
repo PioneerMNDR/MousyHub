@@ -51,7 +51,7 @@ namespace MousyHub.Models.Provider.LLama.Sampler
         {
             var chain = SafeLLamaSamplerChainHandle.Create(LLamaSamplerChainParams.Default());
 
-            chain.AddMirostat1Sampler(context.VocabCount, Seed,Tau,Eta,MIROSTAT_M);
+            chain.AddMirostat1Sampler(context.Vocab.Count, Seed,Tau,Eta,MIROSTAT_M);
 
             return chain;
         }

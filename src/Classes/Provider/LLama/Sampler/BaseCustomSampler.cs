@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.Drawing.Charts;
+﻿using CommunityToolkit.HighPerformance.Buffers;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using LLama.Batched;
 using LLama.Common;
 using LLama.Native;
@@ -98,6 +99,11 @@ namespace MousyHub.Models.Provider.LLama.Sampler
         private readonly float _presencePenalty;
 
         /// <summary>
+        /// How many tokens should be considered for penalties
+        /// </summary>
+        public int PenaltyCount { get; init; } = 64;
+
+        /// <summary>
         /// How many tokens should be considered for penalizing repetition
         /// </summary>
         public int RepeatPenaltyCount { get; init; } = 64;
@@ -172,14 +178,15 @@ namespace MousyHub.Models.Provider.LLama.Sampler
         {
             var chain = SafeLLamaSamplerChainHandle.Create(LLamaSamplerChainParams.Default());
 
-            // Rent a temporary array and copy the biases into it
-            var biases = ArrayPool<LLamaLogitBias>.Shared.Rent(LogitBias.Count);
-            try
+            if (LogitBias.Count > 0)
             {
+                using var biases = SpanOwner<LLamaLogitBias>.Allocate(LogitBias.Count);
+
+                // copy the biases into it
                 var index = 0;
                 foreach (var bias in LogitBias)
                 {
-                    biases[index++] = new LLamaLogitBias
+                    biases.Span[index++] = new LLamaLogitBias
                     {
                         Token = bias.Key,
                         Bias = bias.Value
@@ -187,32 +194,22 @@ namespace MousyHub.Models.Provider.LLama.Sampler
                 }
 
                 // Add the biases to the sampler
-                chain.AddLogitBias(context.ModelHandle.VocabCount, biases.AsSpan(0, LogitBias.Count));
-            }
-            finally
-            {
-                ArrayPool<LLamaLogitBias>.Shared.Return(biases);
+                chain.AddLogitBias(context.Vocab.Count, biases.Span);
+
             }
 
-            if (Grammar != null)
-                chain.AddGrammar(context.ModelHandle, Grammar.Gbnf, Grammar.Root);
-
-            chain.AddPenalties(
-                context.VocabCount,
-                context.ModelHandle.Tokens.EOS, context.ModelHandle.Tokens.Newline ?? 0,
-                RepeatPenaltyCount, RepeatPenalty,
-                FrequencyPenalty, PresencePenalty,
-                PenalizeNewline, PreventEOS
-            );
+            chain.AddPenalties(PenaltyCount, RepeatPenalty, FrequencyPenalty, PresencePenalty);
 
             chain.AddTopK(TopK);
             chain.AddTypical(TypicalP, MinKeep);
             chain.AddTopP(TopP, MinKeep);
             chain.AddMinP(MinP, MinKeep);
             chain.AddTemperature(Temperature);
+
             chain.AddDistributionSampler(Seed);
 
             return chain;
         }
+
     }
 }

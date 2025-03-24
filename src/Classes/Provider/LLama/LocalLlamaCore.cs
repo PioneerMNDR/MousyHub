@@ -207,17 +207,12 @@ namespace MousyHub.Models.Provider.LLama
                     decoder.Add(newToken);
                     string tokenValue = decoder.Read();
                     if (antiprocessor.Add(tokenValue))
-                    {
                         break;
-                    }
-                    if (weights.Tokens.IsEndOfGeneration(newToken))
-                    {
+                    if (newToken.IsEndOfGeneration(executor.Context.Vocab))
                         break;
-                    }
                     if (cancellationToken.IsCancellationRequested)
-                    {
                         break;
-                    }
+
                     Element._tokens.Add(newToken);
 
                     //0.19.0

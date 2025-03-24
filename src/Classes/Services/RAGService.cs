@@ -31,8 +31,6 @@ namespace MousyHub.Models.Services
                 };
                 var textPartOptions = new TextPartitioningOptions
                 {
-                    // Max 20 tokens per sentence
-                    MaxTokensPerLine = 20,
                     // When sentences are merged into paragraphs (aka partitions), stop at 100 tokens
                     MaxTokensPerParagraph = 100,
                     // Each paragraph contains the last 20 tokens from the previous one
