@@ -1,7 +1,5 @@
-﻿using Amazon.S3.Model;
-using Microsoft.Extensions.Hosting;
+﻿
 using MousyHub.Models.Misc;
-using NRedisStack.Search;
 using Octokit;
 using System.Diagnostics;
 using System.Globalization;
@@ -105,16 +103,34 @@ namespace MousyHub.Models.Services
                     return;
                 }
                 var client = new GitHubClient(new ProductHeaderValue("MousyHub"));
+                var miscellaneousRateLimit = await client.RateLimit.GetRateLimits();
+
+                //  The "core" object provides your rate limit status except for the Search API.
+                var coreRateLimit = miscellaneousRateLimit.Resources.Core;
+
+                var howManyCoreRequestsCanIMakePerHour = coreRateLimit.Limit;
+                var howManyCoreRequestsDoIHaveLeft = coreRateLimit.Remaining;
+                var whenDoesTheCoreLimitReset = coreRateLimit.Reset; // UTC time
+
+                // the "search" object provides your rate limit status for the Search API.
+                var searchRateLimit = miscellaneousRateLimit.Resources.Search;
+
+                var howManySearchRequestsCanIMakePerMinute = searchRateLimit.Limit;
+                var howManySearchRequestsDoIHaveLeft = searchRateLimit.Remaining;
+                var whenDoesTheSearchLimitReset = searchRateLimit.Reset; // UTC time
+
                 var releases = await client.Repository.Release.GetAll(owner, repoName);
-                lastVersion = releases.Where(x => float.Parse(x.TagName, CultureInfo.InvariantCulture.NumberFormat) >= float.Parse(AppVersion._version, CultureInfo.InvariantCulture.NumberFormat)).FirstOrDefault().TagName;
+
+                var latestRelease = releases.Where(x => float.Parse(x.TagName, CultureInfo.InvariantCulture.NumberFormat) >= float.Parse(AppVersion._version, CultureInfo.InvariantCulture.NumberFormat)).FirstOrDefault();
+                lastVersion = latestRelease != null ? latestRelease.TagName : AppVersion._version;
                 if (float.Parse(lastVersion, CultureInfo.InvariantCulture.NumberFormat) > float.Parse(AppVersion._version, CultureInfo.InvariantCulture.NumberFormat))
                 {
                     ReadyToUpdate = true;
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                Console.WriteLine("CheckUpdate Error");
+                Console.WriteLine("CheckUpdate Error: " +ex.Message);
 
             }
 

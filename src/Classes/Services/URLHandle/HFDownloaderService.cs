@@ -1,7 +1,5 @@
 ﻿using KokoroSharp;
 using HuggingfaceHub;
-using Microsoft.AspNetCore.Components;
-using NRedisStack.Search;
 using static MousyHub.Models.Services.URLHandle.HFDownloaderService;
 namespace MousyHub.Models.Services.URLHandle
 {

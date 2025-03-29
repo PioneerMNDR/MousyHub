@@ -1,5 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using MongoDB.Bson;
+﻿
 using MousyHub.Models.Services;
 
 namespace MousyHub.Classes.Misc
@@ -92,7 +91,7 @@ namespace MousyHub.Classes.Misc
                 case ProviderService.APIType.Cloud:
                     StepGuide.Add("Enter the API address of your service", !string.IsNullOrEmpty(settings.User.CloudBasedConfig.BaseUrl));
                     StepGuide.Add("Enter your service API Key, if required", !string.IsNullOrEmpty(settings.User.CloudBasedConfig.APIKey));
-                    StepGuide.Add("Load the list of LLM models from your service", !provider.ModelList.IsNullOrEmpty());
+                    StepGuide.Add("Load the list of LLM models from your service", provider.ModelList.Count!=0);
                     StepGuide.Add("Select an LLM model from the list", !string.IsNullOrEmpty(provider.SelectModel));
                     StepGuide.Add("Connect", provider.Status);
                     break;
@@ -101,7 +100,7 @@ namespace MousyHub.Classes.Misc
                     StepGuide.Add("Connect", provider.Status);
                     break;
                 case ProviderService.APIType.Native:
-                    StepGuide.Add("Install at least one LLM model in .gguf format", !settings.LocalModelsList.IsNullOrEmpty());
+                    StepGuide.Add("Install at least one LLM model in .gguf format",provider.ModelList.Count != 0);
                     StepGuide.Add("Select an LLM model from the list", !string.IsNullOrEmpty(settings.User.SelfInferenceConfig.ModelPath));
                     StepGuide.Add("Don't forget to specify launch parameters suitable for the model and your PC", true);
                     StepGuide.Add("Connect", provider.Status);

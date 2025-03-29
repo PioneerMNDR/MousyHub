@@ -7,6 +7,8 @@ using LLama.Sampling;
 using MousyHub.Models.Model;
 using MousyHub.Models.Provider.LLama.Sampler;
 using Spectre.Console;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace MousyHub.Models.Provider.LLama
 {
@@ -24,11 +26,12 @@ namespace MousyHub.Models.Provider.LLama
         {
             try
             {
-                
+
+          
                 weights = await LLamaWeights.LoadFromFileAsync(modelParams);
                 var metadata = weights.Metadata;
                 metaChatTemplate = metadata.FirstOrDefault(x=>x.Key=="tokenizer.chat_template").Value;
-                executor = new BatchedExecutor(weights, modelParams);
+                executor = new BatchedExecutor(weights, modelParams);         
                 Params = modelParams;
                 return true;
             }

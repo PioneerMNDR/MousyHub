@@ -1,4 +1,4 @@
-﻿using SharpCompress.Common;
+﻿
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;

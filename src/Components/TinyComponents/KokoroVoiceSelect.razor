@@ -31,7 +31,7 @@
 @code {
 
     public List<KokoroVoice> KokoroVoices = new List<KokoroVoice>();
-    KokoroVoice selected_voice;
+    KokoroVoice? selected_voice;
 
     [Parameter]
     public string Name {get;set;}
@@ -51,7 +51,7 @@
     {
         if (Name != null && KokoroVoices != null)
         {
-            selected_voice = KokoroVoices.Where(x => x.Name == Name).FirstOrDefault(KokoroVoices.First());
+            selected_voice = KokoroVoices.Where(x => x.Name == Name).FirstOrDefault();
         } 
     }
     public async Task TestPlay()

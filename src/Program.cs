@@ -10,6 +10,9 @@ using MousyHub.Models.Services.URLHandle;
 using MudExtensions.Services;
 using Microsoft.KernelMemory;
 using MousyHub.Classes.Services.TTS;
+using LLama.Native;
+using System.Diagnostics;
+using System.Reflection;
 
 
 
@@ -29,9 +32,11 @@ builder.Services.AddMudServices(config =>
 });
 
 builder.Services.AddSpeechRecognitionServices();
-// or this to add only the MudBlazor.Extensions but please ensure that this is added after mud servicdes are added. That means after `AddMudServices`
+
+string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+var config = LLama.Native.NativeLibraryConfig.All
+    .WithSearchDirectories(new[] { baseDir });
 builder.Services.AddMudExtensions();
-// Получить конфигурацию
 var configuration = builder.Configuration;
 builder.Services.AddMudMarkdownServices();
 builder.Services.AddLocalization();

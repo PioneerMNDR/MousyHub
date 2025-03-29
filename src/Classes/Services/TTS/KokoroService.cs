@@ -10,13 +10,17 @@ namespace MousyHub.Classes.Services.TTS
 {
     public class KokoroService
     {
-        public KokoroService(IHostEnvironment environment) 
+        public KokoroService(IHostEnvironment environment)
         {
             _environment = environment;
             if (_environment.IsDevelopment())
             {
                 Tokenizer.eSpeakNGPath = Path.Combine(AppContext.BaseDirectory, "espeak");
                 KokoroVoiceManager.LoadVoicesFromPath(Path.Combine(AppContext.BaseDirectory, "voices"));
+            }
+            else if (Directory.Exists("voices"))
+            {
+                KokoroVoiceManager.LoadVoicesFromPath();
             }
         }
         private IHostEnvironment _environment;
@@ -31,17 +35,14 @@ namespace MousyHub.Classes.Services.TTS
                 {
                     return false;
                 }
-
-     
                 TTS = await Task.Run(() => new KokoroWavSynthesizer(modelPath));
                 Debug.WriteLine("Kokoro loaded: " + modelPath);
-
                 IsRun = true;
                 return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Failed run kokoro model: " + ex.Message);
+                Console.WriteLine("Failed run kokoro model: " + ex.Message + ex.StackTrace);
                 IsRun = false;
                 return false;
             }
@@ -49,7 +50,7 @@ namespace MousyHub.Classes.Services.TTS
 
         public async Task<byte[]> GetSpeak(string text, string KokoroVoice)
         {
-            if (IsRun) 
+            if (IsRun)
             {
                 text = StringHelperBuilder.RemoveAsterisks(text);
                 if (!IsValidForTTS(text))
@@ -63,7 +64,7 @@ namespace MousyHub.Classes.Services.TTS
 
                 return bytes;
             }
-            return Array.Empty<byte>();       
+            return Array.Empty<byte>();
         }
 
         public List<KokoroVoice> GetVoices()
@@ -94,7 +95,7 @@ namespace MousyHub.Classes.Services.TTS
 }
 public class KokoroDownloader
 {
-    // Дублируем необходимые константы
+
     public static readonly Dictionary<KModel, string> ModelFileNames = new Dictionary<KModel, string>() {
         { KModel.float32, "kokoro.onnx" },
         { KModel.float16, "kokoro-quant.onnx" },
