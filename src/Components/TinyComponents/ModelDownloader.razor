@@ -5,7 +5,7 @@
 @inject HFDownloaderService HFService
 @inject UploaderService UploaderService
 @inject DiagnosticsService Diagnostic
-
+@inject AlertServices Alert
 @implements IDisposable
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" id="download-page" Class="pt-5 pb-5 childTab ">
@@ -145,8 +145,12 @@
         RecommendedModels = UploaderService.LoadRecommendedModels();
         BestGPU = Diagnostic.GPUs.OrderByDescending(a => a.VRAM_GB).FirstOrDefault();
         HFService.DownloadTickEvent += ReRenderProgressBar;
+        HFService.EndDownloadEvent += EndDownloadHandler;
     }
-
+    public void EndDownloadHandler(object? o, EventArgs e)
+    {
+        Alert.SuccessAlert($"Successfully downloaded in {o?.ToString()}");
+    }
 
 
     private void ReRenderProgressBar(object? o, EventArgs e)
@@ -156,6 +160,7 @@
     public void Dispose()
     {
         HFService.DownloadTickEvent -= ReRenderProgressBar;
+        HFService.EndDownloadEvent -= EndDownloadHandler;
     }
 
 
