@@ -22,27 +22,43 @@ class Program
         //////Временно
         //args = new string[2];
         //args[0] = "C:\\Users\\user\\Desktop\\LLMRP-master\\llmrp\\LLMRP\\bin\\Debug";
-        //args[1] = "0.2";
-        tempfilePath = $"{repoName}.zip";
+        //args[1] = "0.2";  // Версия или путь к zip-файлу
+
         if (args.Length > 1)
         {
-      
             mainAppPath = args[0];
-            newVersion = args[1];
+            string secondArg = args[1];
+
             Console.WriteLine(FiggleFonts.Slant.Render("Time to Update"));
             Console.WriteLine($"Path to MainApp: {mainAppPath}");
-            Console.WriteLine($"New version: {newVersion}");
+
             if (!Directory.Exists(mainAppPath))
             {
                 Console.WriteLine($"The directory {mainAppPath} does not exist.");
                 return;
             }
-            await DownloadAsset(newVersion);
-            UpdateApp();
+
+            // Определяем тип обновления по второму аргументу
+            if (secondArg.EndsWith(".zip") && File.Exists(secondArg))
+            {
+                // Обновление из локального zip-файла
+                Console.WriteLine($"Update archive: {secondArg}");
+                tempfilePath = secondArg;
+                UpdateApp();
+            }
+            else
+            {
+                // Обновление по версии
+                newVersion = secondArg;
+                Console.WriteLine($"New version: {newVersion}");
+                tempfilePath = $"{repoName}.zip";
+                await DownloadAsset(newVersion);
+                UpdateApp();
+            }
         }
         else
         {
-            Console.WriteLine("Path to MainApp is not specified.");
+            Console.WriteLine("Usage: Updater.exe [MainAppPath] [VersionNumber|ZipFilePath]");
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }
@@ -167,8 +183,6 @@ class Program
     }
     static void UpdateApp()
     {
-     
-
         // Ensure the zip file exists
         if (!File.Exists(tempfilePath))
         {
@@ -184,7 +198,18 @@ class Program
             {
                 if (!entry.IsFile) continue; // Skip directories
 
-                string fullZipToPath = Path.Combine(mainAppPath, entry.Name);
+                string entryName = entry.Name;
+
+                // Only process files that start with "MousyHub/" or "MousyHub\"
+                if (!entryName.StartsWith("MousyHub/") && !entryName.StartsWith("MousyHub\\"))
+                    continue;
+
+                // Extract the relative path within MousyHub
+                string relativePath = entryName.StartsWith("MousyHub/")
+                    ? entryName.Substring("MousyHub/".Length)
+                    : entryName.Substring("MousyHub\\".Length);
+
+                string fullZipToPath = Path.Combine(mainAppPath, relativePath);
                 string directoryName = Path.GetDirectoryName(fullZipToPath);
 
                 if (!string.IsNullOrEmpty(directoryName))
@@ -201,7 +226,7 @@ class Program
             }
         }
 
-        Console.WriteLine("Files successfully extracted and replaced.");
+        Console.WriteLine("MousyHub files successfully extracted and replaced.");
     }
 
 }
