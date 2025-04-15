@@ -1,4 +1,5 @@
-﻿@using MousyHub.Classes.Services.TTS
+﻿@using MousyHub.Classes.Misc
+@using MousyHub.Classes.Services.TTS
 @using MousyHub.Models
 @using MousyHub.Models.Misc
 @using MousyHub.Models.Services
@@ -9,6 +10,7 @@
 @inject SettingsService Settings
 @inject AlertServices Alert
 @inject KokoroService Kokoro
+@inject UploaderService Uploader
 <MudGrid id="select-api">
     <MudItem md="10" xs="7">
         <MudSelect Label="Select API" Variant="Variant.Outlined" Value="Service.SelectType" ValueChanged="@((KeyValuePair<ProviderService.APIType, string> newValue)=>ValueSelectConnectionChange(newValue))" OpenIcon="@Icons.Material.Filled.Api">
@@ -16,10 +18,11 @@
             {
                 <MudSelectItem Value="@item">
                     <MudStack Row AlignItems="AlignItems.Center" Spacing="0">
-                        <MudText Typo="Typo.subtitle1" Class="me-2">@item.Value</MudText>
+                   
+                        <MudText Typo="Typo.subtitle1"  Class="me-2">@item.Value</MudText>
                         @switch (item.Key)
                         {
-                            case ProviderService.APIType.Native:
+                            case ProviderService.APIType.Native:                        
                                 <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Success">quick start</MudChip>
                                 <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Success">local</MudChip>
                                 <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Primary">based on LlamaSharp</MudChip>
@@ -182,8 +185,21 @@
                 case ProviderService.APIType.Cloud:
                     <MudItem Class="d-flex align-content-center" md="6">
                         <MudForm Class="w-100">
-                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" TextChanged="RefreshStepGuide" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL"></MudTextField>
-                            <MudTextField @bind-Value="@Settings.User.CloudBasedConfig.APIKey" TextChanged="RefreshStepGuide" Adornment="Adornment.End" InputType="@PasswordInput" AdornmentIcon="@PasswordInputIcon" OnAdornmentClick="PasswordVisibleSwitch" AdornmentAriaLabel="Show Password" Variant="Variant.Outlined" Label="API KEY"></MudTextField>
+                            <MudTextFieldExtended @bind-Value="@Settings.User.CloudBasedConfig.BaseUrl" TextChanged="RefreshStepGuide" HelperText="example: https://api.llmservice.com/" Variant="Variant.Outlined" InputMode="InputMode.url" Label="URL">
+                                <AdornmentEnd>
+                                    <MudMenu Icon="@Icons.Material.Outlined.ViewList">
+                                        @foreach (var preset in CloudPresets)
+                                        {
+                                            <MudMenuItem Icon="@preset.Icon" Label="@preset.Name" OnClick="()=>Settings.User.CloudBasedConfig.BaseUrl = preset.Url" />
+                                        }
+                                    </MudMenu>
+                                </AdornmentEnd>
+                            </MudTextFieldExtended>
+                            <MudTextFieldExtended @bind-Value="@Settings.User.CloudBasedConfig.APIKey" TextChanged="RefreshStepGuide" InputType="@PasswordInput" Variant="Variant.Outlined" Label="API KEY">
+                                <AdornmentEnd>
+                                    <MudIconButton OnClick="PasswordVisibleSwitch" Icon="@PasswordInputIcon"></MudIconButton>
+                                </AdornmentEnd>
+                            </MudTextFieldExtended>
                         </MudForm>
                     </MudItem>
                     <MudItem Class="px-5" md="6">
@@ -211,7 +227,11 @@
         </MudGrid>
     </MudContainer>
 </MudPaper>
-<MudPaper Class="mt-5 pa-4">
+
+@{
+    string dynamicClass = (Service.Status || Settings.User.HideModelSettingsWhenNotConnected == false || Main.isTutorialMode) ? "unblocked mt-5 pa-4" : "blocked mt-5 pa-4";
+}
+<MudPaper Class="@dynamicClass">
     <MudGrid Spacing="2">
         <MudItem md="6">
             <TextGenParamEditor></TextGenParamEditor>
@@ -235,8 +255,12 @@
     InstructEditor InstructEditor;
 
     private void RefreshStepGuide() => Main.UserHintManager?.RefreshStepGuide();
+    private List<CloudPreset> CloudPresets = new List<CloudPreset>();
 
-
+    protected override async Task OnInitializedAsync()
+    {
+        CloudPresets = Uploader.LoadCloudPresets();
+    }
 
     private async Task ConnectionChanged()
     {

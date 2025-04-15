@@ -291,7 +291,7 @@
     }
     public async Task RefreshState(bool _)
     {
-        StateHasChanged();
+      await InvokeAsync(StateHasChanged);
     }
     public void Dispose()
     {

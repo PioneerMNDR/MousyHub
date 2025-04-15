@@ -7,14 +7,14 @@
 @inject TranslatorService Translator
 @inject TTSManagerService TTS
 @inject IJSRuntime JSRuntime
-@if (Message.Content != null && Message.Content != "")
+@if (!string.IsNullOrEmpty(Message.Content) || !string.IsNullOrEmpty(Message.ReasoningContent))
 {
     <MudAnimate Selector=".mes1" AnimationType="AnimationType.Scale" AnimationTiming="AnimationTiming.Ease" Value=1 Duration="0.2" Infinite=false>
 
     </MudAnimate>
     <MudGrid Class="mt-1 mes1" Spacing="0">
         @if (!NoAvatar)
-    {
+        {
             <MudItem md="1" xs="2">
                 <MudAvatar Class="mt-2 cursor-pointer" Size="@(Main.isMobile ? Size.Medium :Size.Large)" Elevation="2" Rounded="Settings.User.SquareAvatars">
                     @{
@@ -23,8 +23,8 @@
                     <MudImage @onclick="@(()=>ClickAvatar.InvokeAsync(imageSrc))" Fluid Src="@($"data:image/png;base64,{imageSrc}")"></MudImage>
                 </MudAvatar>
             </MudItem>
-    }
-   
+        }
+
         <MudItem md="11" xs="10">
             <div class="d-flex align-center">
                 <MudText Color="Color.Tertiary">@Message.Owner.Name</MudText>
@@ -80,6 +80,17 @@
                 else
                 {
                     <div class="MarkdownFormatting">
+
+                        @if (!string.IsNullOrEmpty(Message.ReasoningContent) && Settings.User.ReasoningOptions.Enabled)
+                        {
+                            <MudButton EndIcon="@Icons.Material.Filled.ArrowDropDown" Class="mb-2" Variant="Variant.Filled" OnClick="@(()=>ReasoningVisible = !ReasoningVisible)">Thoughts</MudButton>
+                            <MudCollapse Expanded=ReasoningVisible>
+                                <div class="border-dashed border-2 mud-border-default mb-2 px-3 pt-3">
+                                    <MudMarkdown CodeBlockTheme="CodeBlockTheme.ColorsBase16" Value="@Message.ReasoningContent"></MudMarkdown>
+                                </div>
+                    
+                            </MudCollapse>
+                        }
                         @if (Message.UserNativeLanguageContent != "" && Message.UserNativeLanguageContent != null && Message.isGenerating == false)
                         {
                             <MudMarkdown CodeBlockTheme="CodeBlockTheme.DraculaBase16" Value="@Message.UserNativeLanguageContent"></MudMarkdown>
@@ -104,7 +115,7 @@
     public bool isChatPageLoaded { get; set; }
 
     bool isEditing = false;
-
+    bool ReasoningVisible { get; set; }
 
     [CascadingParameter]
     public Main Main { get; set; }
@@ -157,7 +168,11 @@
 
         }
     }
-
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        ReasoningVisible = Settings.User.ReasoningOptions.AutoExpand;
+    }
     private async Task SaveMessage()
     {
 

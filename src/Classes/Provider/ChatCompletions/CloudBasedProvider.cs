@@ -39,7 +39,7 @@ public class ChatCompletionProvider : ILanguageModel
             var response = await _client.GenerateTextAsync(_modelName, prompt, config, maxTokens, stopSequence, _cts.Token);
 
             if (response.IsSuccess)
-                return new MessageResponse(response.Content, true, "");
+                return new MessageResponse(response.Content, true, "",response.ReasoningContent,response.RawData);
 
             return new MessageResponse("", false, response.ErrorMessage);
         }
@@ -60,7 +60,7 @@ public class ChatCompletionProvider : ILanguageModel
         try
         {
             await _client.GenerateStreamTextAsync(_modelName, prompt, config, 
-                async messageResponse => await onTokenReceived(new MessageResponse { IsSuccess = messageResponse.IsSuccess, ErrorMessage = messageResponse.ErrorMessage, Content = messageResponse.Content }), 
+                async messageResponse => await onTokenReceived(new MessageResponse { IsSuccess = messageResponse.IsSuccess, ErrorMessage = messageResponse.ErrorMessage, Content = messageResponse.Content, ReasoningContent = messageResponse.ReasoningContent }), 
                 maxTokens, stopSequence,cancellationToken: _cts.Token);
         }
         finally

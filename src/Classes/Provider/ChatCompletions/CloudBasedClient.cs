@@ -45,10 +45,10 @@ public class ChatCompletionsClient : IDisposable
     /// </summary>
     public async Task<MessageResponse> GenerateTextAsync(string model, Promt prompt, GenerationConfig config, int maxTokens = 100, string? stopSequence = null, CancellationToken cancellationToken = default)
     {
-        string endpoint = prompt.isChat ? "v1/chat/completions" : "v1/completions";
+        string endpoint = prompt.isChatCompletion ? "v1/chat/completions" : "v1/completions";
         object requestBody;
 
-        if (prompt.isChat)
+        if (prompt.isChatCompletion)
         {
             var messages = prompt.Elements.Select(e => new { role = e.MessageRole.ToString().ToLower(), content = e.Content }).ToList();
             requestBody = new
@@ -78,10 +78,12 @@ public class ChatCompletionsClient : IDisposable
                 //top_k = config.top_k,
                 min_p = config.min_p,
                 repeat_penalty = config.rep_pen,
+
             };
         }
 
         HttpResponseMessage response;
+        string rawResponseContent = string.Empty;
         try
         {
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, endpoint)
@@ -90,6 +92,7 @@ public class ChatCompletionsClient : IDisposable
             };
             response = await _httpClient.SendAsync(httpRequest, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
             response.EnsureSuccessStatusCode();
+            rawResponseContent = await response.Content.ReadAsStringAsync();
         }
         catch (HttpRequestException ex)
         {
@@ -106,24 +109,20 @@ public class ChatCompletionsClient : IDisposable
 
         try
         {
-            if (prompt.isChat)
+            var result = await response.Content.ReadFromJsonAsync<OpenAIResponse>();
+
+            if (result?.Choices?.FirstOrDefault() is Choice choice)
             {
-                var result = await response.Content.ReadFromJsonAsync<OpenAIChatResponse>(cancellationToken: cancellationToken);
-                if (result == null || result.Choices == null || result.Choices.Length == 0)
+                return new MessageResponse
                 {
-                    return new MessageResponse { IsSuccess = false, ErrorMessage = "The API returned an empty response." };
-                }
-                return new MessageResponse { IsSuccess = true, Content = result.Choices[0].Message.Content };
+                    IsSuccess = true,
+                    Content = choice.GetContent(),
+                    ReasoningContent = choice.GetReasoning(),
+                    RawData = rawResponseContent.Trim()
+                };
             }
-            else
-            {
-                var result = await response.Content.ReadFromJsonAsync<OpenAICompletionResponse>(cancellationToken: cancellationToken);
-                if (result == null || result.Choices == null || result.Choices.Length == 0)
-                {
-                    return new MessageResponse { IsSuccess = false, ErrorMessage = "The API returned an empty response." };
-                }
-                return new MessageResponse { IsSuccess = true, Content = result.Choices[0].Text };
-            }
+
+            return new MessageResponse { IsSuccess = false };
         }
         catch (JsonException ex)
         {
@@ -136,10 +135,10 @@ public class ChatCompletionsClient : IDisposable
     /// </summary>
     public async Task GenerateStreamTextAsync(string model, Promt prompt, GenerationConfig config, Action<MessageResponse> onMessage, int maxTokens = 100, string stopSequence = "", Func<string, Task> onTokenReceived = null, CancellationToken cancellationToken = default)
     {
-        string endpoint = prompt.isChat ? "v1/chat/completions" : "v1/completions";
+        string endpoint = prompt.isChatCompletion ? "v1/chat/completions" : "v1/completions";
         object requestBody;
 
-        if (prompt.isChat)
+        if (prompt.isChatCompletion)
         {
             var messages = prompt.Elements.Select(e => new { role = e.MessageRole.ToString().ToLower(), content = e.Content }).ToList();
             requestBody = new
@@ -210,28 +209,15 @@ public class ChatCompletionsClient : IDisposable
 
                 try
                 {
-                    if (prompt.isChat)
+                    var chunk = JsonSerializer.Deserialize<OpenAIResponse>(json);
+                    if (chunk?.Choices?.FirstOrDefault() is Choice choice)
                     {
-                        var chunk = JsonSerializer.Deserialize<OpenAIChatStreamResponse>(json);
-                        var content = chunk?.Choices?[0]?.Delta?.Content;
-                        if (!string.IsNullOrEmpty(content))
+                        onMessage(new MessageResponse
                         {
-                            onMessage(new MessageResponse { IsSuccess = true, Content = content });
-                            if (onTokenReceived != null)
-                                await onTokenReceived(content);
-                        }
-                    }
-                    else
-                    {
-                        var chunk = JsonSerializer.Deserialize<OpenAICompletionStreamResponse>(json);
-                        var content = chunk?.Choices?[0]?.Text;
-                        if (!string.IsNullOrEmpty(content))
-                        {
-                            onMessage(new MessageResponse { IsSuccess = true, Content = content });
-                            if (onTokenReceived != null)
-                                if (onTokenReceived != null)
-                                    await onTokenReceived(content);
-                        }
+                            IsSuccess = true,
+                            Content = choice.GetContent(),
+                            ReasoningContent = choice.GetReasoning()
+                        });
                     }
                 }
                 catch (Exception ex)
@@ -299,51 +285,65 @@ public class OpenAIModelsResponse
     }
 }
 
-// Base response class
 public class OpenAIResponse
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; }
+
+    [JsonPropertyName("object")]
+    public string ObjectType { get; set; }
+
+    [JsonPropertyName("created")]
+    public long Created { get; set; }
+
+    [JsonPropertyName("model")]
+    public string Model { get; set; }
+
+    [JsonPropertyName("data")]
+    public ModelData[] Data { get; set; }
+
+    [JsonPropertyName("choices")]
+    public List<Choice> Choices { get; set; }
+}
+
+public class ModelData
 {
     [JsonPropertyName("id")]
     public string Id { get; set; }
 }
 
-// For non-chat completions
-public class OpenAICompletionResponse : OpenAIResponse
-{
-    [JsonPropertyName("choices")]
-    public CompletionChoice[] Choices { get; set; }
-}
-
-// For chat completions
-public class OpenAIChatResponse : OpenAIResponse
-{
-    [JsonPropertyName("choices")]
-    public ChatChoice[] Choices { get; set; }
-}
-
-// Choice for non-chat completions
-public class CompletionChoice
+public class Choice
 {
     [JsonPropertyName("text")]
     public string Text { get; set; }
 
-    [JsonPropertyName("index")]
-    public int Index { get; set; }
+    [JsonPropertyName("reasoning")]
+    public string Reasoning { get; set; }
 
-    [JsonPropertyName("finish_reason")]
-    public string FinishReason { get; set; }
-}
-
-// Choice for chat completions
-public class ChatChoice
-{
     [JsonPropertyName("message")]
     public Message Message { get; set; }
 
+    [JsonPropertyName("delta")]
+    public Delta Delta { get; set; }
+
     [JsonPropertyName("index")]
     public int Index { get; set; }
 
     [JsonPropertyName("finish_reason")]
     public string FinishReason { get; set; }
+
+    public string GetContent()
+    {
+        if (Delta != null) return Delta.Content ?? "";
+        if (Message != null) return Message.Content ?? "";
+        return Text ?? "";
+    }
+
+    public string GetReasoning()
+    {
+        if (Message != null) return Message.Reasoning ?? "";
+        return Reasoning ?? "";
+    } 
 }
 
 public class Message
@@ -353,68 +353,9 @@ public class Message
 
     [JsonPropertyName("content")]
     public string Content { get; set; }
-}
 
-// For streaming non-chat completions
-public class OpenAICompletionStreamResponse
-{
-    [JsonPropertyName("id")]
-    public string Id { get; set; }
-
-    [JsonPropertyName("object")]
-    public string Object { get; set; }
-
-    [JsonPropertyName("created")]
-    public long Created { get; set; }
-
-    [JsonPropertyName("model")]
-    public string Model { get; set; }
-
-    [JsonPropertyName("choices")]
-    public CompletionStreamChoice[] Choices { get; set; }
-}
-
-// For streaming chat completions
-public class OpenAIChatStreamResponse
-{
-    [JsonPropertyName("id")]
-    public string Id { get; set; }
-
-    [JsonPropertyName("object")]
-    public string Object { get; set; }
-
-    [JsonPropertyName("created")]
-    public long Created { get; set; }
-
-    [JsonPropertyName("model")]
-    public string Model { get; set; }
-
-    [JsonPropertyName("choices")]
-    public ChatStreamChoice[] Choices { get; set; }
-}
-
-public class CompletionStreamChoice
-{
-    [JsonPropertyName("text")]
-    public string Text { get; set; }
-
-    [JsonPropertyName("index")]
-    public int Index { get; set; }
-
-    [JsonPropertyName("finish_reason")]
-    public string FinishReason { get; set; }
-}
-
-public class ChatStreamChoice
-{
-    [JsonPropertyName("index")]
-    public int Index { get; set; }
-
-    [JsonPropertyName("delta")]
-    public Delta Delta { get; set; }
-
-    [JsonPropertyName("finish_reason")]
-    public string FinishReason { get; set; }
+    [JsonPropertyName("reasoning")]
+    public string Reasoning { get; set; }
 }
 
 public class Delta
@@ -425,40 +366,6 @@ public class Delta
     [JsonPropertyName("content")]
     public string Content { get; set; }
 }
-
-
-
-
-
-// Модели для десериализации ответов
-// Универсальный интерфейс для получения контента из разных типов ответов
-public interface IContentProvider
-{
-    string GetContent();
-}
-
-// Базовый класс для ответов с выбором
-public class OpenAIChoiceResponse : OpenAIResponse
-{
-    [JsonPropertyName("choices")]
-    public object[] Choices { get; set; }
-
-    // Метод для получения контента в зависимости от типа ответа
-    public string GetContent()
-    {
-        if (Choices == null || Choices.Length == 0)
-            return null;
-
-        if (Choices[0] is IContentProvider provider)
-            return provider.GetContent();
-
-        return null;
-    }
-}
-
-
-
-
 
 
 public class OpenAIEmbeddingsResponse

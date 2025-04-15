@@ -71,6 +71,24 @@
     --bs-nav-link-hover-color: var(--mud-palette-primary-darken) !important;
 }
 
+.unblocked {
+    opacity: 1;
+    filter: blur(0);
+    pointer-events: auto;
+    user-select: auto;
+
+    transition: opacity 0.5s ease, filter 0.5s ease, pointer-events 0.5s ease;
+}
+
+.blocked {
+
+    opacity: 0.5;
+    filter: blur(5px);
+    pointer-events: none;
+    user-select: none;
+    cursor: not-allowed;
+    transition: opacity 0.5s ease, filter 0.5s ease, pointer-events 0.5s ease;
+}
 
 .asa {
     display: flex;

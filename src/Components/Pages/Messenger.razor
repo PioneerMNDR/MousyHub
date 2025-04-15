@@ -7,6 +7,7 @@
 @using MousyHub.Models.Model
 @using MousyHub.Models.Services
 @using MousyHub.Models.User
+@using System.Diagnostics
 @implements IDisposable
 @inject ProviderService Provider
 @inject ChatState State
@@ -141,7 +142,7 @@
         await RAG_Searching();
         //AddEmptyMessage run before PromtToLLM for include next bot name in message
         Guid currentGuid = State.ChatHistory.AddEmptyMessage(person, Settings.CurrentInstruct);
-        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, person, Settings.User.CloudBasedConfig.UseChatCompletions);
+        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, person, Settings.User.ReasoningOptions, Settings.User.CloudBasedConfig.UseChatCompletions);
         await Generation(currentGuid, person, promt);
         if (Force == false)
         {
@@ -214,7 +215,7 @@
 
                 await InvokeAsync(async () =>
                 {       
-                    message = await State.ChatHistory.StreamLLMEditingMessage(messageResponse.Content, messageGuid);
+                    message = await State.ChatHistory.StreamLLMEditingMessage(messageResponse.Content, messageResponse.ReasoningContent, messageGuid, Settings.User.ReasoningOptions);
                     _ = TTS.ProcessStreamingText(messageResponse.Content, person.KokoroVoice, person);
                     await JS.InvokeVoidAsync("scrollToBottom", "chat");
                     await InvokeAsync(StateHasChanged);
@@ -225,8 +226,9 @@
         {
             try
             {
-                 TTS.EndSentenceThread();
+                TTS.EndSentenceThread();
                 await message.TranslateMessage(Translator);
+     
             }
             catch (Exception ex)
             {
@@ -274,7 +276,7 @@
 
         Main.RefreshWizardPage();
         StateHasChanged();
-        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, lastMessage.Owner, Settings.User.CloudBasedConfig.UseChatCompletions);
+        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, lastMessage.Owner, Settings.User.ReasoningOptions, Settings.User.CloudBasedConfig.UseChatCompletions,isContinue:true);
         Guid currentGuid = lastMessage.GuidMessage;
         await Generation(currentGuid, lastMessage.Owner, promt);
 

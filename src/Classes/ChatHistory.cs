@@ -1,6 +1,7 @@
 ﻿using DocumentFormat.OpenXml.Bibliography;
 using MousyHub.Classes.Misc;
 using MousyHub.Classes.Model;
+using MousyHub.Classes.User;
 using MousyHub.Models.Misc;
 using MousyHub.Models.Model;
 using MousyHub.Models.Services;
@@ -111,16 +112,12 @@ namespace MousyHub.Models
         /// <param name="instruct"></param>
         /// <returns></returns>
         
-        public Promt GetPromt(Instruct instruct, Person person, bool isChat)
+        public Promt GetPromt(Instruct instruct, Person person,ReasoningOptions reasoningOptions, bool isChat, bool isContinue = false)
         {
-            Promt promt = new Promt(this, instruct, person, isChat);
+            Promt promt = new Promt(this, instruct, person, reasoningOptions, isChat, isContinue);
             if (true)
             {
-                Console.WriteLine("-----Promt-----");
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.WriteLine(promt.FullContent);
-                Console.ResetColor();
-                Console.WriteLine("---------------");
+                promt.ConsoleLog();
             }
             return promt;   
         }
@@ -386,7 +383,7 @@ namespace MousyHub.Models
 
             return message;
         }
-        public async Task<Message> StreamLLMEditingMessage(string newtoken, Guid guid)
+        public async Task<Message> StreamLLMEditingMessage(string newtoken,string newreastoken, Guid guid, ReasoningOptions reasoningOptions)
         {
             Message? message = null;
 
@@ -403,7 +400,9 @@ namespace MousyHub.Models
                 return null;
             }
             message.isGenerating = true;
+            //message.AppendContent(newtoken, reasoningOptions);
             message.Content += newtoken;
+            message.ReasoningContent += newreastoken;
             return message;
             await Task.CompletedTask;
         }

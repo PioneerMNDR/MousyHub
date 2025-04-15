@@ -17,13 +17,13 @@ namespace MousyHub.Models.Services
         bool isInstructed;
 
 
-        private void DetectAPIType()
+        private void DetectAPIType(bool isChatCompletions)
         {
-            isInstructed = _providerService.SelectType.Key is ProviderService.APIType.Cloud ? false : true;
+            isInstructed = _providerService.SelectType.Key is ProviderService.APIType.Cloud && isChatCompletions ? false : true;
         }
         public async Task<MessageResponse> Generate(string SystemPromt, string UserPromt, GenerationConfig generationConfig, Instruct instruct, string BotName = "Assistant", string UserName = "User", string PromtAfterOutputSequence = "", bool isChatCompletions=false)
         {
-            DetectAPIType();
+            DetectAPIType(isChatCompletions);
             if (_providerService.Status)
             {
                 //Set custom temp
@@ -43,7 +43,7 @@ namespace MousyHub.Models.Services
         }
         public async Task<MessageResponse> Continue(string SystemPromt, string UserPromt, string PromtForContinue, GenerationConfig generationConfig, Instruct instruct, string BotName = "Assistant", string UserName = "User", string PromtAfterOutputSequence = "", bool isChatCompletions = false)
         {
-            DetectAPIType();
+            DetectAPIType(isChatCompletions);
             if (_providerService.Status)
             {
                 //Make request

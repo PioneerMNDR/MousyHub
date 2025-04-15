@@ -1,4 +1,5 @@
 ﻿@using MousyHub.Classes.Misc
+@using MousyHub.Classes.User
 @using MousyHub.Models
 @using MousyHub.Models.Model
 @using System.Text.RegularExpressions
@@ -86,8 +87,61 @@
                     <MudTextField Label="Stop sequence" HelperText="(stopS1,stopS2,stopsSn...)" Value=@StringHelperBuilder.ToLiteral(Settings.CurrentInstruct.stop_sequence) ValueChanged=@((string e)=>{TextChanged<Instruct>(e,x=>x.stop_sequence);}) Variant="Variant.Filled"></MudTextField>
                 </MudItem>
                 <MudItem md="6" xs=6>
-                    <MudSwitch Label="Include names" Color="Color.Primary" @bind-Value=Settings.CurrentInstruct.names></MudSwitch>
+                    <MudTooltip Inline="false" Text="Add character names to dialog prompts. Makes it easier for LLMs to understand what's going on. May cause problems for Thinking Models.">
+                        <MudSwitch Label="Include names" Color="Color.Primary" @bind-Value=Settings.CurrentInstruct.names ThumbIcon="@((Settings.User.ReasoningOptions.Enabled && Settings.CurrentInstruct.names) ? Icons.Material.Rounded.Warning : "")" ThumbIconColor="Color.Warning"></MudSwitch>
+                    </MudTooltip>
+
                 </MudItem>
+                <MudItem md="12">
+                    <MudStack Justify="Justify.SpaceBetween" Row AlignItems="AlignItems.End">
+                        <MudButton EndIcon="@Icons.Material.Filled.ArrowDropDown" Variant="Variant.Filled" Class="my-3 mt-5" OnClick="@(()=>ReasoningOptionsVisible = !ReasoningOptionsVisible)">Reasoning options</MudButton>
+                        <MudTooltip Text="Enable this option if your model can reason.">
+                            <MudCheckBox Label="Enable reasoning 🧠 " Color="Color.Primary" @bind-Value=Settings.User.ReasoningOptions.Enabled></MudCheckBox>
+                        </MudTooltip>
+                    </MudStack>
+                    <MudDivider Class="mb-2" />
+                    <MudCollapse Expanded=ReasoningOptionsVisible>
+                        <MudGrid>
+                            <MudItem md="6" xs="12">
+                                <MudTooltip Text="Show hidden reasoning blocks (if model doesn't return them explicitly).">
+                                    <MudSwitch Label="Auto Expand" Color="Color.Info" @bind-Value=Settings.User.ReasoningOptions.AutoExpand></MudSwitch>
+                                </MudTooltip>
+                            </MudItem>
+                            <MudItem md="6" xs="12">
+                                <MudTooltip Text="Automatically parse reasoning from message text. (not working)">
+                                    <MudSwitch Label="Auto Parse" Color="Color.Info" @bind-Value="Settings.User.ReasoningOptions.AutoParse"></MudSwitch>
+                                </MudTooltip>
+                            </MudItem>
+                            <MudItem md="6" xs="12">
+                                <MudTextField Label="Prefix"
+                                              Value="@StringHelperBuilder.ToLiteral(Settings.User.ReasoningOptions.Prefix)"
+                                              ValueChanged="@((string e)=>TextChangedForReasoning<ReasoningOptions>(e,x=>x.Prefix))"
+                                              Variant="Variant.Filled">
+                                </MudTextField>
+                            </MudItem>
+                            <MudItem md="6" xs="12">
+                                <MudTextField Label="Suffix"
+                                              Value="@StringHelperBuilder.ToLiteral(Settings.User.ReasoningOptions.Suffix)"
+                                              ValueChanged="@((string e)=>TextChangedForReasoning<ReasoningOptions>(e,x=>x.Suffix))"
+                                              Variant="Variant.Filled">
+                                </MudTextField>
+                            </MudItem>
+                            <MudItem md="6" xs="12">
+                                <MudTextField Label="Separator"
+                                              Value="@StringHelperBuilder.ToLiteral(Settings.User.ReasoningOptions.Separator)"
+                                              ValueChanged="@((string e)=>TextChangedForReasoning<ReasoningOptions>(e,x=>x.Separator))"
+                                              Variant="Variant.Filled">
+                                </MudTextField>
+                            </MudItem>
+
+
+
+                        </MudGrid>
+
+                    </MudCollapse>
+
+                </MudItem>
+
             }
             else
             {
@@ -96,7 +150,7 @@
                 </MudItem>
             }
 
-       
+
             @if (shouldShowInstructForTextCompletion)
             {
                 <MudItem md="12" xs=12 Class="d-flex flex-column">
@@ -104,7 +158,7 @@
                     <MudMarkdown CodeBlockTheme="CodeBlockTheme.A11yDark" Value="@preview"></MudMarkdown>
                 </MudItem>
             }
-     
+
         </MudGrid>
     </MudContainer>
 }
@@ -121,7 +175,8 @@
     string symbol = "@";
     string preview { get; set; } = "";
     bool isWaitNameInput = false;
-        private bool shouldShowInstructForTextCompletion =>
+    bool ReasoningOptionsVisible = false;
+    private bool shouldShowInstructForTextCompletion =>
     !(Service.SelectType.Key is ProviderService.APIType.Cloud && Settings.User.CloudBasedConfig.UseChatCompletions);
 
     public void ReRenderState()
@@ -133,6 +188,11 @@
     {
         var property = (PropertyInfo)((MemberExpression)propertyExpession.Body).Member;
         property.SetValue(Settings.CurrentInstruct, Regex.Unescape(val));
+    }
+    private void TextChangedForReasoning<T>(string val, Expression<Func<T, object>> propertyExpession)
+    {
+        var property = (PropertyInfo)((MemberExpression)propertyExpession.Body).Member;
+        property.SetValue(Settings.User.ReasoningOptions, Regex.Unescape(val));
     }
     private async Task PreviewGenerator(Instruct instruct)
     {
@@ -155,7 +215,7 @@
         StateHasChanged();
         await Task.Delay(100);
 
-        preview = "```" + "\n" + instruct.system_sequence + "\n" + "(System_Promt+Char_Info)" + instruct.input_suffix + instruct.input_sequence + "\n" + n1 + "(User_Message)" + instruct.output_suffix + instruct.output_sequence + "\n" + n2 + "(Char_Message)" ;
+        preview = "```" + "\n" + instruct.system_sequence + "\n" + "(System_Promt+Char_Info)" + instruct.input_suffix + instruct.input_sequence + "\n" + n1 + "(User_Message)" + instruct.output_suffix + instruct.output_sequence + "\n" + n2 + "(Char_Message)";
 
         StateHasChanged();
     }

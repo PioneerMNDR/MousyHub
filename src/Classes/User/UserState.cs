@@ -21,6 +21,7 @@ namespace MousyHub.Models.User
         public TranslatorOptions TranslatorOptions { get; set; } = new TranslatorOptions();
         public RAGOptions RAGOptions { get; set; } =  new RAGOptions();
         public CloudBasedConfig CloudBasedConfig { get; set; } = new CloudBasedConfig();
+        public ReasoningOptions ReasoningOptions { get; set; } = new ReasoningOptions();
         public TTSOptions TTSOptions { get; set; } = new TTSOptions();
         public int CurrentMaxToken { get; set; } = 300;
         public int CurrentContextLength { get; set; } = 4096;
@@ -34,6 +35,7 @@ namespace MousyHub.Models.User
         public bool HideNSFWPicture { get; set; } = false;
         public bool VoiceMode { get; set; } = false;
         public bool HideDownloadPage { get; set; } = false;
+        public bool HideModelSettingsWhenNotConnected { get; set; } = true;
         private bool AttemptHideDownloadPage { get; set; } = false;
         public bool GenerateShortDesOnImport { get; set; } = true;
         public QuickReplySetting[] QuickRepliesSetings { get; set; } = { new QuickReplySetting(QuickReplySetting.ResponseEmotion.Positive), new QuickReplySetting(QuickReplySetting.ResponseEmotion.Neutral), new QuickReplySetting(QuickReplySetting.ResponseEmotion.Negative) };

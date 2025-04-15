@@ -37,22 +37,22 @@ namespace MousyHub.Classes.Services.TTS
         {
             if (_settingsService.User.TTSOptions.Enabled)
             {
-                // Отменяем текущую обработку
+                // Cancel the current processing
                 if (!_processingCts.IsCancellationRequested)
                 {
                     _processingCts.Cancel();
 
-                    // Создаем новый источник токена отмены для будущих операций
+                    // Create a new cancellation token source for future operations
                     _processingCts = new CancellationTokenSource();
                 }
 
-                // Очищаем строковый буфер вместо коллекции
+
                 Buffer = string.Empty;
                 BufferSentences.Clear();
-                // Сбрасываем состояние нарратора
+
                 NarratorSequence = false;
 
-                // Очистка очереди аудио
+                // Clear audio queue
                 await _audioService.StopAllAsync();
                 await _audioService.ClearQueueAsync();
                     IsQueued = false;
@@ -97,7 +97,7 @@ namespace MousyHub.Classes.Services.TTS
             foreach (string sent in AllSentences)
             {
                 // Use a more robust way to check if this sentence already exists
-                if (!BufferSentences.Any(x => x.Text.Equals(sent, StringComparison.Ordinal)))
+                if (!BufferSentences.Any(x => x.Text.NormalizeString().Equals(sent.NormalizeString(), StringComparison.Ordinal)))
                 {
                     var newSent = new KokoroSentence(sent, false);
                     if (newSent.textMarkerType is KokoroSentence.TextMarkerType.StartOnly)
@@ -117,10 +117,10 @@ namespace MousyHub.Classes.Services.TTS
         {
             foreach (var sentence in sentencesToSpeak)
             {
-                // Проверяем отмену без выбрасывания исключения
+                // Check for cancellation without throwing an exception
                 if (token.IsCancellationRequested)
                 {                
-                    break; // Выходим из цикла при отмене
+                    break; 
                 }            
                 try
                 {
@@ -136,7 +136,7 @@ namespace MousyHub.Classes.Services.TTS
                         wavData = await _kokoroService.GetSpeak(sentence.Text, char_voice_name);
                     }
 
-                    // Повторная проверка после асинхронной операции
+                 
                     if (token.IsCancellationRequested)
                     {
                      
@@ -148,7 +148,7 @@ namespace MousyHub.Classes.Services.TTS
                 }
                 catch (Exception ex) when (!(ex is OperationCanceledException))
                 {
-                    // Обрабатываем все исключения кроме отмены операции
+                  
                     Console.WriteLine($"Processing error: {ex.Message}");
                 }
             }
@@ -188,8 +188,8 @@ namespace MousyHub.Classes.Services.TTS
                 return;
 
             try
-            {          
-                // Очищаем всё
+            {
+                // Clear everything
                 NarratorSequence = false;
                 if (BufferSentences.Count > 30)
                 {
@@ -209,6 +209,7 @@ namespace MousyHub.Classes.Services.TTS
         }
 
     }
+
     public class KokoroSentence
     {
         public KokoroSentence(string text, bool isNarrator)
@@ -229,10 +230,10 @@ namespace MousyHub.Classes.Services.TTS
         public TextMarkerType textMarkerType { get; set; }
         public enum TextMarkerType
         {
-            None,           // Нет звездочек
-            StartOnly,      // Звездочка только в начале
-            EndOnly,        // Звездочка только в конце
-            BothEnds        // Звездочки в начале и в конце
+            None, // No asterisks
+            StartOnly, // Star only at the beginning
+            EndOnly, // Star only at the end
+            BothEnds // Stars at the beginning and at the end
         }
 
 

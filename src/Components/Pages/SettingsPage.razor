@@ -120,9 +120,9 @@
     </MudItem>
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
-            <MudStack Row>
+            <MudStack Row Justify="Justify.SpaceBetween">
                 <MudText Typo="Typo.h4">Kokoro TTS Model</MudText>
-                <MudSpacer></MudSpacer>
+
                 <MudSwitch @bind-Value=Settings.User.TTSOptions.Enabled Color="Color.Primary" Label="Enabled"></MudSwitch>
             </MudStack>
             <MudDivider Class="mb-4"></MudDivider>
@@ -173,12 +173,13 @@
                     }
                 </MudSelect>
                 <MudStack Row>
-                    <MudTextField Label="Custom model directory" @bind-Value=newDir ></MudTextField>
+                    <MudTextField Label="Custom model directory" @bind-Value=newLLMFolderDir ></MudTextField>
                     <MudButton OnClick="SelectDirectoryAsync" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small">Save directory</MudButton>
-                    <MudButton Variant="Variant.Filled" Size="Size.Small" OnClick="@(()=>{newDir = "";Settings.User.CustomModelPathFolder=string.Empty;Settings.LoadModelsList(Uploader); Alert.SuccessAlert("Returned to default path");})">Default path</MudButton>
+                    <MudButton Variant="Variant.Filled" Size="Size.Small" OnClick="@(()=>{newLLMFolderDir = "";Settings.User.CustomModelPathFolder=string.Empty;Settings.LoadModelsList(Uploader); Alert.SuccessAlert("Returned to default path");})">Default path</MudButton>
                 </MudStack>
                 <MudSwitch @bind-Value=Settings.User.HideNSFWPicture Color="Color.Primary" Label="Hide NSFW picture"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.HideDownloadPage Color="Color.Primary" Label="Hide Download Page"></MudSwitch>
+                <MudSwitch @bind-Value=Settings.User.HideModelSettingsWhenNotConnected Color="Color.Primary" Label="Hide Model Settings When Not Connected"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.GenerateShortDesOnImport Color="Color.Primary" Label="Generate short description on card import"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.SquareAvatars Color="Color.Primary" Label="Square avatars"></MudSwitch>
             </MudStack>
@@ -186,9 +187,9 @@
     </MudItem>
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
-            <MudStack Row>
+            <MudStack Row Justify="Justify.SpaceBetween">
                 <MudText Typo="Typo.h4">Translator</MudText>
-                <MudSpacer></MudSpacer>
+           
                 <MudSwitch Label="Enabled" Color="Color.Primary" @bind-Value=Settings.User.TranslatorOptions.isEnabled></MudSwitch>
             </MudStack>
 
@@ -218,16 +219,22 @@
     </MudItem>
     <MudItem xs="12" md="6">
         <MudPaper Class="pa-3">
-            <MudStack Row>
+            <MudStack Row Justify="Justify.SpaceBetween">
                 <MudText Typo="Typo.h4">Check update</MudText>
+                <MudSwitch Color="Color.Primary" Label="Manual update" @bind-Value=IsManualZipUpdate></MudSwitch>
             </MudStack>
             <MudDivider Class="mb-4"></MudDivider>
             <MudStack>
                 <MudText>Current version: @AppVersion._version</MudText>
                 <MudText>Last version: @Updater.lastVersion</MudText>
-                @if (Updater.ReadyToUpdate && Updater.isUpdating == false)
+           
+                @if (IsManualZipUpdate)
                 {
-                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Updater.LaunchUpdater">Update</MudButton>
+                    <MudTextField @bind-Value=ZipUpdatePath Variant="Variant.Outlined"  Label="Path to MousyHub.zip"></MudTextField>
+                }
+                @if (IsManualZipUpdate && !string.IsNullOrEmpty(ZipUpdatePath) && ZipUpdatePath.EndsWith(".zip") || (Updater.ReadyToUpdate && Updater.isUpdating == false))
+                {
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@(()=>Updater.LaunchUpdater(ZipUpdatePath))">Update</MudButton>
                 }
                 else if (Updater.isUpdating)
                 {
@@ -250,7 +257,9 @@
     Func<string, string> converter = p => Path.GetFileName(p);
     bool themeOpen = false;
     string themeName = "";
-    string newDir = "";
+    string newLLMFolderDir = "";
+    bool IsManualZipUpdate = false;
+    string ZipUpdatePath = string.Empty;
     // private ThemeManagerTheme ManagerTheme = new ThemeManagerTheme();
 
     // private void savepreset()
@@ -265,8 +274,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-
-        await Updater.CheckUpdate();
+        _ =  Updater.CheckUpdate();
         StateHasChanged();
     }
 
@@ -274,9 +282,9 @@
     {
         try
         {
-            if (Directory.Exists(newDir))
+            if (Directory.Exists(newLLMFolderDir))
             {
-                Settings.User.CustomModelPathFolder = newDir;
+                Settings.User.CustomModelPathFolder = newLLMFolderDir;
                 Settings.LoadModelsList(Uploader);
                 Alert.SuccessAlert("New models directory saved");
             }

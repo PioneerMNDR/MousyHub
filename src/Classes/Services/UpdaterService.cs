@@ -23,9 +23,6 @@ namespace MousyHub.Models.Services
             _hostApplicationLifetime = hostApplicationLifetime;
             _hostEnvironment = hostEnvironment;
             appPath = AppDomain.CurrentDomain.BaseDirectory;
-            string v = Directory.GetParent(appPath).FullName;
-            appPath = Directory.GetParent(v).FullName;
-
 
         }
         private bool IsApplicationDevelopmentVersion()
@@ -53,7 +50,7 @@ namespace MousyHub.Models.Services
             return Util.FindFileRecursive(rootDirectory, fileName);
         }
 
-        public void LaunchUpdater()
+        public void LaunchUpdater(string updateSource = null)
         {
             isUpdating = true;
             string updaterFileName = "MousyUpdater.exe";
@@ -61,17 +58,29 @@ namespace MousyHub.Models.Services
 
             if (!string.IsNullOrEmpty(updaterPath))
             {
-
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var settings = scope.ServiceProvider.GetRequiredService<UploaderService>();
                     settings.SavePresets();
                 }
                 _hostApplicationLifetime.StopApplication();
-                // Запускаем Updater.exe с аргументом в виде пути к MainApp
+
+                // Запускаем Updater.exe с аргументами
                 ProcessStartInfo startInfo = new ProcessStartInfo(updaterPath);
                 startInfo.ArgumentList.Add($"{appPath}");
-                startInfo.ArgumentList.Add(lastVersion);
+
+                // Определяем, что передать в качестве второго аргумента
+                if (!string.IsNullOrEmpty(updateSource) && updateSource.EndsWith(".zip") && File.Exists(updateSource))
+                {
+                    // Если передан путь к zip-файлу, используем его
+                    startInfo.ArgumentList.Add(updateSource);
+                }
+                else
+                {
+                    // Иначе используем номер версии
+                    startInfo.ArgumentList.Add(updateSource ?? lastVersion);
+                }
+
                 startInfo.UseShellExecute = false;
                 startInfo.CreateNoWindow = false;
 
@@ -88,7 +97,7 @@ namespace MousyHub.Models.Services
             }
             else
             {
-                isUpdating= false;
+                isUpdating = false;
                 Console.WriteLine("Updater не найден.");
             }
         }

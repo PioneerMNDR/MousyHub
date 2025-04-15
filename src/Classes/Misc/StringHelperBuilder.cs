@@ -7,6 +7,18 @@ namespace MousyHub.Classes.Misc
 {
     static class StringExtensions
     {
+        public static string NormalizeString(this string text)
+        {
+            // Удаляем пробелы по краям
+            string trimmed = text.Trim();
+
+            // Заменяем множественные пробелы на один
+            string normalizedSpaces = Regex.Replace(trimmed, @"\s+", " ");
+
+            // Опционально: удаляем знаки пунктуации для сравнения
+            // Или используем более мягкую проверку
+            return Regex.Replace(normalizedSpaces, @"[,.!?;:'""()]", "");
+        }
         public static string[] SplitWithDefaultSeparators(this string text)
         {
             string[] separators = GenerateSeparatorVariations();
@@ -160,13 +172,13 @@ namespace MousyHub.Classes.Misc
             return story_string;
         }
 
-        /// <returns>Returns a phrase for a chat like: '<|im_end|><|im_start|>user\UserName: '</returns>
+        /// <returns>Returns a phrase for a chat like: '<|im_end|><|im_start|>user\UserName:{promt here} '</returns>
         public static string UserMessageInstructed(Instruct instruct, string promt, string personName)
         {
             var n1 = personName + ": ";
             if (instruct.names == false)
             {
-                n1 = "";
+                n1 = " ";
             }
             if (instruct.macro)
             {
@@ -176,7 +188,7 @@ namespace MousyHub.Classes.Misc
             {
                 instruct.input_suffix = "\n";
             }
-            string e = instruct.input_suffix + instruct.input_sequence + n1 + promt;
+            string e = instruct.input_suffix + instruct.input_sequence + "\n" + n1 +promt;
             return e;
         }
 
@@ -198,7 +210,7 @@ namespace MousyHub.Classes.Misc
             {
                 instruct.output_suffix = "\n";
             }
-            string content = instruct.output_suffix + instruct.output_sequence + n2;
+            string content = instruct.output_suffix + instruct.output_sequence + "\n" + n2;
             return content;
         }
 

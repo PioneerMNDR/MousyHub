@@ -5,6 +5,7 @@ using MousyHub.Models.Misc;
 using MousyHub.Models.Model;
 using MousyHub.Models.User;
 using MousyHub.Models.Misc.Tutorial;
+using MousyHub.Classes.Misc;
 namespace MousyHub.Models.Services
 {
     public class UploaderService
@@ -90,10 +91,12 @@ namespace MousyHub.Models.Services
         public List<Instruct> LoadInstructs(bool Default = false)
         {
             string directory = Environment.CurrentDirectory + "/wwwroot/InstructConfigs/";
-            if (Default)
-                directory = Environment.CurrentDirectory + "/wwwroot/default/InstructConfigs/";
+            string defaultDirectory = Environment.CurrentDirectory + "/wwwroot/default/InstructConfigs/";
+
             List<Instruct> list = new List<Instruct>();
-            if (Directory.Exists(directory))
+
+            // Load user configs first
+            if (!Default && Directory.Exists(directory))
             {
                 foreach (string file in Directory.GetFiles(directory, "*.json"))
                 {
@@ -102,28 +105,79 @@ namespace MousyHub.Models.Services
                     list.Add(ints);
                 }
             }
-            if (list.Count == 0 && Default == false)
+
+            // Load default configs
+            string loadDir = Default ? directory : defaultDirectory;
+            if (Directory.Exists(loadDir))
+            {
+                foreach (string file in Directory.GetFiles(loadDir, "*.json"))
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(file);
+                    string json = File.ReadAllText(file);
+                    Instruct defaultInst = JsonConvert.DeserializeObject<Instruct>(json);
+
+                    // Check if this config already exists in the list by name
+                    bool exists = list.Any(i => i.name == fileName);
+
+                    if (!exists)
+                    {
+                        list.Add(defaultInst);
+                    }
+                }
+            }
+
+            // If still empty and not already looking for defaults, load defaults
+            if (list.Count == 0 && !Default)
                 list = LoadInstructs(Default: true);
+
             return list;
         }
+
+
         public List<GenerationConfig> LoadPresets(bool Default = false)
         {
             string directory = Environment.CurrentDirectory + "/wwwroot/Presets/";
-            if (Default)
-                directory = Environment.CurrentDirectory + "/wwwroot/default/Presets/kobold";
+            string defaultDirectory = Environment.CurrentDirectory + "/wwwroot/default/Presets/kobold";
+
             List<GenerationConfig> list = new List<GenerationConfig>();
-            if (Directory.Exists(directory))
+
+            // Load user configs first
+            if (!Default && Directory.Exists(directory))
             {
                 foreach (string file in Directory.GetFiles(directory, "*.json"))
                 {
                     string json = File.ReadAllText(file);
-                    GenerationConfig ints = JsonConvert.DeserializeObject<GenerationConfig>(json);
-                    ints.ConfigName = Path.GetFileNameWithoutExtension(file);
-                    list.Add(ints);
+                    GenerationConfig config = JsonConvert.DeserializeObject<GenerationConfig>(json);
+                    config.ConfigName = Path.GetFileNameWithoutExtension(file);
+                    list.Add(config);
                 }
             }
-            if (list.Count == 0 && Default == false)
+
+            // Load default configs
+            string loadDir = Default ? directory : defaultDirectory;
+            if (Directory.Exists(loadDir))
+            {
+                foreach (string file in Directory.GetFiles(loadDir, "*.json"))
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(file);
+
+                    // Check if this config already exists in the list by name
+                    bool exists = list.Any(c => c.ConfigName == fileName);
+
+                    if (!exists)
+                    {
+                        string json = File.ReadAllText(file);
+                        GenerationConfig config = JsonConvert.DeserializeObject<GenerationConfig>(json);
+                        config.ConfigName = fileName;
+                        list.Add(config);
+                    }
+                }
+            }
+
+            // If still empty and not already looking for defaults, load defaults
+            if (list.Count == 0 && !Default)
                 list = LoadPresets(Default: true);
+
             return list;
         }
         public UserState LoadSettings()
@@ -182,6 +236,35 @@ namespace MousyHub.Models.Services
             return null;
         }
 
+        public List<CloudPreset> LoadCloudPresets()
+        {
+            List<CloudPreset> list = new List<CloudPreset>();
+            string path = Environment.CurrentDirectory + "/wwwroot/default/CloudPresets.json";
+            if (File.Exists(path))
+            {
+                string json = File.ReadAllText(path);
+                list = JsonConvert.DeserializeObject<CloudPreset[]>(json).ToList();
+
+            }
+            foreach (CloudPreset cloudPreset in list) 
+            {
+                cloudPreset.Icon = LoadCustomIcon(cloudPreset.IconName);
+            }
+            return list;
+
+        }
+        public string LoadCustomIcon(string iconName)
+        {
+            string iconsFolderPath = Path.Combine(Environment.CurrentDirectory, "wwwroot", "Content", "icons");
+            string iconPath = Path.Combine(iconsFolderPath, iconName);
+
+            if (File.Exists(iconPath))
+            {
+                return File.ReadAllText(iconPath);
+            }
+
+            return string.Empty;
+        }
         public List<RecommendedModel> LoadRecommendedModels()
         {
             List<RecommendedModel> list = new List<RecommendedModel>();

@@ -100,7 +100,7 @@ namespace MousyHub.Classes.Misc
                     StepGuide.Add("Connect", provider.Status);
                     break;
                 case ProviderService.APIType.Native:
-                    StepGuide.Add("Install at least one LLM model in .gguf format",provider.ModelList.Count != 0);
+                    StepGuide.Add("Install at least one LLM model in .gguf format",settings.LocalModelsList.Count != 0);
                     StepGuide.Add("Select an LLM model from the list", !string.IsNullOrEmpty(settings.User.SelfInferenceConfig.ModelPath));
                     StepGuide.Add("Don't forget to specify launch parameters suitable for the model and your PC", true);
                     StepGuide.Add("Connect", provider.Status);

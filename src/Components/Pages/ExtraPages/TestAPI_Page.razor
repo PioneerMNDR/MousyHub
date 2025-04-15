@@ -1,0 +1,89 @@
+﻿@using MousyHub.Models.Services
+@inject IStringLocalizer<Resource> Loc
+@inject AdvancedQueryService Service
+@inject SettingsService Settings
+@inject ProviderService Provider
+@inject AlertServices Alert
+
+<MudGrid Justify="Justify.Center">
+    <MudItem lg="6" sm="12">
+        <MudText Class="mb-2" Typo="Typo.h4">Input data</MudText>
+        <MudPaper Class="pa-3">
+            <MudStack Justify="Justify.Center">
+                <MudItem>
+                    <MudTextField AutoGrow Variant="Variant.Filled" Label="System promt" @bind-Value=SystemPromt></MudTextField>
+                </MudItem>
+                <MudItem>
+                    <MudTextField AutoGrow Variant="Variant.Filled" Label="Promt" @bind-Value=Promt></MudTextField>
+                </MudItem>
+                <MudItem>
+                    <MudButton Variant="Variant.Filled" Disabled="!Provider.Status" Color="Color.Primary" OnClick="Generate">Generate</MudButton>
+                </MudItem>
+            </MudStack>
+        </MudPaper>
+
+    </MudItem>
+    <MudItem lg="12" sm="12">
+        <MudText Class="mb-2" Typo="Typo.h4">JSON Viewer</MudText>
+        <MudPaper Class="pa-3">
+            @if (!string.IsNullOrEmpty(_json))
+            {
+                <MudJsonTreeView Json="@_json"  />
+            }
+            else if (isGenerating)
+            {
+                <MudProgressCircular Indeterminate></MudProgressCircular>
+        
+            }
+            else
+            {
+                <MudText>Empty data</MudText>
+            }
+
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+
+@code {
+    string? _json;
+    string Promt = "Think and tell me what is the best way to catch a perch";
+    string SystemPromt = "A chat between a curious human and an artificial intelligence assistant. The assistant gives helpful, detailed, and polite answers to the human's questions.";
+    string Reasoning = string.Empty;
+    string Answer = string.Empty;
+    bool isGenerating;
+    async Task Generate()
+    {
+        _json = string.Empty;
+        StateHasChanged();
+        try
+        {
+            isGenerating = true;
+            var response = await Service.Generate(SystemPromt, Promt, Settings.CurrentGenerationConfig, Settings.CurrentInstruct, isChatCompletions: Settings.User.CloudBasedConfig.UseChatCompletions);
+            if (response.IsSuccess)
+            {
+                Answer = response.Content;
+                Reasoning = response.ReasoningContent;
+                _json = response.RawData;
+            }
+            else
+            {
+                Alert.ErrorAlert(response.ErrorMessage);
+            }
+            isGenerating = false;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw;
+        }
+        finally
+        {
+            isGenerating = false;
+            StateHasChanged();
+        }
+
+
+    }
+
+}
