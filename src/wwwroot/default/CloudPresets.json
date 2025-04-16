@@ -1,0 +1,12 @@
+﻿[
+  {
+    "url": "https://openrouter.ai/api/",
+    "IconName": "openrouter.svg",
+    "name": "OpenRouter"
+  },
+  {
+    "url": "http://localhost:1234",
+    "IconName": "lmstudio.svg",
+    "name": "LM Studio"
+  }
+]
