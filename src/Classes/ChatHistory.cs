@@ -92,7 +92,7 @@ namespace MousyHub.Models
         /// </summary>
         public string? MemoryFromChat { get; set; }
 
-        public int? ChatContextSize { get; set; }
+        public int ChatContextSize { get; set; } = 0;
 
         public int TotalMessagesCount {  get; private set; }
         public List<Message> Messages { get; set; }

@@ -18,11 +18,11 @@
             {
                 <MudSelectItem Value="@item">
                     <MudStack Row AlignItems="AlignItems.Center" Spacing="0">
-                   
-                        <MudText Typo="Typo.subtitle1"  Class="me-2">@item.Value</MudText>
+
+                        <MudText Typo="Typo.subtitle1" Class="me-2">@item.Value</MudText>
                         @switch (item.Key)
                         {
-                            case ProviderService.APIType.Native:                        
+                            case ProviderService.APIType.Native:
                                 <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Success">quick start</MudChip>
                                 <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Success">local</MudChip>
                                 <MudChip Size="Size.Small" Style="height:20px" T="string" Color="Color.Primary">based on LlamaSharp</MudChip>
@@ -53,32 +53,32 @@
         }
         else
         {
-            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="ConnectionChanged" FullWidth>Connect</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="ConnectionChanged" FullWidth>@(Service.Status ? "Reconnect" : "Connect")</MudButton>
         }
     </MudItem>
 </MudGrid>
 
 
 <MudDivider Class="mt-3 mb-3"></MudDivider>
-<MudPaper Elevation="2">
+<MudPaper Elevation="@(Service.Status ? 2 : 6)">
     <MudContainer Class="pa-4">
         <MudGrid Spacing="2" Justify="Justify.SpaceBetween">
             @switch (Service.SelectType.Key)
             {
                 case ProviderService.APIType.KoboldCPP:
                     <MudItem md="12">
-                        <MudText Typo="Typo.h6">What is KoboldCPP</MudText>
-                        <MudPaper Outlined Class="pa-4">
+                        <MudStack Row AlignItems="AlignItems.Center">
+                            <MudImage Height="150" ObjectFit="ObjectFit.Contain"  Src="Content/icons/kobold.png"></MudImage>
                             <MudStack>
-
-                                <MudText>KoboldCPP is the best backend application for running LLM today. Kobold supports the most modern models, as well as cool and complex samplers that provide the best experience of communicating with characters</MudText>
-                                <MudText>
+                                <MudText HtmlTag="i" Class="pa-2 rounded" Typo="Typo.body2">«KoboldCPP is the best backend application for running LLM today. Kobold supports the most modern models, as well as cool and complex samplers that provide the best experience of communicating with characters»</MudText>
+                                <MudText Class="pa-2 rounded border-1 border">
                                     You can download the KoboldCPP program
                                     <MudLink href="https://github.com/LostRuins/koboldcpp/releases" Target="_blank">HERE</MudLink>.
                                     Don't forget to choose the version you need according to your PC's specifications
                                 </MudText>
                             </MudStack>
-                        </MudPaper>
+
+                        </MudStack>
                     </MudItem>
                     <MudItem Class="d-flex align-content-center" md="4">
                         <MudTextField @bind-Value="@Settings.User.KoboldURL" Label="URL"></MudTextField>
@@ -231,7 +231,7 @@
 @{
     string dynamicClass = (Service.Status || Settings.User.HideModelSettingsWhenNotConnected == false || Main.isTutorialMode) ? "unblocked mt-5 pa-4" : "blocked mt-5 pa-4";
 }
-<MudPaper Class="@dynamicClass">
+<MudPaper Class="@dynamicClass" Elevation="2">
     <MudGrid Spacing="2">
         <MudItem md="6">
             <TextGenParamEditor></TextGenParamEditor>

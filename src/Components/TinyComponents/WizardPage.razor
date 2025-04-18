@@ -23,15 +23,15 @@
                 <MudDivider DividerType="DividerType.Middle"></MudDivider>
             </div>
 
-            @if (double.TryParse(Provider.MaxContextSize, out var maxValue) && State.ChatHistory.ChatContextSize.HasValue)
+            @if (double.TryParse(Provider.MaxContextSize, out var maxValue) && State.ChatHistory.ChatContextSize>0)
             {
                 <div style="width:100%;">
                     <MudText Typo="Typo.caption">Context size:</MudText>
                     <MudProgressLinear Size="Size.Large" Indeterminate="false"
                                        Max="@maxValue"
-                                       Value="@(Convert.ToDouble(State.ChatHistory.ChatContextSize.Value))">
+                                       Value="@(Convert.ToDouble(State.ChatHistory.ChatContextSize))">
                         <MudText Typo="Typo.caption" Color="Color.Surface">
-                            <small>   @State.ChatHistory.ChatContextSize.Value / @maxValue </small>
+                            <small>   @State.ChatHistory.ChatContextSize / @maxValue </small>
 
                         </MudText>
                     </MudProgressLinear>
@@ -40,10 +40,17 @@
             }
             else
             {
-                <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined">
-                    Context: @State.ChatHistory.ChatContextSize /
-                    @(Provider.MaxContextSize == "?" ? "Unlimited" : Provider.MaxContextSize)
-                </MudAlert>
+                <div style="width:100%;">
+                    <MudText Typo="Typo.caption">Context size:</MudText>
+                    <MudProgressLinear Size="Size.Large" Indeterminate="false"
+                                       Max="10000"
+                                       Value="@(Convert.ToDouble(State.ChatHistory.ChatContextSize))">
+                        <MudText Typo="Typo.caption" Color="Color.Surface">
+                            <small>   @State.ChatHistory.ChatContextSize / ? </small>
+
+                        </MudText>
+                    </MudProgressLinear>
+                </div>
             }
             <SystemMonitor Mode="SystemMonitor.MonitorMode.RAM" ProgressBar></SystemMonitor>
         </MudStack>

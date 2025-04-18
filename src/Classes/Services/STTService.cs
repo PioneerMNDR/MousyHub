@@ -194,15 +194,22 @@ namespace MousyHub.Models.Services
 
         private async Task OnError(SpeechRecognitionErrorEvent errorEvent)
         {
-            Console.WriteLine($"Error: {errorEvent.Error}");
-            isRecord = false;
+            Console.WriteLine($"STT Error: {errorEvent.Error}");
+            if (_lastRecognizedText.Length > 0)
+            {
+                RecognitionCompleted?.Invoke(this, _lastRecognizedText);
 
+             
+            }
+            isRecord = false;      
             _lastRecognizedText = string.Empty;
             _silenceTimer?.Stop();
             _silenceTimer?.Dispose();
             _silenceTimer = null;
             _recognitionSubscription?.Dispose();
             _recognitionSubscription = null;
+            //A very strange error was displayed in Yandex browser
+            if (errorEvent.Error == "network") return;
             ErrorRecognition?.Invoke();
         }
 
