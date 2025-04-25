@@ -27,6 +27,4 @@ jobs:
             📝 *Release Description:*
             ${{ github.event.release.body }}
             
-            --- 
             
-            🔗 [View details on GitHub](${{ github.event.release.html_url }})
