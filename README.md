@@ -8,6 +8,8 @@
 </div>
 
 ---  
+
+
 ## 🌟 Key Features  
 
 ### 🚀 Multi-API Provider Support  
@@ -25,9 +27,10 @@
 
 ### 🔊 Voice Interaction (Beta)  
 - **Dynamic voice synthesis** via `KokoroTTS` (separate voices for characters and narrators)  
-- **Voice Mode**: Audio-only mode (currently English-only output)  
-
----  
+- **Voice Mode**: Audio-only mode (currently English-only output)
+  
+### 📌 Other
+- **Import** from Chub AI (support for other providers planned)  
 
 ## 🐭 Why MousyHub?  
 
@@ -40,12 +43,21 @@
   - Easy setup (especially for beginners)  
   - Support for small RP-fine-tuned models  
 
----  
 
-## 📋 Character Cards  
-- **Import** from Chub AI (support for other providers planned)  
+## ⬇️ Download and Setup
 
----  
+<div align="center">
+
+[![Download Button](https://img.shields.io/badge/Download_MousyHub_(Windows_x64)-darkgreen?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/PioneerMNDR/MousyHub/releases/latest/download/MousyHub.zip)
+
+</div>
+
+### 🚀 Quick Start Guide:
+1. **Download** the archive and unzip it to any location  
+2. **Launch** `MousyHub.exe` and create your first persona  
+3. **Connect** your preferred LLM provider  
+
+✨ *Tip: Right-click the tray icon for quick settings access*
 
 ## 🛠️ Technical Details  
 
