@@ -59,6 +59,17 @@
 
 ✨ *Tip: Right-click the tray icon for quick settings access*
 
+## 💬 Community & Updates
+
+<div align="center">
+
+[![Telegram Channel](https://img.shields.io/badge/Join_Our_Telegram-blue?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/mousyhub)
+
+</div>
+
+Join our Telegram channel for discussions, latest release news, and donation information! Donations will help speed up the development and release of new updates.
+
+
 ## 🛠️ Technical Details  
 
 ### 🔧 Tech Stack  
@@ -66,7 +77,7 @@
 - **Core Libraries**:  
   - MudBlazor (UI)  
   - LLamaSharp (native model execution)  
-  - KokoroTTS (voice synthesis)  
+  - KokoroTTS (voice synthesis)
 
 ### 🐞 Known Issues  
 - The app is under active development  
