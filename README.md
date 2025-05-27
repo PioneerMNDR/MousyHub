@@ -57,7 +57,7 @@
 2. **Launch** `MousyHub.exe` and create your first persona  
 3. **Connect** your preferred LLM provider  
 
-✨ *Tip: Right-click the tray icon for quick settings access*
+✨ *Tip: Don't forget to create a shortcut on your desktop for quick access.*
 
 ## 💬 Community & Updates
 
