@@ -35,7 +35,7 @@ namespace MousyHub.Classes.Misc
             string[] additions = { " ", "\" ", "*", "'","" };
 
             // Special character combinations
-            string[] specChars = { ",* ", "* \"" };
+            string[] specChars = { ",* ", "* \"", "*\n" };
 
             // Специальные комбинации для многоточия
             string[] ellipsisAdditions = { " ", "*", "\"", "*\"" };
