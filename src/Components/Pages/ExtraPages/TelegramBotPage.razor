@@ -1,0 +1,216 @@
+﻿@page "/telegrambot"
+@using Microsoft.Extensions.Options
+@using MousyHub.Classes.Services.TelegramExtra
+@using MousyHub.Models
+@using MousyHub.Models.Services
+@using MousyHub.Models.Services.URLHandle
+@inject TelegramService BotService 
+@inject SettingsService Settings
+@inject ChatState ChatState
+@inject TranslatorService Translator
+@inject URLImporterService UrlImporter
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudGrid >
+        <!-- Header with icon -->
+        <MudItem xs="12"  >
+            <MudPaper Elevation="0" Class="px-4   mb-4" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <MudGrid >
+                    <MudItem xs="12" md="8" >
+                        <MudText Typo="Typo.h3" Class="mt-3">
+                            <MudIcon Icon="@Icons.Custom.Brands.Telegram" Size="Size.Large" Class="mr-2" />
+                            Telegram Bot Management
+                        </MudText>
+                        <MudText Typo="Typo.subtitle1" Style="opacity: 0.9;">
+                            Interact with your favorite characters remotely
+                        </MudText>
+                    </MudItem>
+                    <MudItem xs="12" md="4" >
+                        <MudStack  AlignItems="AlignItems.Center">
+                            <!-- Placeholder for future banner image -->
+                            <MudAvatar Size="Size.Large" Class="mb-3" Style="width: 120px; height: 120px; background-color: rgba(255,255,255,0.2);">
+                                <MudIcon Icon="@Icons.Material.Filled.SmartToy" Size="Size.Large" Style="font-size: 60px; color: white;" />
+                            </MudAvatar>
+                        </MudStack>
+                  
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Main content -->
+        <MudItem xs="12" md="6">
+            <MudCard>
+                <MudCardContent>
+                    <MudText Typo="Typo.h6" Class="mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+                        Connection Settings
+                    </MudText>
+                    
+                    <MudTextField 
+                        @bind-Value="Settings.User.TelegramOptions.BotToken" 
+                        Label="Bot Token" 
+                        Variant="Variant.Outlined"
+                        Adornment="Adornment.Start"
+                        AdornmentIcon="@Icons.Material.Filled.Key"
+                        HelperText="Enter your bot token"
+                        Class="mb-4" />
+
+                    <MudDivider Class="my-4" />
+
+                    <MudText Typo="Typo.h6" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                        Bot Status
+                    </MudText>
+
+                    @if (!string.IsNullOrEmpty(Settings.User.TelegramOptions.BotToken))
+                    {
+                        <MudAlert Severity="@(BotService.IsReceiving ? Severity.Success : Severity.Info)" 
+                                  Icon="@(BotService.IsReceiving ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.PauseCircle)"
+                                  Class="mb-4">
+                            Status: @(BotService.IsReceiving ? "Active and receiving messages" : "Stopped")
+                        </MudAlert>
+
+                        <MudGrid>
+                            <MudItem xs="12" sm="6">
+                                @if (!BotService.IsReceiving)
+                                {
+                                    <MudButton 
+                                        Variant="Variant.Filled" 
+                                        Color="Color.Success" 
+                                        StartIcon="@Icons.Material.Filled.PlayArrow"
+                                        FullWidth="true"
+                                        @onclick="StartBot">
+                                        Start Bot
+                                    </MudButton>
+                                }
+                                else
+                                {
+                                    <MudButton 
+                                        Variant="Variant.Filled" 
+                                        Color="Color.Error" 
+                                        StartIcon="@Icons.Material.Filled.Stop"
+                                        FullWidth="true"
+                                        @onclick="StopBot">
+                                        Stop Bot
+                                    </MudButton>
+                                }
+                            </MudItem>
+                        </MudGrid>
+                    }
+                    else
+                    {
+                        <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Warning">
+                            Bot token is not configured. Please enter the token in the field above.
+                        </MudAlert>
+                    }
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <!-- Instructions -->
+        <MudItem xs="12" md="6">
+            <MudCard>
+                <MudCardContent>
+                    <MudText Typo="Typo.h6" Class="mb-4">
+                        <MudIcon Icon="@Icons.Material.Filled.School" Class="mr-2" />
+                        How to Create a Telegram Bot
+                    </MudText>
+
+                    <MudTimeline TimelineOrientation="TimelineOrientation.Vertical" TimelinePosition="TimelinePosition.Start">
+                        <MudTimelineItem Color="Color.Primary" Size="Size.Small">
+                            <ItemContent>
+                                <MudCard Elevation="0">
+                                    <MudCardContent Class="pa-2">
+                                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Step 1</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            Open Telegram and find the bot <MudChip T="string" Size="Size.Small" Href="https://telegram.me/botfather" Color="Color.Primary">BotFather</MudChip>
+                                        </MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </ItemContent>
+                        </MudTimelineItem>
+
+                        <MudTimelineItem Color="Color.Secondary" Size="Size.Small">
+                            <ItemContent>
+                                <MudCard Elevation="0">
+                                    <MudCardContent Class="pa-2">
+                                        <MudText Typo="Typo.subtitle2" Color="Color.Secondary">Step 2</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            Send the command <MudChip T="string" Size="Size.Small" Color="Color.Secondary">/newbot</MudChip> and follow the instructions
+                                        </MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </ItemContent>
+                        </MudTimelineItem>
+
+                        <MudTimelineItem Color="Color.Tertiary" Size="Size.Small">
+                            <ItemContent>
+                                <MudCard Elevation="0">
+                                    <MudCardContent Class="pa-2">
+                                        <MudText Typo="Typo.subtitle2" Color="Color.Tertiary">Step 3</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            Choose a name for your bot (e.g., MousyHub Bot)
+                                        </MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </ItemContent>
+                        </MudTimelineItem>
+
+                        <MudTimelineItem Color="Color.Info" Size="Size.Small">
+                            <ItemContent>
+                                <MudCard Elevation="0">
+                                    <MudCardContent Class="pa-2">
+                                        <MudText Typo="Typo.subtitle2" Color="Color.Info">Step 4</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            Choose a unique username (must end with 'bot')
+                                        </MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </ItemContent>
+                        </MudTimelineItem>
+
+                        <MudTimelineItem Color="Color.Success" Size="Size.Small">
+                            <ItemContent>
+                                <MudCard Elevation="0">
+                                    <MudCardContent Class="pa-2">
+                                        <MudText Typo="Typo.subtitle2" Color="Color.Success">Step 5</MudText>
+                                        <MudText Typo="Typo.body2">
+                                            Copy the received token and paste it in the field above
+                                        </MudText>
+                                    </MudCardContent>
+                                </MudCard>
+                            </ItemContent>
+                        </MudTimelineItem>
+                    </MudTimeline>
+
+                    <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Lightbulb" Class="mt-4">
+                        <MudText Typo="Typo.body2">
+                            <strong>Tip:</strong> Keep your token secure and never share it with anyone!
+                        </MudText>
+                    </MudAlert>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private async Task StartBot()
+    {
+        if (!BotService.IsReceiving)
+        {
+            await BotService.StartReceivingAsync(Settings, ChatState, Translator, UrlImporter);
+            StateHasChanged(); 
+        }
+    }
+
+    private async Task StopBot()
+    {
+        if (BotService.IsReceiving)
+        {
+            await BotService.StopReceivingAsync();
+            StateHasChanged(); 
+        }
+    }
+}
