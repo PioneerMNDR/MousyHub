@@ -180,20 +180,10 @@
     MudTextFieldExtended<string> mudText;
     private async Task SendMessage()
     {
-        Person CurrentPerson = ChatHistory.GetCurrentSpeakerInQueue();
-        Person NextPerson = ChatHistory.QueueMoveOrder();
-        if (CurrentPerson.IsUser == false)
-        {
-            Alerts.ErrorAlert("Error building queue. Write to the developer about this error");
-        }
         if (!string.IsNullOrWhiteSpace(CurrentMessage) && isGenerating == false)
         {
-            var nativeLangContent = CurrentMessage;
-            string llmContent = CurrentMessage;
-            await ClearMessage();
-            if (Translator.isEnabled)
-                llmContent = await Translator.TranslateForLLM(llmContent);
-            var mes = await ChatHistory.AddMessage(llmContent, CurrentPerson, Settings.CurrentInstruct, nativeLangContent);
+
+            Person NextPerson = await State.AddNewUserMessageInChat(CurrentMessage);
             await InvokeAsync(StateHasChanged);
             _ =  InvokeAsync(() => ClickSend.InvokeAsync(NextPerson));
             FastAnswers.Clear();

@@ -44,7 +44,7 @@
     </MudStack>
 
     <Chat @ref=ChatPage ChatHistory="State.ChatHistory" @bind-isVisibleUnpauseButton=isPaused  AbortCallback="StopGeneration" isRAGing="isRAGing" isBusy="isBusy" isGenerating=isGenerating ClickSend="@((Person per)=>StartGeneration(per,false))" ClickRegenerate="Regenerate" SkipUserTurn="SkipUserTurn" ClickContinueGenerate="ContinueGeneration"></Chat>
-}
+} 
 @code {
     public bool isCharSelectMode = true;
     public bool isCharEditMode = false;
@@ -70,7 +70,7 @@
         {
             State.AddPerson(item);
         }
-        StateHasChanged();
+        InvokeAsync(StateHasChanged);
     }
     async Task OnStartChat(CharCard card)
     {
@@ -85,7 +85,7 @@
             isCharSelectMode = false;
             isCharEditMode = false;
             await State.ChatHistory.ClearIsGenerationBorder();
-            StateHasChanged();
+           await InvokeAsync(StateHasChanged);
         }
     }
     async Task EditCharCard(CharCard card)
@@ -276,7 +276,7 @@
 
         Main.RefreshWizardPage();
         StateHasChanged();
-        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, lastMessage.Owner, Settings.User.ReasoningOptions, Settings.User.CloudBasedConfig.UseChatCompletions,isContinue:true);
+        var promt = State.ChatHistory.GetPromt(Settings.CurrentInstruct, lastMessage.Owner, Settings.User.ReasoningOptions, Settings.User.CloudBasedConfig.UseChatCompletions);
         Guid currentGuid = lastMessage.GuidMessage;
         await Generation(currentGuid, lastMessage.Owner, promt);
 
