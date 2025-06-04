@@ -1,4 +1,4 @@
-name: Notify Telegram about Release 
+name: Notify Telegram about Release
 on:
   release:
     types: [published]
@@ -6,25 +6,19 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      # Step name in English
-      - name: Send message to Telegram 
-        # Using a specific version is recommended
-        uses: appleboy/telegram-action@v0.1.1 # Replace with the latest stable version if needed
+      - name: Send message to Telegram
+        uses: appleboy/telegram-action@v0.1.1
         with:
           to: ${{ secrets.TELEGRAM_CHAT_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          # Specify Markdown format
-          format: markdown 
-          # Message content translated to English
+          format: markdown # This uses Telegram's older, more restrictive Markdown parser
           message: |
             🚀 *New Release Published!* ✨
-            
+
             📂 **Repository:** [${{ github.repository }}](https://github.com/${{ github.repository }})
             🏷️ **Release:** [${{ github.event.release.name }}](${{ github.event.release.html_url }})
             🔖 **Tag:** `${{ github.event.release.tag_name }}`
             👤 **Author:** @${{ github.event.release.author.login }}
-            
+
             📝 *Release Description:*
             ${{ github.event.release.body }}
-            
-            
