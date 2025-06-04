@@ -10,45 +10,21 @@ using System.Threading.Tasks;
 
 public class CharacterDataReader
 {
-
-    public async Task<string> ReadCharacterDataAsync(string base64string, string inputFormat = "png")
+    public string ParseCharacterDataDirect(byte[] imageData)
     {
+        using var image = Image.Load<Rgba32>(imageData);
+        var pngMetaData = image.Metadata.GetPngMetadata();
 
-        // Ensure the format is supported
-        if (inputFormat.ToLower() != "png")
+        foreach (var textChunk in pngMetaData.TextData)
         {
-            throw new NotSupportedException("Unsupported format");
-        }
-
-        byte[] imageBytes = Convert.FromBase64String(base64string);
-
-        // Parse the character data from the image bytes
-        return ParseCharacterData(imageBytes, inputFormat);
-    }
-
-    private string ParseCharacterData(byte[] imageData, string format)
-    {
-        if (format.ToLower() != "png")
-        {
-            throw new NotSupportedException("Unsupported format");
-        }
-
-        using (var image = Image.Load<Rgba32>(imageData))
-        {
-            var pngMetaData = image.Metadata.GetPngMetadata();
-
-            foreach (var textChunk in pngMetaData.TextData)
+            if (textChunk.Keyword.Equals("ccv3", StringComparison.OrdinalIgnoreCase) ||
+                textChunk.Keyword.Equals("chara", StringComparison.OrdinalIgnoreCase))
             {
-                if (textChunk.Keyword.Equals("ccv3", StringComparison.OrdinalIgnoreCase))
-                {
-                    return Encoding.UTF8.GetString(Convert.FromBase64String(textChunk.Value));
-                }
-                else if (textChunk.Keyword.Equals("chara", StringComparison.OrdinalIgnoreCase))
-                {
-                    return Encoding.UTF8.GetString(Convert.FromBase64String(textChunk.Value));
-                }
+                return Encoding.UTF8.GetString(Convert.FromBase64String(textChunk.Value));
             }
-            throw new Exception("No PNG metadata.");
         }
+        throw new Exception("Character data not found in image metadata");
     }
+
+ 
 }

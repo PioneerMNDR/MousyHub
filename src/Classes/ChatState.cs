@@ -1,6 +1,8 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
 using MousyHub.Models.Services;
 using MousyHub.Classes.Misc;
+using DocumentFormat.OpenXml.Bibliography;
+using static MudBlazor.CategoryTypes;
 
 namespace MousyHub.Models
 {
@@ -14,6 +16,8 @@ namespace MousyHub.Models
         private RAGService RAGService { get; set; }
         private TranslatorService TranslatorService { get; set; }
 
+        private AlertServices Alerts { get; set; }
+
         public List<Person> AllPersons { get; set; } = new List<Person>();
 
         public Person NextPerson;
@@ -24,7 +28,7 @@ namespace MousyHub.Models
 
 
 
-        public ChatState(UploaderService uploaderService, SettingsService settingsService, ProviderService Provider, TranslatorService translatorService, RAGService RAG)
+        public ChatState(UploaderService uploaderService, SettingsService settingsService, ProviderService Provider, TranslatorService translatorService, RAGService RAG, AlertServices alerts)
         {
             UploaderService = uploaderService;
             Settings = settingsService;
@@ -37,6 +41,7 @@ namespace MousyHub.Models
             UploaderService.SaveInfoEvent += SaveChatHistory;
             TranslatorService = translatorService;
             RAGService = RAG;
+            Alerts = alerts;
         }
         public async Task CheckChatHistory(CharCard charCard)
         {
@@ -91,11 +96,30 @@ namespace MousyHub.Models
             }
         }
 
+        public async Task<Person> AddNewUserMessageInChat(string UserMessage)
+        {
+            Person CurrentPerson = ChatHistory.GetCurrentSpeakerInQueue();
+            Person NextPerson = ChatHistory.QueueMoveOrder();
+            if (CurrentPerson.IsUser == false)
+            {
+                Alerts.ErrorAlert("Error building queue. Write to the developer about this error");
+            }
+            if (!string.IsNullOrWhiteSpace(UserMessage))
+            {
+                var nativeLangContent = UserMessage;
+                string llmContent = UserMessage;
+                if (TranslatorService.isEnabled)
+                    llmContent = await TranslatorService.TranslateForLLM(llmContent);
+                var mes = await ChatHistory.AddMessage(llmContent, CurrentPerson, Settings.CurrentInstruct, nativeLangContent);
+
+            }
+            return NextPerson;
+        }
 
 
         //Summarize the chat and write the summarization result to Chat History.Summarized Context
         //*It is necessary to move the method to another class
-        public async Task<bool> ChatSummarize()
+        public async Task<bool> ChatSummarize(bool ReSummarize=false)
         {
             string preparePromt = "";
             List<Message> messages = new List<Message>();
@@ -103,7 +127,7 @@ namespace MousyHub.Models
             {
                 preparePromt += StringHelperBuilder.SystemMessageShort(ChatHistory);
             }
-            else
+            else if(!ReSummarize)
             {
                 preparePromt += $"Last summary(use this for summarize too): [{ChatHistory.SummarizeContext}]\n";
             }
@@ -111,7 +135,7 @@ namespace MousyHub.Models
             foreach (var item in ChatHistory.Messages)
             {
            
-                if (item.isSummarized == false && item != ChatHistory.GetLastMessage() && item != ChatHistory.GetLastMessage(offset:1))
+                if ((!item.isSummarized || ReSummarize) && item != ChatHistory.GetLastMessage() && item != ChatHistory.GetLastMessage(offset:1))
                 {
                     preparePromt += "\n" + item.Owner.Name + ": " + item.Content;
                     messages.Add(item);
@@ -134,6 +158,8 @@ namespace MousyHub.Models
                 return false;
             }
         }
+
+
         public async Task ExportChatToMemory()
         {
             if (Settings.User.RAGOptions.Enabled && RAGService.IsAvailable)

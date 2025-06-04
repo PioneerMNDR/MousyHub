@@ -6,6 +6,7 @@ using MousyHub.Models;
 using MousyHub.Models.Misc;
 using MousyHub.Models.Services;
 using System.Text.Json;
+using Newtonsoft.Json.Linq;
 
 
 namespace MousyHub.Models.Services.URLHandle
@@ -53,41 +54,56 @@ namespace MousyHub.Models.Services.URLHandle
                 }
             }
         }
-        private async Task<CharCard> DownloadChubCharacterAsync(string fullPath, string format = "tavern", string version = "main")
+        private async Task<CharCard> DownloadChubCharacterAsync(string fullPath)
         {
-            var request = new
-            {
-                format,
-                fullPath,
-                version
-            };
-            var json = JsonConvert.SerializeObject(request);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://api.chub.ai/api/characters/download")
-            {
-                Content = content
-            };
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-            var response = await _httpClient.SendAsync(requestMessage);
+            const string USER_AGENT = "YourAppName/1.0 (your-contact-info)";
 
-            if (response.IsSuccessStatusCode)
+            var parts = fullPath.Split('/');
+            if (parts.Length < 2) throw new ArgumentException("Invalid character path format");
+
+            string creatorName = parts[0];
+            string projectName = parts[1];
+
+            // 1. Получение метаданных персонажа
+            var metadataUrl = $"https://api.chub.ai/api/characters/{creatorName}/{projectName}";
+            using var metadataRequest = new HttpRequestMessage(HttpMethod.Get, metadataUrl);
+            metadataRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            metadataRequest.Headers.UserAgent.ParseAdd(USER_AGENT);
+
+            using var metadataResponse = await _httpClient.SendAsync(metadataRequest);
+
+            if (!metadataResponse.IsSuccessStatusCode)
             {
-                CharacterDataReader reader = new CharacterDataReader();
-
-                byte[] imageBytes = await response.Content.ReadAsByteArrayAsync();
-
-                string base64String = Convert.ToBase64String(imageBytes);
-                string jsoncard = await reader.ReadCharacterDataAsync(base64String);
-                CharCard card = JsonConvert.DeserializeObject<CharCard>(jsoncard);
-                card.SetAvatar(Util.CompressImage(imageBytes));
-                return card;
+                var errorText = await metadataResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Metadata fetch failed: {metadataResponse.StatusCode} - {errorText}");
             }
-            else
+
+            var metadataJson = await metadataResponse.Content.ReadAsStringAsync();
+            var metadata = JObject.Parse(metadataJson);
+            string downloadUrl = metadata?["node"]?["max_res_url"]?.ToString();
+
+            if (string.IsNullOrEmpty(downloadUrl))
+                throw new Exception("Download URL not found in metadata");
+
+            // 2. Скачивание изображения
+            using var downloadResponse = await _httpClient.GetAsync(downloadUrl);
+            if (!downloadResponse.IsSuccessStatusCode)
             {
-                // Обработка ошибки
-                Console.WriteLine($"Ошибка: {response.StatusCode}");
-                return null;
+                var errorText = await downloadResponse.Content.ReadAsStringAsync();
+                throw new Exception($"Image download failed: {downloadResponse.StatusCode} - {errorText}");
             }
+
+            // 3. Обработка изображения
+            byte[] imageBytes = await downloadResponse.Content.ReadAsByteArrayAsync();
+            CharacterDataReader reader = new CharacterDataReader();
+
+            // Прямая передача байтов вместо base64 конвертации
+            string jsoncard = reader.ParseCharacterDataDirect(imageBytes);
+
+            CharCard card = JsonConvert.DeserializeObject<CharCard>(jsoncard);
+            card.SetAvatar(Util.CompressImage(imageBytes));
+
+            return card;
         }
 
 

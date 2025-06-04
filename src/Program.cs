@@ -13,6 +13,7 @@ using MousyHub.Classes.Services.TTS;
 using LLama.Native;
 using System.Diagnostics;
 using System.Reflection;
+using MousyHub.Classes.Services.TelegramExtra;
 
 
 
@@ -57,6 +58,7 @@ builder.Services.AddSingleton<UploaderService>();
 builder.Services.AddSingleton<RAGService>();
 builder.Services.AddSingleton<AdvancedQueryService>();
 builder.Services.AddSingleton<KokoroService>();
+builder.Services.AddSingleton<TelegramService>();
 string[] supportedCul = ["en-US", "ru-RU"];
 var localizationOptions = new RequestLocalizationOptions().SetDefaultCulture(supportedCul[0])
     .AddSupportedCultures(supportedCul).AddSupportedUICultures(supportedCul);

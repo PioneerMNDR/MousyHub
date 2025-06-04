@@ -74,6 +74,10 @@
             <MudStack Row>
                 <MudSwitch @bind-Value=Settings.User.UseStepsSummaryPromt UncheckedColor="Color.Tertiary" Color="Color.Primary">@(Settings.User.UseStepsSummaryPromt ? "Step version" : "Simple version")</MudSwitch>
                 <MudSwitch  @bind-Value=Settings.User.AutoSummarize Color="Color.Info" Label="Auto summarize" title="Automatic summarization at achievement of a certain border of a context"></MudSwitch>
+                <MudTooltip Text="If you don't like the brief history of your dialogue, you can summarize the entire dialogue again.">
+                         <MudButton Variant="Variant.Filled" OnClick="@(()=>State.ChatSummarize(ReSummarize:true))">Re-summarize</MudButton>
+                </MudTooltip>
+           
             </MudStack>
 
         </MudExpansionPanel>

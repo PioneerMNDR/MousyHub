@@ -38,60 +38,7 @@ namespace MousyHub.Models
 
         }
 
-        //// Новый метод для обработки и разделения контента
-        //public void ProcessReasoningContent(ReasoningOptions options)
-        //{
-        //    options ??= new ReasoningOptions();
 
-        //    if (Content.Contains(options.Suffix))
-        //    {
-        //        int endThinkIndex = Content.IndexOf(options.Suffix);
-
-        //        // Извлекаем reasoning контент (всё до суффикса)
-        //        ReasoningContent = Content.Substring(0, endThinkIndex);
-
-        //        // Обновляем основной контент (всё после суффикса)
-        //        Content = Content.Substring(endThinkIndex + options.Suffix.Length);
-        //    }
-        //    else
-        //    {
-        //        // Если маркер не найден, считаем всё reasoning контентом
-        //        ReasoningContent = Content;
-        //        Content = "";
-        //    }
-        //}
-
-        //// Метод для добавления нового контента с обработкой reasoning
-        //public void AppendContent(string newContent, ReasoningOptions options)
-        //{
-        //    Debug.Write(newContent);
-        //    string updatedContent = Content + newContent;
-
-        //    // Если уже найден маркер reasoning в предыдущем контенте
-        //    if (Content.Contains(options.Suffix))
-        //    {
-        //        // Просто добавляем к обычному контенту
-        //        Content += newContent;
-        //    }
-        //    // Если маркер найден в обновленном контенте (впервые)
-        //    else if (updatedContent.Contains(options.Suffix))
-        //    {
-        //        int endThinkIndex = updatedContent.IndexOf(options.Suffix);
-
-        //        // Извлекаем reasoning контент
-        //        ReasoningContent = updatedContent.Substring(0, endThinkIndex);
-
-        //        // Обновляем основной контент
-        //        Content = updatedContent.Substring(endThinkIndex + options.Suffix.Length);
-        //    }
-        //    // Если маркер еще не найден
-        //    else
-        //    {
-        //        // Добавляем к reasoning контенту
-        //        ReasoningContent += newContent;
-        //        Content = "";
-        //    }
-        //}
 
         public string Content { get; set; }
 

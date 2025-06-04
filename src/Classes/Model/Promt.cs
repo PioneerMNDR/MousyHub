@@ -9,16 +9,24 @@ namespace MousyHub.Classes.Model
     public class Promt
     {
         static string separator = "\n";
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="chatHistory">Существующий чат</param>
+        /// <param name="instruct"></param>
+        /// <param name="person">The parameter responds, from which the LLM entity will respond in the following message</param>
+        /// <param name="reasoningOptions"></param>
+        /// <param name="isChatCompletion"></param>
 
-        public Promt(ChatHistory chatHistory, Instruct instruct, Person person, ReasoningOptions reasoningOptions, bool isChat, bool isContinue=false)
+        public Promt(ChatHistory chatHistory, Instruct instruct, Person person, ReasoningOptions reasoningOptions, bool isChatCompletion)
         {
-            this.isChatCompletion = isChat;
+            this.isChatCompletion = isChatCompletion;
             Elements = new List<PromtElement>();
             FullContent = string.Empty;
             Build(chatHistory, instruct, person, reasoningOptions);
         }
 
-        public Promt(string SystemPromt, string UserPromt, bool isChat, bool isContinue = false)
+        public Promt(string SystemPromt, string UserPromt, bool isChat)
         {
             this.isChatCompletion = isChat;
             Elements = new List<PromtElement>();
@@ -50,13 +58,13 @@ namespace MousyHub.Classes.Model
             //DIALOGUE
             foreach (var item in chatHistory.Messages)
             {
-                //USER
+                //IF USER
                 if (item.Owner.IsUser && item.isSummarized == false)
                 {
                     Elements.Add(new PromtElement(MessageRole.User, $"{item.Content}"));
                     FullDialogue += item.InstructContent;
                 }
-                //BOT
+                //IF BOT
                 else if (item.isSummarized == false)
                 {
 
@@ -72,6 +80,13 @@ namespace MousyHub.Classes.Model
                         FullDialogue += FormatReasoningContent(item.Content, item.ReasoningContent, reasoningOptions);
                     FullDialogue += item.Content;
                 }
+
+            }
+            //Created for the case if we do not create an empty message for the bot in the dialog history in advance (usually created if the dialog is conducted through the main interface)
+            if (chatHistory.Messages.Last().isGenerating==false && chatHistory.Messages.Last().Owner.IsUser==true)
+            {
+                Console.WriteLine("[There is no empty prepared message for the bot's response. I am fixing the prompt...]");
+                FullDialogue += StringHelperBuilder.BotMessageInstructed(instruct, person.Name);
 
             }
             if (!string.IsNullOrEmpty(instruct.jailbreak_promt))

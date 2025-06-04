@@ -1,5 +1,6 @@
 ﻿
 using MousyHub.Classes.Provider.ChatCompletions;
+using MousyHub.Classes.Services.TelegramExtra;
 using MousyHub.Classes.User;
 using MousyHub.Models;
 using MousyHub.Models.Misc;
@@ -23,11 +24,13 @@ namespace MousyHub.Models.User
         public CloudBasedConfig CloudBasedConfig { get; set; } = new CloudBasedConfig();
         public ReasoningOptions ReasoningOptions { get; set; } = new ReasoningOptions();
         public TTSOptions TTSOptions { get; set; } = new TTSOptions();
+
+        public TelegramOptions TelegramOptions { get; set; } = new TelegramOptions();
         public int CurrentMaxToken { get; set; } = 300;
         public int CurrentContextLength { get; set; } = 4096;
         public bool PauseBeforeGenerating { get; set; } = false;
         public bool AutoSummarize { get; set; } = true;
-        public bool UseStepsSummaryPromt { get; set; } = true;
+        public bool UseStepsSummaryPromt { get; set; } = false;
 
         public int SummarizeMessageCount = 15;
         public bool AnswerAssistant { get; set; } = false;

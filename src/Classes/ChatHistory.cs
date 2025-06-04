@@ -112,9 +112,9 @@ namespace MousyHub.Models
         /// <param name="instruct"></param>
         /// <returns></returns>
         
-        public Promt GetPromt(Instruct instruct, Person person,ReasoningOptions reasoningOptions, bool isChat, bool isContinue = false)
+        public Promt GetPromt(Instruct instruct, Person person,ReasoningOptions reasoningOptions, bool isChat)
         {
-            Promt promt = new Promt(this, instruct, person, reasoningOptions, isChat, isContinue);
+            Promt promt = new Promt(this, instruct, person, reasoningOptions, isChat);
             if (true)
             {
                 promt.ConsoleLog();
