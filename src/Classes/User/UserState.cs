@@ -30,7 +30,7 @@ namespace MousyHub.Models.User
         public int CurrentContextLength { get; set; } = 4096;
         public bool PauseBeforeGenerating { get; set; } = false;
         public bool AutoSummarize { get; set; } = true;
-        public bool UseStepsSummaryPromt { get; set; } = true;
+        public bool UseStepsSummaryPromt { get; set; } = false;
 
         public int SummarizeMessageCount = 15;
         public bool AnswerAssistant { get; set; } = false;

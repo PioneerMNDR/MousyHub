@@ -119,7 +119,7 @@ namespace MousyHub.Models
 
         //Summarize the chat and write the summarization result to Chat History.Summarized Context
         //*It is necessary to move the method to another class
-        public async Task<bool> ChatSummarize()
+        public async Task<bool> ChatSummarize(bool ReSummarize=false)
         {
             string preparePromt = "";
             List<Message> messages = new List<Message>();
@@ -127,7 +127,7 @@ namespace MousyHub.Models
             {
                 preparePromt += StringHelperBuilder.SystemMessageShort(ChatHistory);
             }
-            else
+            else if(!ReSummarize)
             {
                 preparePromt += $"Last summary(use this for summarize too): [{ChatHistory.SummarizeContext}]\n";
             }
@@ -135,7 +135,7 @@ namespace MousyHub.Models
             foreach (var item in ChatHistory.Messages)
             {
            
-                if (item.isSummarized == false && item != ChatHistory.GetLastMessage() && item != ChatHistory.GetLastMessage(offset:1))
+                if ((!item.isSummarized || ReSummarize) && item != ChatHistory.GetLastMessage() && item != ChatHistory.GetLastMessage(offset:1))
                 {
                     preparePromt += "\n" + item.Owner.Name + ": " + item.Content;
                     messages.Add(item);
@@ -158,6 +158,8 @@ namespace MousyHub.Models
                 return false;
             }
         }
+
+
         public async Task ExportChatToMemory()
         {
             if (Settings.User.RAGOptions.Enabled && RAGService.IsAvailable)
