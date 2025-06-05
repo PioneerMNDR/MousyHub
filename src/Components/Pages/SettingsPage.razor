@@ -180,6 +180,7 @@
                 <MudSwitch @bind-Value=Settings.User.HideNSFWPicture Color="Color.Primary" Label="Hide NSFW picture"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.HideDownloadPage Color="Color.Primary" Label="Hide Download Page"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.HideModelSettingsWhenNotConnected Color="Color.Primary" Label="Hide Model Settings When Not Connected"></MudSwitch>
+                <MudSwitch Value="Settings.User.ShowHiddenCards" ValueChanged="@((bool val)=>{Settings.User.ShowHiddenCards=val;Uploader.ReloadCards();})" Color="Color.Primary" Label="Show Hidden Cards"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.GenerateShortDesOnImport Color="Color.Primary" Label="Generate short description on card import"></MudSwitch>
                 <MudSwitch @bind-Value=Settings.User.SquareAvatars Color="Color.Primary" Label="Square avatars"></MudSwitch>
             </MudStack>

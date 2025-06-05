@@ -65,7 +65,10 @@
     }
     void LoadCards(object? obj, EventArgs e)
     {
-        Cards = Uploader.LoadCards();
+        Cards = Settings.User.ShowHiddenCards
+    ? Uploader.LoadCards().ToList()
+    : Uploader.LoadCards().Where(x => !x.isHidden).ToList();
+
         foreach (var item in Cards)
         {
             State.AddPerson(item);

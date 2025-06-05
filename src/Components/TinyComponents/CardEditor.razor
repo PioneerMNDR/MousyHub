@@ -40,12 +40,20 @@
                         </div>
                     </MudItem>
                     <MudItem md="12">
-                        <MudStack Row Justify="Justify.Center">
+                        <MudStack Row Justify="Justify.Center">                 
                             <MudButton Color="Color.Success" OnClick="SaveCard" Variant="Variant.Filled">Save</MudButton>
                             <MudButton Color="Color.Error" OnClick="DeleteCard" Variant="Variant.Outlined">Delete</MudButton>
-                        </MudStack>
+                        </MudStack>          
                     </MudItem>
                 </MudGrid>
+            </MudPaper>
+            <MudPaper  Class="mt-1">
+                <MudStack Row Justify="Justify.Center">
+                    <MudTooltip Text="Hide a card from the selection carousel. Save and refresh the page to hide the card. You can enable the display of hidden cards in the settings">
+                        <MudSwitch Color="Color.Primary" @bind-Value="charCard.isHidden">Hide card</MudSwitch>
+                    </MudTooltip>
+                </MudStack>
+       
             </MudPaper>
 
         </MudItem>

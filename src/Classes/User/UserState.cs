@@ -38,6 +38,7 @@ namespace MousyHub.Models.User
         public bool HideNSFWPicture { get; set; } = false;
         public bool VoiceMode { get; set; } = false;
         public bool HideDownloadPage { get; set; } = false;
+        public bool ShowHiddenCards { get; set; } = false;
         public bool HideModelSettingsWhenNotConnected { get; set; } = true;
         private bool AttemptHideDownloadPage { get; set; } = false;
         public bool GenerateShortDesOnImport { get; set; } = true;
