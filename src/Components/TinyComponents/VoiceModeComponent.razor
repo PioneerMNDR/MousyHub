@@ -98,13 +98,13 @@
             {
                 <canvas id="audioVisualizer" class="border-2 mud-border-white rounded-pill mud-elevation-6 mx-auto"></canvas>
             }
-            else if (Kokoro.IsRun)
+            else if (Kokoro.IsRun && Settings.User.TTSOptions.Enabled)
             {
                 <MudButton Variant="Variant.Filled" Disabled="!Kokoro.IsRun" Class="rounded-pill mud-elevation-6  mx-auto" Size="Size.Large" Color="Color.Primary" OnClick="StartVoiceChat">Let's go!</MudButton>
             }
             else
             {
-                <MudAlert Class="rounded-pill mud-elevation-2  mx-auto" Severity="Severity.Error">Kokoro model is not loaded</MudAlert>
+                <MudAlert Class="rounded-pill mud-elevation-2  mx-auto" Severity="Severity.Error">Kokoro model is not loaded or not enabled</MudAlert>
             }
         </MudItem>
     </MudGrid>
