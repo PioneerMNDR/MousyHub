@@ -17,7 +17,7 @@ namespace MousyHub.Models.Services
         private TaskCompletionSource<string>? _recognitionCompletionSource;
         // Таймер для отслеживания тишины // Timer for tracking silence
         private System.Timers.Timer? _silenceTimer;
-        private const int SILENCE_TIMEOUT = 1500;
+        private const int SILENCE_TIMEOUT = 1000;
         private string _lastRecognizedText = string.Empty;
 
         // Событие для всех случаев завершения распознавания (тишина или ручная остановка) // Event for all cases of recognition completion (silence or manual stop)
@@ -101,7 +101,7 @@ namespace MousyHub.Models.Services
                     await speechRecognition.CancelSpeechRecognitionAsync(false);
 
                     // Короткая пауза для завершения всех процессов // A short pause to complete all processes
-                    await Task.Delay(100);
+                    await Task.Delay(50);
 
 
                     RecognitionCompleted?.Invoke(this, _lastRecognizedText);
@@ -134,7 +134,7 @@ namespace MousyHub.Models.Services
                 await speechRecognition.CancelSpeechRecognitionAsync(false);
 
                 // Задержка для завершения всех процессов распознавания // Delay for completing all recognition processes
-                await Task.Delay(200);
+                await Task.Delay(100);
 
                 // После задержки устанавливаем флаг остановки записи // After the delay, set the recording stop flag
                 isRecord = false;
